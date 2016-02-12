@@ -4,12 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Dynamic;
 using System.Text;
-using System.Threading.Tasks;
-using SharpNeat.Utility;
 
-namespace ENTM_CSharpPort
+namespace ENTM.TuringMachine
 {
 
     /**
@@ -21,7 +19,7 @@ namespace ENTM_CSharpPort
      * @author Emil
      *
      */
-    class MinimalTuringMachine : ITuringMachine
+    class TuringMachine : ITuringMachine
     {
         private List<double[]> Tape;
         private int[] _headPositions;
@@ -40,7 +38,7 @@ namespace ENTM_CSharpPort
 
         private double[][] _initialRead;
 
-        public MinimalTuringMachine(Properties props)
+        public TuringMachine(Properties props)
         {
             _m = props.GetIntProperty("tm.m");
             _n = props.GetIntProperty("tm.n", -1);
@@ -70,9 +68,10 @@ namespace ENTM_CSharpPort
                 _internalLastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
                 _lastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
             }
-#if DEBUG
-            PrintState();
-#endif
+            if (Debug.On)
+            {
+                PrintState();
+            }
         }
 
         /**
@@ -113,13 +112,12 @@ namespace ENTM_CSharpPort
                 shifts[i] = Take(fromNN, p, s);
                 p += s;
 
-#if DEBUG
-
-                Console.WriteLine("------------------- MINIMAL TURING MACHINE (HEAD " + (i + 1) + ") -------------------");
-                Console.WriteLine("Write=" + Utilities.ToFormattedString(writeKeys[i], "F4") + " Interp=" + interps[i]);
-                Console.WriteLine("Content?=" + contents[i] + " Shift=" + Utilities.ToFormattedString(shifts[i], "F4"));
-
-#endif
+                if (Debug.On)
+                {
+                    Console.WriteLine("------------------- MINIMAL TURING MACHINE (HEAD " + (i + 1) + ") -------------------");
+                    Console.WriteLine("Write=" + Utilities.ToString(writeKeys[i], "F4") + " Interp=" + interps[i]);
+                    Console.WriteLine("Content?=" + contents[i] + " Shift=" + Utilities.ToString(shifts[i], "F4"));
+                }
 
                 Write(i, writeKeys[i], interps[i]);
             }
@@ -160,70 +158,40 @@ namespace ENTM_CSharpPort
                 }
             }
 
-#if DEBUG
+            if (Debug.On)
+            {
 
-            PrintState();
-            Console.WriteLine("Sending to NN: " + Utilities.ToFormattedString(result, "F4"));
-            Console.WriteLine("--------------------------------------------------------------");
+                PrintState();
+                Console.WriteLine("Sending to NN: " + Utilities.ToString(result, "F4"));
+                Console.WriteLine("--------------------------------------------------------------");
 
-#endif
+            }
             //		return new double[1][result.length];
             return result;
         }
 
-        public TuringMachineTimeStep GetLastTimeStep()
+        public TuringMachineTimeStep LastTimeStep => _lastTimeStep;
+
+        public bool RecordTimeSteps
         {
-            return _lastTimeStep;
+            get { return _recordTimeSteps; }
+            set { _recordTimeSteps = value; }
         }
 
-        public void SetRecordTimeSteps(bool setRecordTimeSteps)
+        public TuringMachineTimeStep InitialTimeStep
         {
-            _recordTimeSteps = setRecordTimeSteps;
+            get { return _lastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0); }
         }
 
-        public TuringMachineTimeStep GetInitialTimeStep()
-        {
-            return _lastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
-        }
-
-
-        public class TuringMachineTimeStep
-        {
-
-            public readonly double[] Key;
-            public readonly double WriteInterpolation, ContentJump;
-            public readonly double[] Shift;
-            public readonly double[] Read;
-            public readonly int WritePosition;
-            public readonly int ReadPosition;
-            public readonly int WriteZeroPosition;
-            public readonly int ReadZeroPosition;
-            public readonly int CorrectedWritePosition;
-            public readonly int CorrectedReadPosition;
-
-            internal TuringMachineTimeStep(double[] key, double write, double jump, double[] shift, double[] read, int writePosition, int readPosition, int writeZeroPosition, int readZeroPosition, int correctedWritePosition, int correctedReadPosition)
-            {
-                Key = key;
-                WriteInterpolation = write;
-                ContentJump = jump;
-                Shift = shift;
-                Read = read;
-                WritePosition = writePosition;
-                ReadPosition = readPosition;
-                WriteZeroPosition = writeZeroPosition;
-                ReadZeroPosition = readZeroPosition;
-                CorrectedWritePosition = correctedWritePosition;
-                CorrectedReadPosition = correctedReadPosition;
-            }
-
-        }
+        
 
 
         public double[][] GetDefaultRead()
         {
-#if DEBUG
-            PrintState();
-#endif
+            if (Debug.On)
+            {
+                PrintState();
+            }
             return _initialRead;
         }
 
@@ -313,9 +281,10 @@ namespace ENTM_CSharpPort
                 for (int i = 0; i < Tape.Count; i++)
                 {
                     double curSim = Utilities.Emilarity(key, Tape[i]);
-#if DEBUG
-                    Console.WriteLine("Pos " + i + ": sim =" + curSim + (curSim > similarity ? " better" : ""));
-#endif
+                    if (Debug.On)
+                    {
+                        Console.WriteLine("Pos " + i + ": sim =" + curSim + (curSim > similarity ? " better" : ""));
+                    }
                     if (curSim > similarity)
                     {
                         similarity = curSim;
@@ -323,9 +292,10 @@ namespace ENTM_CSharpPort
                     }
                 }
 
-#if DEBUG
-                Console.WriteLine("PERFORMING CONTENT JUMP! from " + _headPositions[head] + " to " + bestPos);
-#endif
+                if (Debug.On)
+                {
+                    Console.WriteLine("PERFORMING CONTENT JUMP! from " + _headPositions[head] + " to " + bestPos);
+                }
 
                 _headPositions[head] = bestPos;
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ENTM_CSharpPort
+namespace ENTM
 {
     class Utilities
     {
@@ -74,14 +74,17 @@ namespace ENTM_CSharpPort
             return copy;
         }
 
-        public static string ToFormattedString<T>(T[] col, string format) where T : IFormattable
+        public static string
+        public static string
+
+        public static string ToString<T>(T[] col, string format) where T : IFormattable
         {
             return string.Join(",", col.Select(x => x.ToString(format, Provider)).ToArray());
         }
 
-        public static string ToFormattedString<T>(T[][] col, string format) where T : IFormattable
+        public static string ToString<T>(T[][] col, string format) where T : IFormattable
         {
-            return string.Join("\n", col.Select(x => ToFormattedString(x, format)).ToArray());
+            return string.Join("\n", col.Select(x => ToString(x, format)).ToArray());
         }
     }
 }

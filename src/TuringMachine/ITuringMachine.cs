@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ENTM_CSharpPort
+﻿namespace ENTM.TuringMachine
 {
     interface ITuringMachine
     {
@@ -18,5 +12,7 @@ namespace ENTM_CSharpPort
 
         // Get the info saved
         double[][] GetTapeValues();
+
+        TuringMachineTimeStep LastTimeStep { get; }
     }
 }

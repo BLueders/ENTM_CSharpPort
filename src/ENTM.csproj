@@ -7,8 +7,8 @@
     <ProjectGuid>{951D6BCB-3991-419D-A40C-B64EC35C9451}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ENTM_CSharpPort</RootNamespace>
-    <AssemblyName>ENTM_CSharpPort</AssemblyName>
+    <RootNamespace>ENTM</RootNamespace>
+    <AssemblyName>ENTM</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -56,12 +56,18 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TuringMachine.cs" />
-    <Compile Include="TuringMachineTimeStep.cs" />
+    <Compile Include="SimpleNeatExperiment.cs" />
+    <Compile Include="SineEvaluator.cs" />
+    <Compile Include="ThreadSafeRandom.cs" />
+    <Compile Include="TuringMachine\TuringMachine.cs" />
+    <Compile Include="TuringMachine\TuringMachineTimeStep.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CopyTask\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
