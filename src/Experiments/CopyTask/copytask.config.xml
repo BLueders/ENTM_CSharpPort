@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Config>
+  <PopulationSize>300</PopulationSize>
+  <SpecieCount>10</SpecieCount>
+  <Generations>5000</Generations>
+  <EvaluateParents>false</EvaluateParents>
+  <Activation>
+    <Scheme>FixedIters</Scheme>
+    <Iters>2</Iters>
+  </Activation>
+  <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
+  <ComplexityThreshold>50</ComplexityThreshold>
+  <Description>
+    ArglBlargl
+  </Description>
+
+<!-- Copy Task Values -->
+  <MaxLength>10</MaxLength>
+  <LengthRule>random</LengthRule>
+  <ElementSize>8</ElementSize>
+  <FitnessFunction>StrictClose</FitnessFunction>
+
+<!-- Turing Machine Values-->
+  <Enabled>true</Enabled>
+  <N>25</N>
+  <M>11</M>
+  <ShiftLength>3</ShiftLength>
+  <ShiftMode>Multiple</ShiftMode>
+  <Heads>1</Heads>
+  <Iterations>50</Iterations>
+
+<!--
+#classic is worth trying out
+topology.mutation.classic=true
+add.connection.mutation.rate=0.05
+remove.connection.mutation.rate=0.02
+remove.connection.max.weight=5
+remove.connection.strategy = skewed
+add.neuron.mutation.rate=0.005
+prune.mutation.rate=1.00
+weight.mutation.rate=0.6
+weight.mutation.std.dev=1.5
+weight.max=10.0
+weight.min=-10.0
+survival.rate=0.2
+selector.elitism=true
+selector.roulette=false
+selector.elitism.min.specie.size=2
+
+############
+# speciation
+############
+chrom.compat.excess.coeff=1.0
+chrom.compat.disjoint.coeff=1.0
+chrom.compat.common.coeff=0.4
+speciation.threshold=0.35
+
+  
+##################
+# fitness function
+#
+# stimulus.size = domain + tm.m * tm.heads.read = tm.m + 2 + tm.m * tm.heads.read
+# response.size = domain + (tm.heads.read * (3 + tm.m + tm.shift.length)) 
+#                        + (tm.heads.write + (3 + 3 * tm.m + tm.shift.length))
+##################
+#
+#stimulus.size=7 	CALCULATED AUTOMATICALLY
+#response.size=26 	CALCULATED AUTOMATICALLY
+fitness_function.class=dk.itu.ejuuragr.fitness.FitnessEvaluator
+fitness.function.adjust.for.network.size.factor=0.0
+#targets.range=0.2
+fitness.threshold=0.95
+fitness.target=0.999
+
+####################
+# sigmoid activation
+####################
+initial.topology.activation = sigmoid
+
+##############
+# network arch
+##############
+# Options = linear, sigmoid, evsail-sigmoid, tanh, tanh-cubic, step, signed, clamped-linear, signed-clamped-linear
+initial.topology.activation.input = linear
+initial.topology.activation.output = sigmoid
+initial.topology.fully.connected = true
+initial.topology.num.hidden.neurons = 0
+
+recurrent=disallowed
+recurrent.cycles=1
+ann.type=anji
+
+#############
+# persistence
+#############
+persistence.class=com.anji.persistence.FilePersistence
+persistence.base.dir=./db
+persist.all=false
+persist.champions=true
+persist.last=true
+id.file=./db/id.xml
+neat.id.file=./db/neatid.xml
+presentation.dir=./nevt
+
+#########
+# logging
+#########
+log4j.rootLogger=INFO, A1
+log4j.appender.A1=org.apache.log4j.ConsoleAppender
+#log4j.appender.A1=org.apache.log4j.FileAppender
+#log4j.appender.A1=org.apache.log4j.RollingFileAppender
+#log4j.appender.A1.File=./db/log.txt
+#log4j.appender.A1.MaxFileSize=10MB
+#log4j.appender.A1.MaxBackupIndex=20
+log4j.appender.A1.layout=org.apache.log4j.PatternLayout
+#log4j.appender.A1.layout.ConversionPattern=%-4r %-5p  %m - [%t] %c %x%n
+log4j.appender.A1.layout.ConversionPattern=%-5p %m%x%n
+-->
+
+
+</Config>

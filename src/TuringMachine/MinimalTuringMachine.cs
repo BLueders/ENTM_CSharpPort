@@ -6,29 +6,41 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
+using ENTM.Experiments.CopyTask;
 
 namespace ENTM.TuringMachine
 {
-
     /**
-     * Our simplified version of a Turing Machine for
-     * use with a neural network. It uses the general
-     * TuringMachine interface so can be used in the
-     * same contexts as the GravesTuringMachine.
-     * 
-     * @author Emil
-     *
-     */
-    class TuringMachine : ITuringMachine
+    * Our simplified version of a Turing Machine for
+    * use with a neural network. It uses the general
+    * TuringMachine interface so can be used in the
+    * same contexts as the GravesTuringMachine.
+    * 
+    * @author Emil
+    *
+    */
+    class MinimalTuringMachine : ITuringMachine
     {
-        private List<double[]> Tape;
+        private readonly List<double[]> _tape;
         private int[] _headPositions;
-        private int _m;
-        private int _n;
-        private int _shiftLength;
-        private string _shiftMode;
-        private bool _enabled;
-        private int _heads;
+
+        // The length of the memory at each location.
+        private readonly int _m;
+
+        // The number of memory locations in the FINITE tape.
+        private readonly int _n;
+
+        // The maximum distance you can jump with shifting.
+        private readonly int _shiftLength;
+
+        // Single or multiple shifts
+        private readonly ShiftMode _shiftMode;
+
+        // If false, the turing machine always returns initial read
+        private readonly bool _enabled;
+
+        // Number of combined read/write heads
+        private readonly int _heads;
 
         private bool _recordTimeSteps = false;
         private TuringMachineTimeStep _lastTimeStep;
@@ -38,16 +50,16 @@ namespace ENTM.TuringMachine
 
         private double[][] _initialRead;
 
-        public TuringMachine(Properties props)
+        public MinimalTuringMachine(ENTMProperties props)
         {
-            _m = props.GetIntProperty("tm.m");
-            _n = props.GetIntProperty("tm.n", -1);
-            _shiftLength = props.GetIntProperty("tm.shift.length");
-            _shiftMode = props.GetProperty("tm.shift.mode", "multiple");
-            _enabled = props.GetBooleanProperty("tm.enabled", true);
-            _heads = props.GetIntProperty("tm.heads.readwrite", 1);
+            _m = props.M;
+            _n = props.N;
+            _shiftLength = props.ShiftLength;
+            _shiftMode = props.ShiftMode;
+            _enabled = props.Enabled;
+            _heads = props.Heads;
 
-            Tape = new List<double[]>();
+            _tape = new List<double[]>();
 
             Reset();
             _initialRead = new double[_heads][];
@@ -59,8 +71,8 @@ namespace ENTM.TuringMachine
 
         public void Reset()
         {
-            Tape.Clear();
-            Tape.Add(new double[_m]);
+            _tape.Clear();
+            _tape.Add(new double[_m]);
             _headPositions = new int[_heads];
 
             if (_recordTimeSteps)
@@ -195,41 +207,16 @@ namespace ENTM.TuringMachine
             return _initialRead;
         }
 
-        public int GetReadHeadCount()
-        {
-            return 1;
-        }
+        public int ReadHeadCount => 1;
 
-        public int GetWriteHeadCount()
-        {
-            return 1;
-        }
+        public int WriteHeadCount => 1;
 
-        public int GetInputCount()
-        {
-            // WriteKey, Interpolation, ToContentJump, Shift
-            return _heads * (_m + 2 + GetShiftInputs());
-        }
+        // WriteKey, Interpolation, ToContentJump, Shift
+        public int InputCount => _heads * (_m + 2 + GetShiftInputs());
 
-        public int GetOutputCount()
-        {
-            return _m * _heads;
-        }
+        public int OutputCount => _m * _heads;
 
-        public double[][] GetTapeValues()
-        {
-            return Utilities.DeepCopy(Tape.ToArray());
-        }
-
-        public override string ToString()
-        {
-            StringBuilder b = new StringBuilder();
-            b.Append(Utilities.ToString(Tape));
-            b.Append("\n");
-            b.Append("Pointers=");
-            b.Append(Utilities.ToString(_headPositions));
-            return b.ToString();
-        }
+        public double[][] TapeValues => Utilities.DeepCopy(_tape.ToArray());
 
         // PRIVATE HELPER METHODS
 
@@ -241,24 +228,34 @@ namespace ENTM.TuringMachine
             return result;
         }
 
+        public override string ToString()
+        {
+            StringBuilder b = new StringBuilder();
+            b.Append(Utilities.ToString(_tape));
+            b.Append("\n");
+            b.Append("Pointers=");
+            b.Append(Utilities.ToString(_headPositions));
+            return b.ToString();
+        }
+
         private int GetShiftInputs()
         {
             switch (_shiftMode)
             {
-                case "single": return 1;
+                case ShiftMode.Single: return 1;
                 default: return _shiftLength;
             }
         }
 
         private void PrintState()
         {
-            Console.Write("TM: " + Utilities.ToString(Tape) + " HeadPositions=" + Utilities.ToString(_headPositions));
+            Console.Write("TM: " + Utilities.ToString(_tape) + " HeadPositions=" + Utilities.ToString(_headPositions));
             //Console.WriteLine("TM: " + Utilities.toString(Tape.toArray(new double[Tape.size()][])) + " HeadPositions=" + Arrays.toString(HeadPositions));
         }
 
         private void Write(int head, double[] content, double interp)
         {
-            Tape[_headPositions[head]] = Interpolate(content, Tape[_headPositions[head]], interp);
+            _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
         }
 
         private double[] Interpolate(double[] first, double[] second, double interp)
@@ -278,9 +275,9 @@ namespace ENTM.TuringMachine
                 // JUMPING POINTER TO BEST MATCH
                 int bestPos = 0;
                 double similarity = -1d;
-                for (int i = 0; i < Tape.Count; i++)
+                for (int i = 0; i < _tape.Count; i++)
                 {
-                    double curSim = Utilities.Emilarity(key, Tape[i]);
+                    double curSim = Utilities.Emilarity(key, _tape[i]);
                     if (Debug.On)
                     {
                         Console.WriteLine("Pos " + i + ": sim =" + curSim + (curSim > similarity ? " better" : ""));
@@ -308,7 +305,7 @@ namespace ENTM.TuringMachine
             int highest;
             switch (_shiftMode)
             {
-                case "single": highest = (int)(shift[0] * _shiftLength); break; // single
+                case ShiftMode.Single: highest = (int)(shift[0] * _shiftLength); break; // single
                 default: highest = Utilities.MaxPos(shift); break; // multiple
             }
 
@@ -321,30 +318,30 @@ namespace ENTM.TuringMachine
             {
                 if (offset > 0)
                 {
-                    if (_n > 0 && Tape.Count >= _n)
+                    if (_n > 0 && _tape.Count >= _n)
                     {
                         _headPositions[head] = 0;
                     }
                     else {
                         _headPositions[head] = _headPositions[head] + 1;
 
-                        if (_headPositions[head] >= Tape.Count)
+                        if (_headPositions[head] >= _tape.Count)
                         {
-                            Tape.Add(new double[_m]);
+                            _tape.Add(new double[_m]);
                         }
                     }
 
                 }
                 else {
-                    if (_n > 0 && Tape.Count >= _n)
+                    if (_n > 0 && _tape.Count >= _n)
                     {
-                        _headPositions[head] = Tape.Count - 1;
+                        _headPositions[head] = _tape.Count - 1;
                     }
                     else {
                         _headPositions[head] = _headPositions[head] - 1;
                         if (_headPositions[head] < 0)
                         {
-                            Tape.Insert(0, new double[_m]);
+                            _tape.Insert(0, new double[_m]);
                             _headPositions[head] = 0;
 
                             // Moving all other heads accordingly
@@ -366,7 +363,7 @@ namespace ENTM.TuringMachine
 
         private double[] GetRead(int head)
         {
-            return (double[])Tape[_headPositions[head]].Clone();
+            return (double[])_tape[_headPositions[head]].Clone();
         }
     }
 }

@@ -26,8 +26,6 @@ namespace ENTM
         int OutputCount { get; }
 
 
-        void Initialize(XmlElement xmlConfig);
-
         /**
          * Reset the simulator to some initial state (for new agents
          * to be tested under same circumstances

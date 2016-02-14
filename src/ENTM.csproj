@@ -52,14 +52,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ITuringMachine.cs" />
+    <Compile Include="BaseEvaluator.cs" />
+    <Compile Include="Debug.cs" />
+    <Compile Include="Experiments\CopyTask\CopyTaskEnvironment.cs" />
+    <Compile Include="Experiments\CopyTask\CopyTaskEvaluator.cs" />
+    <Compile Include="Experiments\CopyTask\CopyTaskExperiment.cs" />
+    <Compile Include="IController.cs" />
+    <Compile Include="IEnvironment.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="TuringMachine\ITuringMachine.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Properties.cs" />
+    <Compile Include="Experiments\CopyTask\ENTMProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleNeatExperiment.cs" />
+    <Compile Include="Experiments\NeatExperiment.cs" />
     <Compile Include="SineEvaluator.cs" />
     <Compile Include="ThreadSafeRandom.cs" />
-    <Compile Include="TuringMachine\TuringMachine.cs" />
+    <Compile Include="TuringMachine\TuringController.cs" />
+    <Compile Include="TuringMachine\MinimalTuringMachine.cs" />
     <Compile Include="TuringMachine\TuringMachineTimeStep.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
@@ -67,7 +80,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="CopyTask\" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

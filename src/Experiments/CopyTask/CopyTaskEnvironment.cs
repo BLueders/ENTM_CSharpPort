@@ -1,43 +1,92 @@
 ﻿using System;
+using System.Threading;
 using System.Xml;
 using ENTM.TuringMachine;
 using SharpNeat.Domains;
 
 namespace ENTM.Experiments.CopyTask
 {
-    class CopyTaskEnvironment : IEnvironment
+    public class CopyTaskEnvironment : IEnvironment
     {
-        private FitnessFunction fitnessFunction;
+        private FitnessFunction _fitnessFunction;
 
-        private int _vectorLength;
-        private int _sequenceLength;
-        private double[][] Sequence;
+        // Determines if the length of the sequence should be fixed or random
+        private LengthRule _lengthRule;
 
+        // The length of an element in the sequence (usually M - 1)
+        private int _vectorSize;
+
+        // The maximum length that the sequence can be (if random), else the actual sequence length.
+        private int _maxSequenceLength;
+
+        private double[][] _sequence;
+
+        // Current time step
         private int _step;
+
         private double _score;
 
         public IController Controller { get; set; }
 
-        public int InputCount => _vectorLength;
+        /// <summary>
+        /// The size of the bit vector
+        /// </summary>
+        public int InputCount => _vectorSize;
 
-        public int OutputCount => _vectorLength + 2;
+        /// <summary>
+        /// The input we give the controller in each iteration will be empty when we expect the controller to read back the sequence.
+        /// The two extra ones are START and DELIMITER bits.
+        /// </summary>
+        public int OutputCount => _vectorSize + 2;
 
-        public void Initialize(XmlElement xmlConfig)
+        public double CurrentScore => _score * 10.0 * (_maxSequenceLength / (1.0 * _sequence.Length));
+
+        public int MaxScore => (int)(_sequence.Length * 10.0 * (_maxSequenceLength / (1.0 * _sequence.Length)));
+
+        /// <summary>
+        /// Terminate when the write and read sequences are complete
+        /// </summary>
+        public bool IsTerminated => _step >= 2 * _sequence.Length + 2 + 1;
+
+        public CopyTaskEnvironment(ENTMProperties props)
         {
-            _vectorLength = XmlUtils.GetValueAsInt(xmlConfig, "VectorLength");
-            _sequenceLength = XmlUtils.GetValueAsInt(xmlConfig, "SequenceLength");
-            
-            Reset();
+            _vectorSize = props.VectorSize;
+            _maxSequenceLength = props.MaxSequenceLength;
+            _fitnessFunction = props.FitnessFunction;
+            _lengthRule = props.LengthRule;
+        }
+
+        public CopyTaskEnvironment()
+        {
+            // Default constructor required for generic instantiation
         }
 
         public void Reset()
         {
-
+            if (Debug.On) Console.WriteLine("---------- RESET ----------");
         }
 
         public void Restart()
         {
-            CreateSequence();
+            int length;
+
+            switch (_lengthRule)
+            {
+                case LengthRule.Fixed:
+                    length = _maxSequenceLength;
+                    break;
+
+                case LengthRule.Random:
+                    length = ThreadSafeRandom.Next(0, _maxSequenceLength) + 1;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            CreateSequence(length);
+
+            if (Debug.On) Console.WriteLine("CT: Restart - Sequence:\n " + Utilities.ToString(_sequence, "f1"));
+
 
             _step = 1;
             _score = 0d;
@@ -49,76 +98,91 @@ namespace ENTM.Experiments.CopyTask
         {
             if (Debug.On)
             {
+                
                 Console.WriteLine("-------------------------- COPYTASK --------------------------");
             }
 
             double[] result = GetObservation(_step);
 
             // Compare and score (if reading)
-            if (_step > Sequence.Length + 2)
+            if (_step > _sequence.Length + 2)
             {
                 // The controllers "action" is the reading after 2 + |seq| steps
 
-                int index = _step - Sequence.Length - 2 - 1; // actual sequence index to compare to
-                double[] correct = Sequence[index];
+                int index = _step - _sequence.Length - 2 - 1; // actual sequence index to compare to
+                double[] correct = null;
+                try
+                {
+                    correct = _sequence[index];
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("NAUGHTY INDEX. " + index + " length: " + _sequence.Length + " step " + _step);
+                    throw;
+                }
+
                 double[] received = action;
                 double thisScore = Evaluate(correct, received);
                 _score += thisScore;
 
-                if (Debug.On) Console.WriteLine("\tReading: " + Utilities.ToString(received) + " compared to " + Utilities.ToString(correct) + " = " + thisScore);
+                if (Debug.On)
+                {
+                    Console.WriteLine("\tReading: " + Utilities.ToString(received) + " compared to " + Utilities.ToString(correct) + " = " + thisScore);
+                }
             }
 
-            if (Debug.On) Console.WriteLine("--------------------------------------------------------------");
+            if (Debug.On)
+            {
+                Console.WriteLine("--------------------------------------------------------------");
+            }
 
             _step++; // Increment step
 
             return result;
         }
 
-        public double CurrentScore => _score;
 
-        public int MaxScore { get; }
-        public bool IsTerminated { get; }
-
-        private void CreateSequence()
+        private void CreateSequence(int length)
         {
-            Sequence = new double[_sequenceLength][];
-            for (int i = 0; i < Sequence.Length; i++)
+            _sequence = new double[length][];
+            for (int i = 0; i < _sequence.Length; i++)
             {
-                Sequence[i] = new double[_vectorLength];
-                for (int j = 0; j < Sequence[i].Length; j++)
+                _sequence[i] = new double[_vectorSize];
+                for (int j = 0; j < _sequence[i].Length; j++)
                 {
-                    Sequence[i][j] = ThreadSafeRandom.Next(0, 2);
+                    _sequence[i][j] = ThreadSafeRandom.Next(0, 2);
                 }
             }
         }
 
         private double[] GetObservation(int step)
         {
-            double[] observation = new double[_vectorLength + 2];
+            double[] observation = new double[_vectorSize + 2];
 
             if (step == 0)
             {
                 // Send start vector
                 observation[0] = 1; // START bit
-
             }
-            else if (step <= Sequence.Length)
+            else if (step <= _sequence.Length)
             {
                 // sending the sequence
-                Array.Copy(Sequence[step - 1], 0, observation, 2, Sequence[step - 1].Length);
+                Array.Copy(_sequence[step - 1], 0, observation, 2, _sequence[step - 1].Length);
             }
-            else if (step == Sequence.Length + 1)
+            else if (step == _sequence.Length + 1)
             {
                 // DELIMITER bit
                 observation[1] = 1;
-
             }
-            else {
+            else
+            {
                 // When we are reading we just send zeros
             }
 
-            if (Debug.On) Console.WriteLine(step + ": " + Utilities.ToString(observation, "0f"));
+            if (Debug.On)
+            {
+                Console.WriteLine(step + ": " + Utilities.ToString(observation, "f0"));
+            }
 
             return observation;
         }
@@ -133,9 +197,10 @@ namespace ENTM.Experiments.CopyTask
         /**
 	     * Calculates how similar the two vectors are as a value between 0.0 and 1.0;
 	     */
+
         private double CalcSimilarity(double[] first, double[] second)
         {
-            switch (fitnessFunction)
+            switch (_fitnessFunction)
             {
                 case FitnessFunction.PartialScore:
                     return PartialScore(first, second);
@@ -172,7 +237,7 @@ namespace ENTM.Experiments.CopyTask
 
                 if (Debug.On)
                 {
-                    Console.WriteLine("Target=%s Actual=%s Written=%s | TM Score=%.2f Output Score=%.2f\n", Utilities.ToString(target, "4f"), Utilities.ToString(actual, "4f"), Utilities.ToString(written, "4f"), tmResult, baseResult);
+                    Console.WriteLine("Target={0} Actual={1} Written={2} | TM Score={3} Output Score={4}\n", Utilities.ToString(target, "f4"), Utilities.ToString(actual, "f4"), Utilities.ToString(written, "f4"), tmResult, baseResult);
                 }
 
                 return 0.5 * tmResult + 0.5 * baseResult;

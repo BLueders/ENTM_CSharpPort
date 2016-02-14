@@ -1,17 +1,19 @@
-﻿namespace ENTM.TuringMachine
+﻿using System.Dynamic;
+
+namespace ENTM.TuringMachine
 {
     interface ITuringMachine
     {
         void Reset();
-        int GetReadHeadCount();
-        int GetWriteHeadCount();
-        int GetInputCount();
-        int GetOutputCount();
+        int ReadHeadCount { get; }
+        int WriteHeadCount { get; }
+        int InputCount { get; }
+        int OutputCount { get; }
         double[][] ProcessInput(double[] input);
         double[][] GetDefaultRead();
 
         // Get the info saved
-        double[][] GetTapeValues();
+        double[][] TapeValues { get; }
 
         TuringMachineTimeStep LastTimeStep { get; }
     }

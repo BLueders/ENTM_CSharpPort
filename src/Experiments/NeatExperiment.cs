@@ -46,7 +46,9 @@ namespace ENTM.Experiments
     /// evaluations) then you probably want to implement your own INeatExperiment
     /// class.
     /// </summary>
-    public abstract class NeatExperiment<TEnviroment> : INeatExperiment where TEnviroment : IEnvironment
+    public abstract class NeatExperiment<TEvaluator, TEnviroment> : INeatExperiment 
+        where TEnviroment : IEnvironment, new()
+        where TEvaluator : BaseEvaluator<TEnviroment>, new()
     {
         NeatEvolutionAlgorithmParameters _eaParams;
         NeatGenomeParameters _neatGenomeParams;
@@ -59,13 +61,12 @@ namespace ENTM.Experiments
         string _description;
         ParallelOptions _parallelOptions;
         bool _evaluateParents;
-        
+
+        public TEvaluator Evaluator { get; private set; }
 
         #region Abstract properties that subclasses must implement
-        public abstract IPhenomeEvaluator<IBlackBox> PhenomeEvaluator { get; }
         public abstract int InputCount { get; }
         public abstract int OutputCount { get; }
-        public abstract TEnviroment Environment { get; }
         #endregion
 
         #region INeatExperiment Members
@@ -112,7 +113,8 @@ namespace ENTM.Experiments
             _eaParams.SpecieCount = _specieCount;
             _neatGenomeParams = new NeatGenomeParameters();
 
-            Environment.Initialize(xmlConfig);
+            Evaluator = new TEvaluator();
+            Evaluator.Initialize(xmlConfig);
         }
 
         /// <summary>
@@ -191,7 +193,7 @@ namespace ENTM.Experiments
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(_activationScheme);
 
             // Create a genome2 list evaluator. This packages up the genome2 decoder with the genome2 evaluator.
-            IGenomeListEvaluator<NeatGenome> genomeListEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, PhenomeEvaluator, _parallelOptions);
+            IGenomeListEvaluator<NeatGenome> genomeListEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, Evaluator, _parallelOptions);
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
             // that were in the population in previous generations (elite genomes). This is determiend by examining each genome2's evaluation info object.
