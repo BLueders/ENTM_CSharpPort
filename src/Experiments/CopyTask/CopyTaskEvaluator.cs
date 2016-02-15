@@ -14,21 +14,34 @@ namespace ENTM.Experiments.CopyTask
 {
     public class CopyTaskEvaluator : BaseEvaluator<CopyTaskEnvironment>
     {
-        private const int DEFAULT_ITERATIONS = 10;
 
         private readonly Stopwatch _stopWatch = new Stopwatch();
 
-        private int _iterations;
-        private ENTMProperties _properties;
+        private CopyTaskProperties _properties;
 
         public override void Initialize(XmlElement xmlConfig)
         {
-            _iterations = XmlUtils.TryGetValueAsInt(xmlConfig, "Iterations") ?? DEFAULT_ITERATIONS;
-            _properties = new ENTMProperties(xmlConfig);
-            Environment = new CopyTaskEnvironment(_properties);
+            _properties = new CopyTaskProperties(xmlConfig);
         }
 
-        public override int MaxScore => Environment.MaxScore * _iterations;
+        protected override CopyTaskEnvironment NewEnvironment()
+        {
+            // This is called from the ThreadLocal Environment, so a new environment is instantiated for each thread
+            return new CopyTaskEnvironment(_properties);
+        }
+
+        private int _maxScore = -1;
+        public override int MaxScore
+        {
+            get
+            {
+                if (_maxScore < 0)
+                {
+                    _maxScore = (int) (_properties.Iterations * _properties.MaxSequenceLength * _properties.FitnessFactor);
+                }
+                return _maxScore;
+            }
+        }
 
         public int TuringMachineInputCount
         {
@@ -55,22 +68,8 @@ namespace ENTM.Experiments.CopyTask
 
         public int EnvironmentOutputCount => Environment.OutputCount;
 
-        private Dictionary<int, IEnvironment> _environments = new Dictionary<int, IEnvironment>();
-
-        object lockObj = new object();
-
         public override FitnessInfo Evaluate(IBlackBox phenome)
-        {
-        
-            int id = Thread.CurrentThread.ManagedThreadId;
-            CopyTaskEnvironment environment = null;
-            if (!_environments.ContainsKey(id))
-            {
-               lock (lockObj) _environments.Add(id, new CopyTaskEnvironment(_properties));
-            }
-
-            environment = _environments[id] as CopyTaskEnvironment;
-             
+        {         
             
             double totalScore = 0;
             int steps = 0;
@@ -82,18 +81,18 @@ namespace ENTM.Experiments.CopyTask
             TuringController controller = new TuringController(phenome, _properties);
 
             int turingMachineInputCount = controller.TuringMachine.InputCount;
-            int environmentInputCount = environment.InputCount;
+            int environmentInputCount = Environment.InputCount;
 
             // For each iteration
-            for (int i = 0; i < _iterations; i++)
+            for (int i = 0; i < _properties.Iterations; i++)
             {
                 Reset();
-                environment.Restart();
+                Environment.Restart();
 
                 double[] turingMachineOutput = controller.InitialInput;
-                double[] enviromentOutput = environment.InitialObservation;
+                double[] enviromentOutput = Environment.InitialObservation;
 
-                while (!environment.IsTerminated)
+                while (!Environment.IsTerminated)
                 {
                     _stopWatch.Start();
 
@@ -108,7 +107,7 @@ namespace ENTM.Experiments.CopyTask
                     contTime += _stopWatch.ElapsedMilliseconds;
                     _stopWatch.Restart();
 
-                    enviromentOutput = environment.PerformAction(Utilities.ArrayCopyOfRange(nnOutput, 0, environmentInputCount));
+                    enviromentOutput = Environment.PerformAction(Utilities.ArrayCopyOfRange(nnOutput, 0, environmentInputCount));
 
                     simTime += _stopWatch.ElapsedMilliseconds;
 
@@ -118,15 +117,14 @@ namespace ENTM.Experiments.CopyTask
                     _stopWatch.Reset();
                 }
 
-                totalScore += environment.CurrentScore;
+                totalScore += Environment.CurrentScore;
             }
 
             double result = Math.Max(0.0, totalScore);
 
-            if (result > MaxScore)
-            {
-                int a = 0;
-            }
+            _evaluationCount++;
+
+            if (result >= MaxScore) _stopConditionSatisfied = true;
 
             return new FitnessInfo(result, 0);
         }

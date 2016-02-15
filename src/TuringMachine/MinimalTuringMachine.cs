@@ -50,7 +50,7 @@ namespace ENTM.TuringMachine
 
         private double[][] _initialRead;
 
-        public MinimalTuringMachine(ENTMProperties props)
+        public MinimalTuringMachine(CopyTaskProperties props)
         {
             _m = props.M;
             _n = props.N;

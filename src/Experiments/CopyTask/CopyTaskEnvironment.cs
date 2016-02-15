@@ -8,9 +8,10 @@ namespace ENTM.Experiments.CopyTask
 {
     public class CopyTaskEnvironment : IEnvironment
     {
-        private const double FITNESS_REGULATION = 10.0;
-
         private FitnessFunction _fitnessFunction;
+
+        // A constant to multiply the fitness with
+        private double _fitnessFactor;
 
         // Determines if the length of the sequence should be fixed or random
         private LengthRule _lengthRule;
@@ -26,6 +27,7 @@ namespace ENTM.Experiments.CopyTask
         // Current time step
         private int _step;
 
+        // Current fitness score
         private double _score;
 
         public IController Controller { get; set; }
@@ -41,22 +43,23 @@ namespace ENTM.Experiments.CopyTask
         /// </summary>
         public int OutputCount => _vectorSize + 2;
 
-        public double CurrentScore => _score * FITNESS_REGULATION * (_maxSequenceLength / (1.0 * _sequence.Length));
+        public double CurrentScore => _score * _fitnessFactor * (_maxSequenceLength / (1.0 * _sequence.Length));
 
         //public int MaxScore => (int)(_sequence.Length * 10.0 * (_maxSequenceLength / (1.0 * _sequence.Length)));
-        public int MaxScore => (int) (FITNESS_REGULATION * _maxSequenceLength);
+        public int MaxScore => (int) (_fitnessFactor * _maxSequenceLength);
 
         /// <summary>
         /// Terminate when the write and read sequences are complete
         /// </summary>
         public bool IsTerminated => _step >= 2 * _sequence.Length + 2 + 1;
 
-        public CopyTaskEnvironment(ENTMProperties props)
+        public CopyTaskEnvironment(CopyTaskProperties props)
         {
             _vectorSize = props.VectorSize;
             _maxSequenceLength = props.MaxSequenceLength;
-            _fitnessFunction = props.FitnessFunction;
             _lengthRule = props.LengthRule;
+            _fitnessFunction = props.FitnessFunction;
+            _fitnessFactor = props.FitnessFactor;
         }
 
         public CopyTaskEnvironment()

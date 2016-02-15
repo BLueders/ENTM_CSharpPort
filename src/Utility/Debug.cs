@@ -1,4 +1,4 @@
-﻿#define GLOBALDEBUG
+﻿//#define GLOBALDEBUG
 using System;
 using System.Collections.Generic;
 using System.Linq;
