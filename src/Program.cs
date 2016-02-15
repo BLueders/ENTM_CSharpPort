@@ -14,7 +14,7 @@ namespace ENTM
 {
     class Program
     {
-        const string CHAMPION_FILE = "tictactoe_champion.xml";
+        const string CHAMPION_FILE = "copytask_champion.xml";
 
         private static NeatEvolutionAlgorithm<NeatGenome> _ea;
 
@@ -38,8 +38,7 @@ namespace ENTM
             // Start algorithm (it will run on a background thread).
             _ea.StartContinue();
 
-            // Hit return to quit.
-            Console.ReadLine();
+            ProcessInput();
         }
 
         static void ea_UpdateEvent(object sender, EventArgs e)
@@ -49,6 +48,32 @@ namespace ENTM
             // Save the best genome to file
             XmlDocument doc = NeatGenomeXmlIO.SaveComplete(new List<NeatGenome>() { _ea.CurrentChampGenome }, false);
             doc.Save(CHAMPION_FILE);
+        }
+
+        private static void ProcessInput()
+        {
+            do
+            {
+                ConsoleKey key = Console.ReadKey(true).Key;
+                switch (key)
+                {
+                    case ConsoleKey.Escape:
+                        return;
+                    case ConsoleKey.D:
+#if DEBUG
+                        Debug.On = !Debug.On;
+                        if (!Debug.On)
+                        {
+                            //Console.SetBufferSize(0,0);
+                            Console.WriteLine("Press D to turn Debug back on");
+                        }
+#else
+                        Console.WriteLine("Debug not available");
+#endif
+                        break;
+                }
+
+            } while (true);
         }
     }
 }

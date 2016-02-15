@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,24 +9,52 @@ using System.Threading.Tasks;
 
 namespace ENTM
 {
-    class Utilities
+    public class Utilities
     {
+        private static string STANDARD_FORMAT = "F3";
+
         private static readonly IFormatProvider Provider = CultureInfo.CurrentCulture;
 
-        public static string ToString<T>(IEnumerable<T> col)
+        public static string ToString(IEnumerable col)
         {
-            if (col == null)
+            return ToString(col, STANDARD_FORMAT);
+        }
+
+        public static string ToString(IEnumerable col, string format)
+        {
+            var enumerator = col.GetEnumerator();
+            enumerator.MoveNext();
+            if (enumerator.Current == null)
                 return "null";
-            if (col.Count() != 0 && col.First() is IEnumerable)
+            StringBuilder builder = new StringBuilder();
+            if (enumerator.Current is IEnumerable)
             {
-                return string.Join(",", col.Select(x => ToString(x as IEnumerable<object>)).ToArray());
+                do
+                {
+                    builder.Append("|" + ToString((IEnumerable)enumerator.Current, format) + "|\n");
+                } while (enumerator.MoveNext());
+                return builder.ToString();
+            } 
+            if (enumerator.Current is IFormattable)
+                do
+                {
+                    {
+                        builder.Append(((IFormattable)enumerator.Current).ToString(format, Provider) + ", ");
+                    }
+                } while (enumerator.MoveNext());
+            else
+            {
+                do
+                {
+                    builder.Append(enumerator.Current + ", ");
+                } while (enumerator.MoveNext());
             }
-            return string.Join(",", col.Select(x => x.ToString()).ToArray());
+            return builder.ToString();
         }
 
         public static string ToString<T>(T[] col, string format) where T : IFormattable
         {
-            return string.Join(",", col.Select(x => x.ToString(format, Provider)).ToArray());
+            return string.Join(", ", col.Select(x => x.ToString(format, Provider)).ToArray());
         }
 
         public static string ToString<T>(T[][] col, string format) where T : IFormattable

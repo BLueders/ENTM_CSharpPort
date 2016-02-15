@@ -123,11 +123,6 @@ namespace ENTM.Experiments.CopyTask
 
             double result = Math.Max(0.0, totalScore);
 
-            if (result > MaxScore)
-            {
-                int a = 0;
-            }
-
             return new FitnessInfo(result, 0);
         }
 

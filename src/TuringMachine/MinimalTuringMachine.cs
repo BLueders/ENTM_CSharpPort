@@ -1,5 +1,4 @@
 ﻿
-
 // #define DEBUG
 
 using System;
@@ -80,10 +79,7 @@ namespace ENTM.TuringMachine
                 _internalLastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
                 _lastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
             }
-            if (Debug.On)
-            {
-                PrintState();
-            }
+            Debug.Log(PrintState(), true);
         }
 
         /**
@@ -95,6 +91,7 @@ namespace ENTM.TuringMachine
          */
         public double[][] ProcessInput(double[] fromNN)
         {
+            Debug.Log("------------------- MINIMAL TURING MACHINE START -------------------", true);
             if (!_enabled)
                 return _initialRead;
 
@@ -124,12 +121,11 @@ namespace ENTM.TuringMachine
                 shifts[i] = Take(fromNN, p, s);
                 p += s;
 
-                if (Debug.On)
-                {
-                    Console.WriteLine("------------------- MINIMAL TURING MACHINE (HEAD " + (i + 1) + ") -------------------");
-                    Console.WriteLine("Write=" + Utilities.ToString(writeKeys[i], "F4") + " Interp=" + interps[i]);
-                    Console.WriteLine("Content?=" + contents[i] + " Shift=" + Utilities.ToString(shifts[i], "F4"));
-                }
+                Debug.Log($"------------------- HEAD {i + 1} -------------------" +
+                          $"\nWrite:        \t{Utilities.ToString(writeKeys[i], "f4")}" +
+                          $"\nInterpolate:  \t{interps[i].ToString("f4")}" +
+                          $"\nContent:      \t{contents[i].ToString("f4")}" +
+                          $"\nShift:        \t{Utilities.ToString(shifts[i], "f4")}", true);
 
                 Write(i, writeKeys[i], interps[i]);
             }
@@ -170,14 +166,9 @@ namespace ENTM.TuringMachine
                 }
             }
 
-            if (Debug.On)
-            {
-
-                PrintState();
-                Console.WriteLine("Sending to NN: " + Utilities.ToString(result, "F4"));
-                Console.WriteLine("--------------------------------------------------------------");
-
-            }
+            Debug.Log(PrintState(), true);
+            Debug.Log("Sending to NN: " + Utilities.ToString(result, "F4"), true);
+            Debug.Log("----------------- MINIMAL TURING MACHINE END -------------------", true);
             //		return new double[1][result.length];
             return result;
         }
@@ -195,15 +186,12 @@ namespace ENTM.TuringMachine
             get { return _lastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0); }
         }
 
-        
+
 
 
         public double[][] GetDefaultRead()
         {
-            if (Debug.On)
-            {
-                PrintState();
-            }
+            Debug.Log(PrintState(), true);
             return _initialRead;
         }
 
@@ -247,10 +235,9 @@ namespace ENTM.TuringMachine
             }
         }
 
-        private void PrintState()
+        private string PrintState()
         {
-            Console.Write("TM: " + Utilities.ToString(_tape) + " HeadPositions=" + Utilities.ToString(_headPositions));
-            //Console.WriteLine("TM: " + Utilities.toString(Tape.toArray(new double[Tape.size()][])) + " HeadPositions=" + Arrays.toString(HeadPositions));
+            return "TM Tape: \n" + Utilities.ToString(_tape) + "\nHeadPositions= " + Utilities.ToString(_headPositions);
         }
 
         private void Write(int head, double[] content, double interp)
@@ -278,10 +265,9 @@ namespace ENTM.TuringMachine
                 for (int i = 0; i < _tape.Count; i++)
                 {
                     double curSim = Utilities.Emilarity(key, _tape[i]);
-                    if (Debug.On)
-                    {
-                        Console.WriteLine("Pos " + i + ": sim =" + curSim + (curSim > similarity ? " better" : ""));
-                    }
+
+                    Debug.Log("Pos " + i + ": sim =" + curSim + (curSim > similarity ? " better" : ""), true);
+
                     if (curSim > similarity)
                     {
                         similarity = curSim;
@@ -289,10 +275,7 @@ namespace ENTM.TuringMachine
                     }
                 }
 
-                if (Debug.On)
-                {
-                    Console.WriteLine("PERFORMING CONTENT JUMP! from " + _headPositions[head] + " to " + bestPos);
-                }
+                Debug.Log($"Content Jump Head {head} from {_headPositions[head]} to {bestPos}", true);
 
                 _headPositions[head] = bestPos;
 
@@ -311,8 +294,8 @@ namespace ENTM.TuringMachine
 
             int offset = highest - (_shiftLength / 2);
 
-            //		Console.WriteLine("Highest="+highest);
-            //		Console.WriteLine("Offset="+offset);
+            //Debug.Log("Highest=" + highest, true);
+            //Debug.Log("Offset=" + offset, true);
 
             while (offset != 0)
             {
@@ -322,7 +305,8 @@ namespace ENTM.TuringMachine
                     {
                         _headPositions[head] = 0;
                     }
-                    else {
+                    else
+                    {
                         _headPositions[head] = _headPositions[head] + 1;
 
                         if (_headPositions[head] >= _tape.Count)
@@ -332,31 +316,32 @@ namespace ENTM.TuringMachine
                     }
 
                 }
-                else {
+                else
+                {
                     if (_n > 0 && _tape.Count >= _n)
                     {
                         _headPositions[head] = _tape.Count - 1;
                     }
-                    else {
+                    else
+                    {
                         _headPositions[head] = _headPositions[head] - 1;
+                        // if we shift below index 0, we have to add elements to the start of the tape and move all heads accordingly
                         if (_headPositions[head] < 0)
                         {
                             _tape.Insert(0, new double[_m]);
-                            _headPositions[head] = 0;
 
-                            // Moving all other heads accordingly
+                            // Moving all heads accordingly
                             for (int i = 0; i < _heads; i++)
                             {
-                                if (i != head)
-                                    _headPositions[i] = _headPositions[i] + 1;
+                               _headPositions[i] = _headPositions[i] + 1;
                             }
 
                             _increasedSizeDown = true;
                         }
                     }
-
                 }
 
+                Debug.Log($"Shift Head {head} by {offset} to {_headPositions[head]}", true);
                 offset = offset > 0 ? offset - 1 : offset + 1; // Go closer to 0
             }
         }
