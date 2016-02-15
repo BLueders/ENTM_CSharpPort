@@ -24,6 +24,7 @@
   <LengthRule>Random</LengthRule>
   <ElementSize>8</ElementSize>
   <FitnessFunction>StrictCloseToTarget</FitnessFunction>
+  <FitnessFactor>10</FitnessFactor>
 
 <!-- Turing Machine Values-->
   <Enabled>true</Enabled>
@@ -32,7 +33,6 @@
   <ShiftLength>3</ShiftLength>
   <ShiftMode>Multiple</ShiftMode>
   <Heads>1</Heads>
-  <Iterations>50</Iterations>
 
 <!--
 #classic is worth trying out

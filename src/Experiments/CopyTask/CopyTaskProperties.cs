@@ -4,12 +4,16 @@ using SharpNeat.Domains;
 
 namespace ENTM.Experiments.CopyTask
 {
-    public class ENTMProperties
+    public class CopyTaskProperties
     {
+        private const int DEFAULT_ITERATIONS = 10;
         private const int DEFAULT_SEQUENCE_MAXLENGTH = 10;
+        private const double DEFAULT_FITNESS_FACTOR = 10;
 
-        public ENTMProperties(XmlElement xmlConfig)
+        public CopyTaskProperties(XmlElement xmlConfig)
         {
+            Iterations = XmlUtils.TryGetValueAsInt(xmlConfig, "Iterations") ?? DEFAULT_ITERATIONS;
+
             M = XmlUtils.GetValueAsInt(xmlConfig, "M");
             N = XmlUtils.TryGetValueAsInt(xmlConfig, "N") ?? -1;
             ShiftLength = XmlUtils.GetValueAsInt(xmlConfig, "ShiftLength");
@@ -20,10 +24,13 @@ namespace ENTM.Experiments.CopyTask
 
             VectorSize = XmlUtils.GetValueAsInt(xmlConfig, "VectorSize");
             MaxSequenceLength = XmlUtils.TryGetValueAsInt(xmlConfig, "MaxLength") ?? DEFAULT_SEQUENCE_MAXLENGTH;
-            FitnessFunction = (FitnessFunction)Enum.Parse(typeof(FitnessFunction), XmlUtils.GetValueAsString(xmlConfig, "FitnessFunction"));
             LengthRule = (LengthRule)Enum.Parse(typeof(LengthRule), XmlUtils.GetValueAsString(xmlConfig, "LengthRule"));
-
+            FitnessFunction = (FitnessFunction)Enum.Parse(typeof(FitnessFunction), XmlUtils.GetValueAsString(xmlConfig, "FitnessFunction"));
+            FitnessFactor = XmlUtils.TryGetValueAsDouble(xmlConfig, "FitnessFactor") ?? DEFAULT_FITNESS_FACTOR;
         }
+
+        // Evaluation
+        public int Iterations { get; }
 
         // Turing machine
         public int M { get; }
@@ -38,7 +45,7 @@ namespace ENTM.Experiments.CopyTask
         public int MaxSequenceLength { get; }
         public FitnessFunction FitnessFunction { get; }
         public LengthRule LengthRule { get; }
-
+        public double FitnessFactor { get; }
     }
 
     public enum ShiftMode

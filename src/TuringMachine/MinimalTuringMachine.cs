@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
 using ENTM.Experiments.CopyTask;
+using ENTM.Utility;
 
 namespace ENTM.TuringMachine
 {
@@ -49,7 +50,7 @@ namespace ENTM.TuringMachine
 
         private double[][] _initialRead;
 
-        public MinimalTuringMachine(ENTMProperties props)
+        public MinimalTuringMachine(CopyTaskProperties props)
         {
             _m = props.M;
             _n = props.N;

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using ENTM.Experiments.CopyTask;
+using ENTM.Utility;
 using log4net.Config;
 using SharpNeat.EvolutionAlgorithms;
 using SharpNeat.Genomes.Neat;
