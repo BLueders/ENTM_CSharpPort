@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Remoting.Contexts;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Xml;
 using ENTM.TuringMachine;
@@ -53,10 +55,24 @@ namespace ENTM.Experiments.CopyTask
 
         public int EnvironmentOutputCount => Environment.OutputCount;
 
+        private Dictionary<int, IEnvironment> _environments = new Dictionary<int, IEnvironment>();
+
+        object lockObj = new object();
+
         public override FitnessInfo Evaluate(IBlackBox phenome)
         {
+        
+            int id = Thread.CurrentThread.ManagedThreadId;
+            CopyTaskEnvironment environment = null;
+            if (!_environments.ContainsKey(id))
+            {
+               lock (lockObj) _environments.Add(id, new CopyTaskEnvironment(_properties));
+            }
+
+            environment = _environments[id] as CopyTaskEnvironment;
+             
+            
             double totalScore = 0;
-            //Environment.Reset();
             int steps = 0;
 
             long nnTime = 0;
@@ -66,18 +82,18 @@ namespace ENTM.Experiments.CopyTask
             TuringController controller = new TuringController(phenome, _properties);
 
             int turingMachineInputCount = controller.TuringMachine.InputCount;
-            int environmentInputCount = Environment.InputCount;
+            int environmentInputCount = environment.InputCount;
 
             // For each iteration
             for (int i = 0; i < _iterations; i++)
             {
                 Reset();
-                Environment.Restart();
+                environment.Restart();
 
                 double[] turingMachineOutput = controller.InitialInput;
-                double[] enviromentOutput = Environment.InitialObservation;
+                double[] enviromentOutput = environment.InitialObservation;
 
-                while (!Environment.IsTerminated)
+                while (!environment.IsTerminated)
                 {
                     _stopWatch.Start();
 
@@ -92,7 +108,7 @@ namespace ENTM.Experiments.CopyTask
                     contTime += _stopWatch.ElapsedMilliseconds;
                     _stopWatch.Restart();
 
-                    enviromentOutput = Environment.PerformAction(Utilities.ArrayCopyOfRange(nnOutput, 0, environmentInputCount));
+                    enviromentOutput = environment.PerformAction(Utilities.ArrayCopyOfRange(nnOutput, 0, environmentInputCount));
 
                     simTime += _stopWatch.ElapsedMilliseconds;
 
@@ -102,12 +118,17 @@ namespace ENTM.Experiments.CopyTask
                     _stopWatch.Reset();
                 }
 
-                totalScore += Environment.CurrentScore;
+                totalScore += environment.CurrentScore;
             }
 
             double result = Math.Max(0.0, totalScore);
 
-            return new FitnessInfo(result, result);
+            if (result > MaxScore)
+            {
+                int a = 0;
+            }
+
+            return new FitnessInfo(result, 0);
         }
 
         public override void Reset()

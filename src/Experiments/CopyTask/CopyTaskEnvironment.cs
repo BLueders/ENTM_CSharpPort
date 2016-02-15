@@ -8,6 +8,8 @@ namespace ENTM.Experiments.CopyTask
 {
     public class CopyTaskEnvironment : IEnvironment
     {
+        private const double FITNESS_REGULATION = 10.0;
+
         private FitnessFunction _fitnessFunction;
 
         // Determines if the length of the sequence should be fixed or random
@@ -39,9 +41,10 @@ namespace ENTM.Experiments.CopyTask
         /// </summary>
         public int OutputCount => _vectorSize + 2;
 
-        public double CurrentScore => _score * 10.0 * (_maxSequenceLength / (1.0 * _sequence.Length));
+        public double CurrentScore => _score * FITNESS_REGULATION * (_maxSequenceLength / (1.0 * _sequence.Length));
 
-        public int MaxScore => (int)(_sequence.Length * 10.0 * (_maxSequenceLength / (1.0 * _sequence.Length)));
+        //public int MaxScore => (int)(_sequence.Length * 10.0 * (_maxSequenceLength / (1.0 * _sequence.Length)));
+        public int MaxScore => (int) (FITNESS_REGULATION * _maxSequenceLength);
 
         /// <summary>
         /// Terminate when the write and read sequences are complete
@@ -96,9 +99,10 @@ namespace ENTM.Experiments.CopyTask
 
         public double[] PerformAction(double[] action)
         {
+            
+
             if (Debug.On)
-            {
-                
+            {   
                 Console.WriteLine("-------------------------- COPYTASK --------------------------");
             }
 

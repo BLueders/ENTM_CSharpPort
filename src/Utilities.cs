@@ -14,9 +14,24 @@ namespace ENTM
 
         public static string ToString<T>(IEnumerable<T> col)
         {
+            if (col == null)
+                return "null";
+            if (col.Count() != 0 && col.First() is IEnumerable)
+            {
+                return string.Join(",", col.Select(x => ToString(x as IEnumerable<object>)).ToArray());
+            }
             return string.Join(",", col.Select(x => x.ToString()).ToArray());
         }
 
+        public static string ToString<T>(T[] col, string format) where T : IFormattable
+        {
+            return string.Join(",", col.Select(x => x.ToString(format, Provider)).ToArray());
+        }
+
+        public static string ToString<T>(T[][] col, string format) where T : IFormattable
+        {
+            return string.Join("\n", col.Select(x => ToString(x, format)).ToArray());
+        }
         /**
          * Normalized manhattan distance:
          * Compares two vectors and calculates a similarity between them.
@@ -74,15 +89,6 @@ namespace ENTM
             return copy;
         }
 
-        public static string ToString<T>(T[] col, string format) where T : IFormattable
-        {
-            return string.Join(",", col.Select(x => x.ToString(format, Provider)).ToArray());
-        }
-
-        public static string ToString<T>(T[][] col, string format) where T : IFormattable
-        {
-            return string.Join("\n", col.Select(x => ToString(x, format)).ToArray());
-        }
 
         /// <summary>
         /// Takes a 2D array and returns the same elements in a 1D array structure.

@@ -1,24 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Config>
+  
+  <Description>
+    ArglBlargl
+  </Description>
+
+  <!-- Evolutionary algorithm -->
   <PopulationSize>300</PopulationSize>
   <SpecieCount>10</SpecieCount>
   <Generations>5000</Generations>
   <EvaluateParents>false</EvaluateParents>
   <Activation>
     <Scheme>FixedIters</Scheme>
-    <Iters>2</Iters>
+    <Iters>1</Iters>
   </Activation>
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   <ComplexityThreshold>50</ComplexityThreshold>
-  <Description>
-    ArglBlargl
-  </Description>
+  <Iterations>10</Iterations>
 
 <!-- Copy Task Values -->
+  <VectorSize>2</VectorSize>
   <MaxLength>10</MaxLength>
-  <LengthRule>random</LengthRule>
+  <LengthRule>Random</LengthRule>
   <ElementSize>8</ElementSize>
-  <FitnessFunction>StrictClose</FitnessFunction>
+  <FitnessFunction>StrictCloseToTarget</FitnessFunction>
 
 <!-- Turing Machine Values-->
   <Enabled>true</Enabled>
