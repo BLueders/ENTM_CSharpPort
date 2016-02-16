@@ -16,6 +16,13 @@ namespace ENTM.Utility
             Log(text, false);
         }
 
+        private const string HORIZONTAL_LINE = "--------------------";
+
+        public static void LogHeader(string text, bool singleThread)
+        {
+            Log($"{HORIZONTAL_LINE} {text} {HORIZONTAL_LINE}", singleThread);
+        }
+
         [Conditional("DEBUG")]
         public static void Log(string text, bool singleThread)
         {
@@ -24,6 +31,7 @@ namespace ENTM.Utility
 
             Console.WriteLine(text);
         }
+
 
         public static bool IsDebugTread
         {
@@ -34,7 +42,8 @@ namespace ENTM.Utility
                     _debugThread = Thread.CurrentThread;
                 }
                 
-                return _debugThread == Thread.CurrentThread;
+                // Return true if we are on the debug thread, or if we are on the main thread (for testing)
+                return _debugThread == Thread.CurrentThread || Program.MainThreadId == Thread.CurrentThread.ManagedThreadId;
             }
         }
     }

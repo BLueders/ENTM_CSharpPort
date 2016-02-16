@@ -83,16 +83,22 @@ namespace ENTM.TuringMachine
             Debug.Log(PrintState(), true);
         }
 
-        /**
-         * Operation order:
-         * 	write
-         *	jump
-         *	shift
-         *	read
-         */
+        /// <summary>
+        /// Activate the Turing machine
+        /// Operation order:
+        ///	write
+        /// jump
+        /// shift
+        /// read
+        /// </summary>
+        /// <param name="fromNN">Turing machine input (NN output)</param>
+        /// <returns>Turing machine output (NN input)</returns>
+
         public double[][] ProcessInput(double[] fromNN)
         {
-            Debug.Log("------------------- MINIMAL TURING MACHINE START -------------------", true);
+            Debug.LogHeader("MINIMAL TURING MACHINE START", true);
+            Debug.Log($"From NN: {Utilities.ToString(fromNN, "f4")}", true);
+
             if (!_enabled)
                 return _initialRead;
 
@@ -122,8 +128,8 @@ namespace ENTM.TuringMachine
                 shifts[i] = Take(fromNN, p, s);
                 p += s;
 
-                Debug.Log($"------------------- HEAD {i + 1} -------------------" +
-                          $"\nWrite:        \t{Utilities.ToString(writeKeys[i], "f4")}" +
+                Debug.LogHeader($"HEAD {i + 1}", true);
+                Debug.Log($"\nWrite:        \t{Utilities.ToString(writeKeys[i], "f4")}" +
                           $"\nInterpolate:  \t{interps[i].ToString("f4")}" +
                           $"\nContent:      \t{contents[i].ToString("f4")}" +
                           $"\nShift:        \t{Utilities.ToString(shifts[i], "f4")}", true);
@@ -169,7 +175,7 @@ namespace ENTM.TuringMachine
 
             Debug.Log(PrintState(), true);
             Debug.Log("Sending to NN: " + Utilities.ToString(result, "F4"), true);
-            Debug.Log("----------------- MINIMAL TURING MACHINE END -------------------", true);
+            Debug.LogHeader("MINIMAL TURING MACHINE END", true);
             //		return new double[1][result.length];
             return result;
         }
@@ -238,7 +244,7 @@ namespace ENTM.TuringMachine
 
         private string PrintState()
         {
-            return "TM Tape: \n" + Utilities.ToString(_tape) + "\nHeadPositions= " + Utilities.ToString(_headPositions);
+            return "TM Tape: \n" + Utilities.ToString(_tape) + "\nHeadPositions: " + Utilities.ToString(_headPositions, "n0");
         }
 
         private void Write(int head, double[] content, double interp)
@@ -267,7 +273,7 @@ namespace ENTM.TuringMachine
                 {
                     double curSim = Utilities.Emilarity(key, _tape[i]);
 
-                    Debug.Log("Pos " + i + ": sim =" + curSim + (curSim > similarity ? " better" : ""), true);
+                    //Debug.Log("Pos " + i + ": sim =" + curSim + (curSim > similarity ? " better" : ""), true);
 
                     if (curSim > similarity)
                     {
@@ -280,6 +286,10 @@ namespace ENTM.TuringMachine
 
                 _headPositions[head] = bestPos;
 
+            }
+            else
+            {
+                Debug.Log("No content jump", true);
             }
         }
 

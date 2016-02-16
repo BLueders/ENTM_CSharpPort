@@ -29,7 +29,7 @@
 <!-- Turing Machine Values-->
   <Enabled>true</Enabled>
   <N>25</N>
-  <M>11</M>
+  <M>5</M>
   <ShiftLength>3</ShiftLength>
   <ShiftMode>Multiple</ShiftMode>
   <Heads>1</Heads>

@@ -52,7 +52,7 @@ namespace ENTM.Experiments.CopyTask
         /// <summary>
         /// Terminate when the write and read sequences are complete
         /// </summary>
-        public bool IsTerminated => _step >= 2 * _sequence.Length + 2 + 1;
+        public bool IsTerminated => _step >= 2 * _sequence.Length + 2;
 
         public CopyTaskEnvironment(CopyTaskProperties props)
         {
@@ -70,11 +70,13 @@ namespace ENTM.Experiments.CopyTask
 
         public void Reset()
         {
-            Debug.Log("---------- RESET ----------", true);
+            Debug.LogHeader("COPY TASK RESET", true);
         }
 
         public void Restart()
         {
+            Debug.LogHeader("COPY TASK RESTART", true);
+
             int length;
 
             switch (_lengthRule)
@@ -92,8 +94,11 @@ namespace ENTM.Experiments.CopyTask
 
             CreateSequence(length);
 
-            Debug.Log("CT: Restart - Sequence:\n " + Utilities.ToString(_sequence, "f1"), true);
+            Debug.Log($"{"Sequence Length:", -16} {length}" +
+                      $"\n{"Vector Size:", -16} {_vectorSize}" +
+                      $"\n{"Max score:", -16} {MaxScore}", true);
 
+            Debug.Log($"Sequence:\n{Utilities.ToString(_sequence, "f1")}", true);
 
             _step = 1;
             _score = 0d;
@@ -103,29 +108,30 @@ namespace ENTM.Experiments.CopyTask
 
         public double[] PerformAction(double[] action)
         {
-            
-
-            Debug.Log("-------------------------- COPYTASK --------------------------", true);
-
+            Debug.LogHeader("COPYTASK START", true);
+            Debug.Log($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
+            Debug.Log($"{"Step:",-16} {_step}", true);
 
             double[] result = GetObservation(_step);
 
             // Compare and score (if reading)
-            if (_step > _sequence.Length + 2)
+            if (_step >= _sequence.Length + 2)
             {
                 // The controllers "action" is the reading after 2 + |seq| steps
 
-                int index = _step - _sequence.Length - 2 - 1; // actual sequence index to compare to
+                int index = _step - _sequence.Length - 2; // actual sequence index to compare to
                 double[] correct = _sequence[index];
                 double[] received = action;
                 double thisScore = Evaluate(correct, received);
                 _score += thisScore;
 
-                Debug.Log("\tReading: " + Utilities.ToString(received, "F2") + " compared to " + Utilities.ToString(correct, "F2") + " = " + thisScore, true);
-
+                Debug.Log($"{"Reading:",-16} {Utilities.ToString(received, "F2")}" +
+                            $"\n{"Actual:",-16} {Utilities.ToString(correct, "F2")}" +
+                            $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
+                            $"\n{"Total Score:",-16} {_score.ToString("F4")}", true);
             }
 
-            Debug.Log("--------------------------------------------------------------", true);
+            Debug.LogHeader("COPYTASK END", true);
 
             _step++; // Increment step
 
@@ -152,27 +158,31 @@ namespace ENTM.Experiments.CopyTask
 
             if (step == 0)
             {
+                Debug.Log($"{"Type:",-16} START", true);
                 // Send start vector
                 observation[0] = 1; // START bit
             }
             else if (step <= _sequence.Length)
             {
+                Debug.Log($"{"Type:",-16} WRITE", true);
+
                 // sending the sequence
                 Array.Copy(_sequence[step - 1], 0, observation, 2, _sequence[step - 1].Length);
             }
             else if (step == _sequence.Length + 1)
             {
+                Debug.Log($"{"Type:",-16} DELIMITER", true);
+
                 // DELIMITER bit
                 observation[1] = 1;
             }
             else
             {
+                Debug.Log($"{"Type:",-16} READ", true);
                 // When we are reading we just send zeros
             }
 
-            
-            Debug.Log(step + ": " + Utilities.ToString(observation, "f0"), true);
-
+            Debug.Log($"{"Observation:",-16} {Utilities.ToString(observation, "f0")}", true);
 
             return observation;
         }
@@ -226,7 +236,7 @@ namespace ENTM.Experiments.CopyTask
                 double baseResult = StrictCloseToTarget(target, actual);
 
 
-                    Debug.Log($"Target={Utilities.ToString(target, "f4")} Actual={Utilities.ToString(actual, "f4")} Written={Utilities.ToString(written, "f4")} | TM Score={tmResult} Output Score={baseResult}\n", true);
+                Debug.Log($"Target={Utilities.ToString(target, "f4")} Actual={Utilities.ToString(actual, "f4")} Written={Utilities.ToString(written, "f4")} | TM Score={tmResult} Output Score={baseResult}\n", true);
 
 
                 return 0.5 * tmResult + 0.5 * baseResult;

@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.Remoting.Contexts;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Xml;
 using ENTM.TuringMachine;
 using ENTM.Utility;
 using SharpNeat.Core;
-using SharpNeat.Domains;
 using SharpNeat.Phenomes;
 
 namespace ENTM.Experiments.CopyTask
 {
     public class CopyTaskEvaluator : BaseEvaluator<CopyTaskEnvironment>
     {
-
+        
         private readonly Stopwatch _stopWatch = new Stopwatch();
 
         private CopyTaskProperties _properties;
@@ -70,8 +65,19 @@ namespace ENTM.Experiments.CopyTask
         public int EnvironmentOutputCount => Environment.OutputCount;
 
         public override FitnessInfo Evaluate(IBlackBox phenome)
-        {         
-            
+        {
+            double score = Evaluate(phenome, _properties.Iterations);
+
+            _evaluationCount++;
+
+            if (score >= MaxScore) _stopConditionSatisfied = true;
+
+            return new FitnessInfo(score, 0);
+        }
+
+        public double Evaluate(IBlackBox phenome, int iterations)
+        {
+            Utility.Debug.LogHeader("STARTING EVAULATION", true);
             double totalScore = 0;
             int steps = 0;
 
@@ -85,7 +91,7 @@ namespace ENTM.Experiments.CopyTask
             int environmentInputCount = Environment.InputCount;
 
             // For each iteration
-            for (int i = 0; i < _properties.Iterations; i++)
+            for (int i = 0; i < iterations; i++)
             {
                 Reset();
                 Environment.Restart();
@@ -121,13 +127,7 @@ namespace ENTM.Experiments.CopyTask
                 totalScore += Environment.CurrentScore;
             }
 
-            double result = Math.Max(0.0, totalScore);
-
-            _evaluationCount++;
-
-            if (result >= MaxScore) _stopConditionSatisfied = true;
-
-            return new FitnessInfo(result, 0);
+            return Math.Max(0d, totalScore);
         }
 
         public override void Reset()
