@@ -54,7 +54,7 @@ namespace ENTM.TuringMachine
         private List<int> _writeActivities = new List<int>();
         private List<int> _readActivities = new List<int>();
 
-        public MinimalTuringMachine(CopyTaskProperties props)
+        public MinimalTuringMachine(TuringMachineProperties props)
         {
             _m = props.M;
             _n = props.N;

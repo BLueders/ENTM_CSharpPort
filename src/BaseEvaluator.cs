@@ -46,7 +46,6 @@ namespace ENTM
 
         public abstract void Reset();
 
-
         public ulong EvaluationCount => _evaluationCount;
         public bool StopConditionSatisfied => _stopConditionSatisfied;
     }

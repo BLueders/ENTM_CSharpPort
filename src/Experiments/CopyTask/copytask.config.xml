@@ -2,37 +2,117 @@
 <Config>
   
   <Description>
-    ArglBlargl
+    Copy task experiment with turing controller. 
+    The controller must record a bit-vector sequence to memory, and read it back.
   </Description>
 
-  <!-- Evolutionary algorithm -->
-  <PopulationSize>300</PopulationSize>
-  <SpecieCount>10</SpecieCount>
+<!-- NEAT -->
+  <PopulationSize>100</PopulationSize>
   <Generations>5000</Generations>
-  <EvaluateParents>false</EvaluateParents>
+  <EvaluateParents>true</EvaluateParents>
   <Activation>
-    <Scheme>FixedIters</Scheme>
+    <Scheme>Acyclic</Scheme>
     <Iters>1</Iters>
   </Activation>
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   <ComplexityThreshold>50</ComplexityThreshold>
-  <Iterations>10</Iterations>
+  
+  <!-- Evolution Algorithm Parameters -->
+  <EAParams>
+    <!-- Number of species in the population. Default: 10 -->
+    <SpecieCount>10</SpecieCount>
 
-<!-- Copy Task Values -->
-  <VectorSize>2</VectorSize>
-  <MaxLength>10</MaxLength>
-  <LengthRule>Random</LengthRule>
-  <ElementSize>8</ElementSize>
-  <FitnessFunction>StrictCloseToTarget</FitnessFunction>
-  <FitnessFactor>10</FitnessFactor>
+    <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
+    <ElitismProportion>0.2</ElitismProportion>
 
-<!-- Turing Machine Values-->
-  <Enabled>true</Enabled>
-  <N>25</N>
-  <M>5</M>
-  <ShiftLength>3</ShiftLength>
-  <ShiftMode>Multiple</ShiftMode>
-  <Heads>1</Heads>
+    <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
+         Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
+    <SelectionProportion>0.2</SelectionProportion>
+
+    <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
+    <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
+
+    <!-- The proportion of offspring to be produced from sexual reproduction. Default: 0.5 -->
+    <OffspringSexualProportion>0.5</OffspringSexualProportion>
+
+    <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
+    <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
+
+    <!-- The history buffer length used for calculating the best fitness moving average. Default: 100 -->
+    <BestFitnessMovingAverageHistoryLength>100</BestFitnessMovingAverageHistoryLength>
+
+    <!-- The history buffer length used for calculating the mean specie champ fitness. Default: 100 -->
+    <MeanSpecieChampFitnessMovingAverageHistoryLength>100</MeanSpecieChampFitnessMovingAverageHistoryLength>
+
+    <!-- The history buffer length used for calculating the mean genome complexity moving. Default: 100 -->
+    <ComplexityMovingAverageHistoryLength>100</ComplexityMovingAverageHistoryLength>
+  </EAParams>
+
+  <!-- Genome Parameters -->
+  <GenomeParams>
+    <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
+         The weight range is strictly enforced - e.g. when creating new connections and mutating existing ones. Default: 5.0 -->
+    <ConnectionWeightRange>5.0</ConnectionWeightRange>
+
+    <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
+         This is a proportion of the total number of possible interconnections. Default: 0.05 -->
+    <InitialInterconnectionsProportion>0.05</InitialInterconnectionsProportion>
+
+    <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
+         Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
+    <DisjointExcessGenesRecombinedProbability>0.1</DisjointExcessGenesRecombinedProbability>
+
+    <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
+    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
+
+    <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
+    <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
+
+    <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
+    <AddConnectionMutationProbability>0.01</AddConnectionMutationProbability>
+
+    <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
+    <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
+
+    <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
+    <DeleteConnectionMutationProbability>0.001</DeleteConnectionMutationProbability>
+  </GenomeParams>
+
+  <!-- Turing Machine Parameters-->
+  <TuringMachineParams>
+    <Enabled>true</Enabled>
+    <!-- Maximum memory size (-1 for unlimited) -->
+    <N>-1</N>
+
+    <!-- Write vector size -->
+    <M>5</M>
+    
+    <!-- Number of shift inputs -->
+    <ShiftLength>3</ShiftLength>
+    
+    <!-- Shift mode: "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
+    <ShiftMode>Multiple</ShiftMode>
+
+    <!-- Number of Read/Write heads-->
+    <Heads>1</Heads>
+  </TuringMachineParams>
+
+  <!-- Copy Task Parameters -->
+  <CopyTaskParams>
+    <!-- Evaluation -->
+    <Iterations>50</Iterations>
+
+    <VectorSize>2</VectorSize>
+    <MaxLength>10</MaxLength>
+
+    <!-- "Random" or "Fixed" sequence lengts -->
+    <LengthRule>Random</LengthRule>
+    <ElementSize>8</ElementSize>
+    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
+    <FitnessFactor>10</FitnessFactor>
+  </CopyTaskParams>
+
+</Config>
 
 <!--
 #classic is worth trying out
@@ -123,4 +203,3 @@ log4j.appender.A1.layout.ConversionPattern=%-5p %m%x%n
 -->
 
 
-</Config>

@@ -7,7 +7,7 @@ namespace ENTM.Experiments.CopyTask
     {
       
         // The read output from the controller
-        public override int InputCount => Evaluator.EnvironmentOutputCount + Evaluator.TuringMachineOutputCount;
+        public override int InputCount => Evaluator.EnvironmentOutputCount + Evaluator.TuringMachineOutputCount + 1;
 
         // The input we give the controller in each iteration
         // Will be empty when we expect the controller to read back the sequence.

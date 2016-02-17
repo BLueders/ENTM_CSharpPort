@@ -16,7 +16,7 @@ namespace ENTM.TuringMachine
 
         public ITuringMachine TuringMachine { get; }
 
-        public TuringController(IBlackBox blackBox, CopyTaskProperties props)
+        public TuringController(IBlackBox blackBox, TuringMachineProperties props)
         {
             TuringMachine = new MinimalTuringMachine(props);
             _blackBox = blackBox;
