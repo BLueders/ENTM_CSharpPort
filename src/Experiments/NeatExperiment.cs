@@ -46,7 +46,7 @@ namespace ENTM.Experiments
     /// evaluations) then you probably want to implement your own INeatExperiment
     /// class.
     /// </summary>
-    public abstract class NeatExperiment<TEvaluator, TEnviroment> : INeatExperiment 
+    public abstract class NeatExperiment<TEvaluator, TEnviroment> : INeatExperiment
         where TEnviroment : IEnvironment, new()
         where TEvaluator : BaseEvaluator<TEnviroment>, new()
     {
@@ -54,7 +54,6 @@ namespace ENTM.Experiments
         NeatGenomeParameters _neatGenomeParams;
         string _name;
         int _populationSize;
-        int _specieCount;
         NetworkActivationScheme _activationScheme;
         string _complexityRegulationStr;
         int? _complexityThreshold;
@@ -101,7 +100,6 @@ namespace ENTM.Experiments
         {
             _name = name;
             _populationSize = XmlUtils.GetValueAsInt(xmlConfig, "PopulationSize");
-            _specieCount = XmlUtils.GetValueAsInt(xmlConfig, "SpecieCount");
             _activationScheme = ExperimentUtils.CreateActivationScheme(xmlConfig, "Activation");
             _complexityRegulationStr = XmlUtils.TryGetValueAsString(xmlConfig, "ComplexityRegulationStrategy");
             _complexityThreshold = XmlUtils.TryGetValueAsInt(xmlConfig, "ComplexityThreshold");
@@ -109,10 +107,36 @@ namespace ENTM.Experiments
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
             _evaluateParents = XmlUtils.GetValueAsBool(xmlConfig, "EvaluateParents");
 
+
+            // Evolutionary algorithm parameters
+            XmlElement xmlEAParams = xmlConfig.SelectSingleNode("EAParams") as XmlElement;
             _eaParams = new NeatEvolutionAlgorithmParameters();
-            _eaParams.SpecieCount = _specieCount;
+
+            _eaParams.SpecieCount = XmlUtils.GetValueAsInt(xmlEAParams, "SpecieCount");
+            _eaParams.ElitismProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "ElitismProportion");
+            _eaParams.SelectionProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "SelectionProportion");
+            _eaParams.OffspringAsexualProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "OffspringAsexualProportion");
+            _eaParams.OffspringSexualProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "OffspringSexualProportion");
+            _eaParams.InterspeciesMatingProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "InterspeciesMatingProportion");
+            _eaParams.BestFitnessMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "BestFitnessMovingAverageHistoryLength");
+            _eaParams.MeanSpecieChampFitnessMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "MeanSpecieChampFitnessMovingAverageHistoryLength");
+            _eaParams.ComplexityMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "ComplexityMovingAverageHistoryLength");
+
+            // NEAT Genome parameters
+            XmlElement xmlGenomeParams = xmlConfig.SelectSingleNode("GenomeParams") as XmlElement;
             _neatGenomeParams = new NeatGenomeParameters();
 
+            // Prevent recurrent connections if the activation scheme is acyclic
+            _neatGenomeParams.FeedforwardOnly = _activationScheme.AcyclicNetwork;
+            _neatGenomeParams.ConnectionWeightRange = XmlUtils.GetValueAsDouble(xmlGenomeParams, "ConnectionWeightRange");
+            _neatGenomeParams.InitialInterconnectionsProportion = XmlUtils.GetValueAsDouble(xmlGenomeParams, "InitialInterconnectionsProportion");
+            _neatGenomeParams.DisjointExcessGenesRecombinedProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DisjointExcessGenesRecombinedProbability");
+            _neatGenomeParams.ConnectionWeightMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "ConnectionWeightMutationProbability");
+            _neatGenomeParams.AddNodeMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddNodeMutationProbability");
+            _neatGenomeParams.AddConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddConnectionMutationProbability");
+            _neatGenomeParams.NodeAuxStateMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "NodeAuxStateMutationProbability");
+            _neatGenomeParams.DeleteConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DeleteConnectionMutationProbability");
+            
             Evaluator = new TEvaluator();
             Evaluator.Initialize(xmlConfig);
         }
@@ -123,7 +147,8 @@ namespace ENTM.Experiments
         /// </summary>
         public List<NeatGenome> LoadPopulation(XmlReader xr)
         {
-            return NeatGenomeUtils.LoadPopulation(xr, false, this.InputCount, this.OutputCount);
+            NeatGenomeFactory genomeFactory = (NeatGenomeFactory) CreateGenomeFactory();
+            return NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, genomeFactory);
         }
 
         /// <summary>

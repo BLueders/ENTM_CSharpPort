@@ -5,6 +5,7 @@ using ENTM.TuringMachine;
 using ENTM.Utility;
 using SharpNeat.Core;
 using SharpNeat.Phenomes;
+using SharpNeat.Domains;
 
 namespace ENTM.Experiments.CopyTask
 {
@@ -13,17 +14,19 @@ namespace ENTM.Experiments.CopyTask
         
         private readonly Stopwatch _stopWatch = new Stopwatch();
 
-        private CopyTaskProperties _properties;
+        private TuringMachineProperties _turingMachineProps;
+        private CopyTaskProperties _copyTaskProps;
 
         public override void Initialize(XmlElement xmlConfig)
         {
-            _properties = new CopyTaskProperties(xmlConfig);
+            _turingMachineProps = new TuringMachineProperties(xmlConfig.SelectSingleNode("TuringMachineParams") as XmlElement);
+            _copyTaskProps = new CopyTaskProperties(xmlConfig.SelectSingleNode("CopyTaskParams") as XmlElement);
         }
 
         protected override CopyTaskEnvironment NewEnvironment()
         {
             // This is called from the ThreadLocal Environment, so a new environment is instantiated for each thread
-            return new CopyTaskEnvironment(_properties);
+            return new CopyTaskEnvironment(_copyTaskProps);
         }
 
         private int _maxScore = -1;
@@ -33,7 +36,7 @@ namespace ENTM.Experiments.CopyTask
             {
                 if (_maxScore < 0)
                 {
-                    _maxScore = (int) (_properties.Iterations * _properties.MaxSequenceLength * _properties.FitnessFactor);
+                    _maxScore = (int) (_copyTaskProps.Iterations * _copyTaskProps.MaxSequenceLength * _copyTaskProps.FitnessFactor);
                 }
                 return _maxScore;
             }
@@ -44,21 +47,21 @@ namespace ENTM.Experiments.CopyTask
             get
             {
                 int shifts = 0;
-                switch (_properties.ShiftMode)
+                switch (_turingMachineProps.ShiftMode)
                 {
                     case ShiftMode.Multiple:
-                        shifts = _properties.ShiftLength;
+                        shifts = _turingMachineProps.ShiftLength;
                         break;
                     case ShiftMode.Single:
                         shifts = 1;
                         break;
                 }
 
-                return (_properties.M + 2 + shifts) * _properties.Heads;
+                return (_turingMachineProps.M + 2 + shifts) * _turingMachineProps.Heads;
             }
         }
 
-        public int TuringMachineOutputCount => _properties.M * _properties.Heads;
+        public int TuringMachineOutputCount => _turingMachineProps.M * _turingMachineProps.Heads;
 
         public int EnvironmentInputCount => Environment.InputCount;
 
@@ -66,7 +69,7 @@ namespace ENTM.Experiments.CopyTask
 
         public override FitnessInfo Evaluate(IBlackBox phenome)
         {
-            double score = Evaluate(phenome, _properties.Iterations);
+            double score = Evaluate(phenome, _copyTaskProps.Iterations);
 
             _evaluationCount++;
 
@@ -85,7 +88,7 @@ namespace ENTM.Experiments.CopyTask
             long contTime = 0;
             long simTime = 0;
 
-            TuringController controller = new TuringController(phenome, _properties);
+            TuringController controller = new TuringController(phenome, _turingMachineProps);
 
             int turingMachineInputCount = controller.TuringMachine.InputCount;
             int environmentInputCount = Environment.InputCount;
