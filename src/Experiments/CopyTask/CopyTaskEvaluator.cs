@@ -96,8 +96,10 @@ namespace ENTM.Experiments.CopyTask
             // For each iteration
             for (int i = 0; i < iterations; i++)
             {
+                Utility.Debug.LogHeader($"EVALUATION ITERATION {i}", true);
+
                 Reset();
-                Environment.Restart();
+                controller.Reset();
 
                 double[] turingMachineOutput = controller.InitialInput;
                 double[] enviromentOutput = Environment.InitialObservation;
@@ -135,7 +137,7 @@ namespace ENTM.Experiments.CopyTask
 
         public override void Reset()
         {
-            Environment.Reset();
+            Environment.Restart();
         }
     }
 }

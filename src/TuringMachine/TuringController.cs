@@ -59,7 +59,7 @@ namespace ENTM.TuringMachine
 
         public void Reset()
         {
-            throw new NotImplementedException();
+            TuringMachine.Reset();
         }
     }
 }

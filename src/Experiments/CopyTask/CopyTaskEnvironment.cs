@@ -128,7 +128,8 @@ namespace ENTM.Experiments.CopyTask
                 Debug.Log($"{"Reading:",-16} {Utilities.ToString(received, "F2")}" +
                             $"\n{"Actual:",-16} {Utilities.ToString(correct, "F2")}" +
                             $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
-                            $"\n{"Total Score:",-16} {_score.ToString("F4")}", true);
+                            $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - _sequence.Length - 1}" +
+                            $"\n{"Max Score:",-16} {_sequence.Length.ToString("F0")}", true);
             }
 
             Debug.LogHeader("COPYTASK END", true);

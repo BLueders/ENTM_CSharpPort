@@ -44,6 +44,7 @@ namespace ENTM
                 $"\n-{"Space:", -10} Start/Pause Evolutionary Algorithm" +
                 $"\n-{"D:",-10} Toggle Debug (only available for debug builds)" +
                 $"\n-{"C:",-10} Test current champion" +
+                $"\n-{"S:",-10} Test saved champion (from champion xml)" +
                 $"\n-{"Esc:",-10} Exit");
 
             // Start listening for input
@@ -69,6 +70,25 @@ namespace ENTM
             TestPhenome(champion);
         }
 
+        private static void TestSavedChampion()
+        {
+            // Load genome from the xml file
+            XmlDocument xmlChamp = new XmlDocument();
+            xmlChamp.Load(CHAMPION_FILE);
+            NeatGenome champGenome = NeatGenomeXmlIO.LoadGenome(xmlChamp.DocumentElement, false);
+
+            // Create and set the genome factory
+            champGenome.GenomeFactory = _experiment.CreateGenomeFactory() as NeatGenomeFactory;
+
+            // Create the genome decoder
+            IGenomeDecoder<NeatGenome, IBlackBox> decoder = _experiment.CreateGenomeDecoder();
+            
+            // Decode the genome (genotype => phenotype)
+            IBlackBox champion = decoder.Decode(champGenome);
+
+            TestPhenome(champion);
+        }
+
         private static void TestPhenome(IBlackBox phenome)
         {
             Debug.On = true;
@@ -82,7 +102,7 @@ namespace ENTM
             Console.WriteLine("gen={0:N0} bestFitness={1:N6}", _ea.CurrentGeneration, _ea.Statistics._maxFitness);
 
             // Save the best genome to file
-            XmlDocument doc = NeatGenomeXmlIO.SaveComplete(new List<NeatGenome>() { _ea.CurrentChampGenome }, false);
+            XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);
             doc.Save(CHAMPION_FILE);
         }
 
@@ -152,6 +172,10 @@ namespace ENTM
 
                     case ConsoleKey.C:
                         TestCurrentChampion();
+                        break;
+
+                    case ConsoleKey.S:
+                        TestSavedChampion();
                         break;
 
                     case ConsoleKey.Escape:
