@@ -8,7 +8,7 @@ namespace ENTM.Experiments.CopyTask
     {
         private const int DEFAULT_ITERATIONS = 10;
         private const int DEFAULT_SEQUENCE_MAXLENGTH = 10;
-        private const double DEFAULT_FITNESS_FACTOR = 10;
+        private const double DEFAULT_FITNESS_FACTOR = 1;
 
         // Evaluation
         public int Iterations { get; }

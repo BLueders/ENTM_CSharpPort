@@ -31,7 +31,7 @@ namespace ENTM.Utility
                     builder.Append("|" + ToString((IEnumerable)enumerator.Current, format) + "|\n");
                 } while (enumerator.MoveNext());
                 return builder.ToString();
-            } 
+            }
             if (enumerator.Current is IFormattable)
                 do
                 {

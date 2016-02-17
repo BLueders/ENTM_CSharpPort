@@ -50,6 +50,10 @@ namespace ENTM.TuringMachine
 
         private double[][] _initialRead;
 
+        // Number of times each location was accessed during livetime of the tm
+        private List<int> _writeActivities = new List<int>();
+        private List<int> _readActivities = new List<int>();
+
         public MinimalTuringMachine(TuringMachineProperties props)
         {
             _m = props.M;
@@ -67,6 +71,7 @@ namespace ENTM.TuringMachine
             {
                 _initialRead[i] = GetRead(i);
             }
+            
         }
 
         public void Reset()
@@ -80,6 +85,13 @@ namespace ENTM.TuringMachine
                 _internalLastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
                 _lastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
             }
+
+            // clear debug log lists
+            _readActivities.Clear();
+            _readActivities.Add(0);
+            _writeActivities.Clear();
+            _writeActivities.Add(0);
+
             Debug.Log(PrintState(), true);
         }
 
@@ -244,12 +256,27 @@ namespace ENTM.TuringMachine
 
         private string PrintState()
         {
-            return "TM Tape: \n" + Utilities.ToString(_tape) + "\nHeadPositions: " + Utilities.ToString(_headPositions, "n0");
+            StringBuilder builder = new StringBuilder();
+            builder.Append("TM Tape: \n");
+            for (int i = 0; i < _tape.Count; i++)
+            {
+                builder.Append("| ");
+                builder.Append(Utilities.ToString(_tape[i]));
+                builder.Append("|");
+                builder.Append($" reads: {_readActivities[i]}, writes: {_writeActivities[i]}");
+                builder.Append("\n");
+            }
+            builder.Append("\nHeadPositions: ");
+            builder.Append(Utilities.ToString(_headPositions, "n0"));
+            return builder.ToString();
         }
 
         private void Write(int head, double[] content, double interp)
         {
             _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
+
+            //Log write activities
+            _writeActivities[_headPositions[head]]++;
         }
 
         private double[] Interpolate(double[] first, double[] second, double interp)
@@ -323,6 +350,10 @@ namespace ENTM.TuringMachine
                         if (_headPositions[head] >= _tape.Count)
                         {
                             _tape.Add(new double[_m]);
+
+                            // extend debug logs for read and write activities
+                            _writeActivities.Add(0);
+                            _readActivities.Add(0);
                         }
                     }
 
@@ -340,6 +371,10 @@ namespace ENTM.TuringMachine
                         if (_headPositions[head] < 0)
                         {
                             _tape.Insert(0, new double[_m]);
+
+                            // extend debug logs for read and write activities
+                            _writeActivities.Insert(0, 0);
+                            _readActivities.Insert(0, 0);
 
                             // Moving all heads accordingly
                             for (int i = 0; i < _heads; i++)
@@ -359,6 +394,9 @@ namespace ENTM.TuringMachine
 
         private double[] GetRead(int head)
         {
+            // log debug read activity
+            _readActivities[_headPositions[head]]++;
+
             return (double[])_tape[_headPositions[head]].Clone();
         }
     }
