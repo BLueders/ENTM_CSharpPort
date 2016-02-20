@@ -60,6 +60,7 @@ namespace ENTM.Experiments
         string _description;
         ParallelOptions _parallelOptions;
         bool _evaluateParents;
+        bool _multiThreading;
 
         public TEvaluator Evaluator { get; private set; }
 
@@ -106,7 +107,7 @@ namespace ENTM.Experiments
             _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description");
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
             _evaluateParents = XmlUtils.GetValueAsBool(xmlConfig, "EvaluateParents");
-
+            _multiThreading = XmlUtils.TryGetValueAsBool(xmlConfig, "MultiThreading") ?? true;
 
             // Evolutionary algorithm parameters
             XmlElement xmlEAParams = xmlConfig.SelectSingleNode("EAParams") as XmlElement;
@@ -218,7 +219,15 @@ namespace ENTM.Experiments
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(_activationScheme);
 
             // Create a genome2 list evaluator. This packages up the genome2 decoder with the genome2 evaluator.
-            IGenomeListEvaluator<NeatGenome> genomeListEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, Evaluator, _parallelOptions);
+            IGenomeListEvaluator<NeatGenome> genomeListEvaluator;
+            if (_multiThreading)
+            {
+                genomeListEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, Evaluator, _parallelOptions);
+            }
+            else
+            {
+                genomeListEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, Evaluator);
+            }
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
             // that were in the population in previous generations (elite genomes). This is determiend by examining each genome2's evaluation info object.
