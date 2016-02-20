@@ -99,7 +99,7 @@ namespace ENTM
 
         private static void EAUpdateEvent(object sender, EventArgs e)
         {
-            Console.WriteLine("gen={0:N0} bestFitness={1:N6}", _ea.CurrentGeneration, _ea.Statistics._maxFitness);
+            Console.WriteLine($"gen={_ea.CurrentGeneration}, bestFitness={_ea.Statistics._maxFitness.ToString("F4")}, meanFitness={_ea.Statistics._meanFitness.ToString("F4")}");
 
             // Save the best genome to file
             XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);

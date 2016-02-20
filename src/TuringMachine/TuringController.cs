@@ -24,11 +24,8 @@ namespace ENTM.TuringMachine
 
         public double[] ActivateNeuralNetwork(double[] environmentInput, double[] controllerInput)
         {
-            //double[] input = new double[environmentInput.Length + controllerInput.Length + 1];
-            double[] input = new double[environmentInput.Length + controllerInput.Length];
-            Array.Copy(environmentInput, input, environmentInput.Length);
-            Array.Copy(controllerInput, 0, input, environmentInput.Length, controllerInput.Length);
-            //input[input.Length - 1] = 1.0; // Bias node
+
+            double[] input = Utilities.JoinArrays(environmentInput, controllerInput);
 
             // Cap values at 1
             Utilities.ClampArray01(input); // FIXME: This might be a symptom in the GTM.
@@ -36,11 +33,9 @@ namespace ENTM.TuringMachine
             Debug.Log($"Neural Network Input:  {Utilities.ToString(input, "f4")}", true);
 
             _blackBox.ResetState();
-            for (int i = 0; i < input.Length; i++)
-            {
-                _blackBox.InputSignalArray[i] = input[i];
-            }
+            _blackBox.InputSignalArray.CopyFrom(input, 0, input.Length);
             _blackBox.Activate();
+
             double[] output = new double[_blackBox.OutputSignalArray.Length];
             _blackBox.OutputSignalArray.CopyTo(output, 0);
 
