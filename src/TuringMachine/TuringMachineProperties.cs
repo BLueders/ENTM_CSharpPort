@@ -24,6 +24,16 @@ namespace ENTM.TuringMachine
             Enabled = XmlUtils.TryGetValueAsBool(xmlConfig, "Enabled") ?? true;
             Heads = XmlUtils.TryGetValueAsInt(xmlConfig, "Heads") ?? 1;
         }
+
+        public TuringMachineProperties(int m, int n, int shiftLength, ShiftMode shiftMode, bool enabled, int heads)
+        {
+            M = m;
+            N = n;
+            ShiftLength = shiftLength;
+            ShiftMode = shiftMode;
+            Enabled = enabled;
+            Heads = heads;
+        }
     }
 
     public enum ShiftMode

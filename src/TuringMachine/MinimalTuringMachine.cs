@@ -19,7 +19,7 @@ namespace ENTM.TuringMachine
     * @author Emil
     *
     */
-    class MinimalTuringMachine : ITuringMachine
+    public class MinimalTuringMachine : ITuringMachine
     {
         private readonly List<double[]> _tape;
         private int[] _headPositions;

@@ -130,6 +130,7 @@ namespace ENTM.Experiments.CopyTask
                 }
 
                 totalScore += Environment.CurrentScore;
+                Utility.Debug.Log($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }
 
             return Math.Max(0d, totalScore);
