@@ -22,6 +22,7 @@ namespace ENTM.Experiments.CopyTask
         private int _maxSequenceLength;
 
         private double[][] _sequence;
+        public double[][] Sequence => _sequence;
 
         // Current time step
         private int _step;

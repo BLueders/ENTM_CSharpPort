@@ -11,14 +11,24 @@ namespace ENTM.Experiments.CopyTask
         private const double DEFAULT_FITNESS_FACTOR = 1;
 
         // Evaluation
-        public int Iterations { get; }
+        public int Iterations;
 
         // Copy task environment
-        public int VectorSize { get; }
-        public int MaxSequenceLength { get; }
-        public FitnessFunction FitnessFunction { get; }
-        public LengthRule LengthRule { get; }
-        public double FitnessFactor { get; }
+        public int VectorSize;
+        public int MaxSequenceLength;
+        public FitnessFunction FitnessFunction;
+        public LengthRule LengthRule;
+        public double FitnessFactor;
+
+        public CopyTaskProperties(int iterations, int vectorSize, int maxSequenceLength, FitnessFunction fitnessFunction, LengthRule lengthRule, double fitnessFactor)
+        {
+            Iterations = iterations;
+            VectorSize = vectorSize;
+            MaxSequenceLength = maxSequenceLength;
+            FitnessFunction = fitnessFunction;
+            LengthRule = lengthRule;
+            FitnessFactor = fitnessFactor;
+        }
 
         public CopyTaskProperties(XmlElement xmlConfig)
         {
@@ -29,6 +39,10 @@ namespace ENTM.Experiments.CopyTask
             LengthRule = (LengthRule)Enum.Parse(typeof(LengthRule), XmlUtils.GetValueAsString(xmlConfig, "LengthRule"));
             FitnessFunction = (FitnessFunction)Enum.Parse(typeof(FitnessFunction), XmlUtils.GetValueAsString(xmlConfig, "FitnessFunction"));
             FitnessFactor = XmlUtils.TryGetValueAsDouble(xmlConfig, "FitnessFactor") ?? DEFAULT_FITNESS_FACTOR;
+        }
+
+        public CopyTaskProperties()
+        {
         }
     }
 

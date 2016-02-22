@@ -1,25 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using ENTM.Experiments.CopyTask;
-using SharpNeat.Phenomes;
+﻿using SharpNeat.Phenomes;
 using ENTM.Utility;
 
 namespace ENTM.TuringMachine
 {
-    class TuringController : IController
+    public class TuringController : IController
     {
-        private readonly IBlackBox _blackBox;
+        public IBlackBox BlackBox { get; }
 
         public ITuringMachine TuringMachine { get; }
 
         public TuringController(IBlackBox blackBox, TuringMachineProperties props)
         {
             TuringMachine = new MinimalTuringMachine(props);
-            _blackBox = blackBox;
+            BlackBox = blackBox;
         }
 
         public double[] ActivateNeuralNetwork(double[] environmentInput, double[] controllerInput)
@@ -32,12 +25,12 @@ namespace ENTM.TuringMachine
 
             Debug.Log($"Neural Network Input:  {Utilities.ToString(input, "f4")}", true);
 
-            //_blackBox.ResetState();
-            _blackBox.InputSignalArray.CopyFrom(input, 0, input.Length);
-            _blackBox.Activate();
+            BlackBox.ResetState();
+            BlackBox.InputSignalArray.CopyFrom(input, 0, input.Length);
+            BlackBox.Activate();
 
-            double[] output = new double[_blackBox.OutputSignalArray.Length];
-            _blackBox.OutputSignalArray.CopyTo(output, 0);
+            double[] output = new double[BlackBox.OutputSignalArray.Length];
+            BlackBox.OutputSignalArray.CopyTo(output, 0);
 
             Debug.Log($"Neural Network Output: {Utilities.ToString(output, "f4")}", true);
 

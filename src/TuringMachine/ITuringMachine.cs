@@ -3,7 +3,7 @@ using ENTM.Replay;
 
 namespace ENTM.TuringMachine
 {
-    interface ITuringMachine : IReplayable<TuringMachineTimeStep>
+    public interface ITuringMachine : IReplayable<TuringMachineTimeStep>
     {
         void Reset();
         int ReadHeadCount { get; }

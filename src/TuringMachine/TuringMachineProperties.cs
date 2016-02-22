@@ -6,13 +6,13 @@ namespace ENTM.TuringMachine
 {
     public class TuringMachineProperties
     {
-        
-        public int M { get; }
-        public int N { get; }
-        public int ShiftLength { get; }
-        public ShiftMode ShiftMode { get; }
-        public bool Enabled { get; }
-        public int Heads { get; }
+
+        public int M;
+        public int N;
+        public int ShiftLength;
+        public ShiftMode ShiftMode;
+        public bool Enabled;
+        public int Heads;
 
         public TuringMachineProperties(XmlElement xmlConfig)
         {
@@ -33,6 +33,10 @@ namespace ENTM.TuringMachine
             ShiftMode = shiftMode;
             Enabled = enabled;
             Heads = heads;
+        }
+
+        public TuringMachineProperties()
+        {
         }
     }
 
