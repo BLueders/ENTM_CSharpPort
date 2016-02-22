@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Threading;
-using System.Xml;
+using ENTM.Replay;
 using ENTM.TuringMachine;
 using ENTM.Utility;
-using SharpNeat.Domains;
 
 namespace ENTM.Experiments.CopyTask
 {
-    public class CopyTaskEnvironment : IEnvironment
+    public class CopyTaskEnvironment : IEnvironment, IReplayable<EnvironmentTimeStep>
     {
         private FitnessFunction _fitnessFunction;
 
@@ -44,15 +42,21 @@ namespace ENTM.Experiments.CopyTask
         /// </summary>
         public int OutputCount => _vectorSize + 2;
 
-        public double CurrentScore => _score * _fitnessFactor * (_maxSequenceLength / (1.0 * _sequence.Length));
+        public double CurrentScore => _score * _fitnessFactor * ((double) _maxSequenceLength / (double) _sequence.Length);
 
-        //public int MaxScore => (int)(_sequence.Length * 10.0 * (_maxSequenceLength / (1.0 * _sequence.Length)));
-        public int MaxScore => (int) (_fitnessFactor * _maxSequenceLength);
+        public double MaxScore => _fitnessFactor * _maxSequenceLength;
+
+        public double NormalizedScore => CurrentScore / MaxScore;
 
         /// <summary>
         /// Terminate when the write and read sequences are complete
         /// </summary>
-        public bool IsTerminated => _step >= 2 * _sequence.Length + 2;
+        public bool IsTerminated => _step >= TotalTimeSteps;
+
+        /// <summary>
+        /// Read + Write + start and delimiter
+        /// </summary>
+        public int TotalTimeSteps => 2 * _sequence.Length + 2;
 
         public CopyTaskEnvironment(CopyTaskProperties props)
         {
@@ -73,9 +77,13 @@ namespace ENTM.Experiments.CopyTask
             Debug.LogHeader("COPY TASK RESET", true);
         }
 
+        private Random random;
+
         public void Restart()
         {
             Debug.LogHeader("COPY TASK RESTART", true);
+
+            random = new Random(0);
 
             int length;
 
@@ -86,7 +94,9 @@ namespace ENTM.Experiments.CopyTask
                     break;
 
                 case LengthRule.Random:
-                    length = ThreadSafeRandom.Next(0, _maxSequenceLength) + 1;
+                    //length = ThreadSafeRandom.Next(0, _maxSequenceLength) + 1;
+                    length = random.Next(0, _maxSequenceLength) + 1;
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -114,6 +124,7 @@ namespace ENTM.Experiments.CopyTask
 
             double[] result = GetObservation(_step);
 
+            double thisScore = 0;
             // Compare and score (if reading)
             if (_step >= _sequence.Length + 2)
             {
@@ -122,7 +133,7 @@ namespace ENTM.Experiments.CopyTask
                 int index = _step - _sequence.Length - 2; // actual sequence index to compare to
                 double[] correct = _sequence[index];
                 double[] received = action;
-                double thisScore = Evaluate(correct, received);
+                thisScore = Evaluate(correct, received);
                 _score += thisScore;
 
                 Debug.Log($"{"Reading:",-16} {Utilities.ToString(received, "F2")}" +
@@ -133,6 +144,11 @@ namespace ENTM.Experiments.CopyTask
             }
 
             Debug.LogHeader("COPYTASK END", true);
+
+            if (RecordTimeSteps)
+            {
+                _prevTimeStep = new EnvironmentTimeStep(action, result, thisScore);
+            }
 
             _step++; // Increment step
 
@@ -148,7 +164,9 @@ namespace ENTM.Experiments.CopyTask
                 _sequence[i] = new double[_vectorSize];
                 for (int j = 0; j < _sequence[i].Length; j++)
                 {
-                    _sequence[i][j] = ThreadSafeRandom.Next(0, 2);
+                    //_sequence[i][j] = ThreadSafeRandom.Next(0, 2);
+                    _sequence[i][j] = random.Next(0, 2);
+                    //_sequence[i][j] = (j + i) % 3 % 2;
                 }
             }
         }
@@ -231,7 +249,7 @@ namespace ENTM.Experiments.CopyTask
                 // Get half the score for storing correctly
                 // comparing the target with the first E elements written to memory that round
                 double[] written = new double[target.Length];
-                Array.Copy((Controller as TuringController).TuringMachine.PrevTimeStep.Key, written, target.Length);
+                Array.Copy(((Controller as TuringController).TuringMachine as IReplayable<TuringMachineTimeStep>).PreviousTimeStep.Key, written, target.Length);
 
                 double tmResult = StrictCloseToTarget(target, written);
                 double baseResult = StrictCloseToTarget(target, actual);
@@ -307,5 +325,24 @@ namespace ENTM.Experiments.CopyTask
         }
 
         #endregion
+
+        #region Replayable
+
+        private EnvironmentTimeStep _prevTimeStep;
+
+        public bool RecordTimeSteps { get; set; } = false;
+
+        public EnvironmentTimeStep InitialTimeStep
+        {
+            get
+            {
+                return _prevTimeStep = new EnvironmentTimeStep(new double[_vectorSize], GetObservation(0), _score);
+            }
+        }
+
+        public EnvironmentTimeStep PreviousTimeStep => _prevTimeStep;
+
+        #endregion
     }
+
 }

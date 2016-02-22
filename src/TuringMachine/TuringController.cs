@@ -32,7 +32,7 @@ namespace ENTM.TuringMachine
 
             Debug.Log($"Neural Network Input:  {Utilities.ToString(input, "f4")}", true);
 
-            _blackBox.ResetState();
+            //_blackBox.ResetState();
             _blackBox.InputSignalArray.CopyFrom(input, 0, input.Length);
             _blackBox.Activate();
 

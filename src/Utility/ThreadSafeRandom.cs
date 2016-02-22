@@ -24,7 +24,8 @@ namespace ENTM.Utility
 
         static int GetSeed()
         {
-            return Environment.TickCount * Thread.CurrentThread.ManagedThreadId;
+            return 0;
+            //return Environment.TickCount * Thread.CurrentThread.ManagedThreadId;
         }
     }
 }

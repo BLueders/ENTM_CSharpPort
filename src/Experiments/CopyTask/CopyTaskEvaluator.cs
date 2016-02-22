@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml;
+using ENTM.Replay;
 using ENTM.TuringMachine;
 using ENTM.Utility;
 using SharpNeat.Core;
@@ -63,13 +65,15 @@ namespace ENTM.Experiments.CopyTask
 
         public int TuringMachineOutputCount => _turingMachineProps.M * _turingMachineProps.Heads;
 
-        public int EnvironmentInputCount => Environment.InputCount;
+        public int EnvironmentInputCount => _copyTaskProps.VectorSize;
 
-        public int EnvironmentOutputCount => Environment.OutputCount;
+        public int EnvironmentOutputCount => _copyTaskProps.VectorSize + 2;
+
+        public Recorder Recorder;
 
         public override FitnessInfo Evaluate(IBlackBox phenome)
         {
-            double score = Evaluate(phenome, _copyTaskProps.Iterations);
+            double score = Evaluate(phenome, _copyTaskProps.Iterations, false);
 
             _evaluationCount++;
 
@@ -78,15 +82,15 @@ namespace ENTM.Experiments.CopyTask
             return new FitnessInfo(score, 0);
         }
 
-        public double Evaluate(IBlackBox phenome, int iterations)
+        public double Evaluate(IBlackBox phenome, int iterations, bool record)
         {
             Utility.Debug.LogHeader("STARTING EVAULATION", true);
             double totalScore = 0;
-            int steps = 0;
+            //int steps = 0;
 
-            long nnTime = 0;
-            long contTime = 0;
-            long simTime = 0;
+            //long nnTime = 0;
+            //long contTime = 0;
+            //long simTime = 0;
 
             TuringController controller = new TuringController(phenome, _turingMachineProps);
 
@@ -104,36 +108,54 @@ namespace ENTM.Experiments.CopyTask
                 double[] turingMachineOutput = controller.InitialInput;
                 double[] enviromentOutput = Environment.InitialObservation;
 
+                if (record)
+                {
+                    Recorder = new Recorder();
+                    Recorder.Start();
+
+                    controller.TuringMachine.RecordTimeSteps = true;
+                    Environment.RecordTimeSteps = true;
+
+                    Recorder.Record(Environment.InitialTimeStep, controller.TuringMachine.InitialTimeStep);
+                }
+
                 while (!Environment.IsTerminated)
                 {
-                    _stopWatch.Start();
+                    //_stopWatch.Start();
 
                     double[] nnOutput = controller.ActivateNeuralNetwork(enviromentOutput, turingMachineOutput);
 
-                    nnTime += _stopWatch.ElapsedMilliseconds;
-                    _stopWatch.Restart();
+                    //nnTime += _stopWatch.ElapsedMilliseconds;
+                    //_stopWatch.Restart();
 
                     // CopyTask can rely on the TM acting first
                     turingMachineOutput = controller.ProcessNNOutputs(Utilities.ArrayCopyOfRange(nnOutput, environmentInputCount, turingMachineInputCount));
 
-                    contTime += _stopWatch.ElapsedMilliseconds;
-                    _stopWatch.Restart();
+                    //contTime += _stopWatch.ElapsedMilliseconds;
+                    //_stopWatch.Restart();
 
                     enviromentOutput = Environment.PerformAction(Utilities.ArrayCopyOfRange(nnOutput, 0, environmentInputCount));
 
-                    simTime += _stopWatch.ElapsedMilliseconds;
+                    //simTime += _stopWatch.ElapsedMilliseconds;
 
-                    steps++;
+                    //steps++;
 
-                    _stopWatch.Stop();
-                    _stopWatch.Reset();
+                    //_stopWatch.Stop();
+                    //_stopWatch.Reset();
+
+                    if (record)
+                    {
+                        Recorder.Record(Environment.PreviousTimeStep, controller.TuringMachine.PreviousTimeStep);
+                    }
                 }
 
-                totalScore += Environment.CurrentScore;
+                totalScore += Environment.NormalizedScore;
+
                 Utility.Debug.Log($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }
 
-            return Math.Max(0d, totalScore);
+
+            return Math.Max(0d, totalScore / iterations);
         }
 
         public override void Reset()

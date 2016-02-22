@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
 using ENTM.Experiments.CopyTask;
+using ENTM.Replay;
 using ENTM.Utility;
 
 namespace ENTM.TuringMachine
@@ -42,11 +43,6 @@ namespace ENTM.TuringMachine
         // Number of combined read/write heads
         private readonly int _heads;
 
-        private bool _recordTimeSteps = false;
-        private TuringMachineTimeStep _prevTimeStep;
-        private bool _increasedSizeDown = false;
-        private int _zeroPosition = 0;
-
         private double[][] _initialRead;
 
         // Number of times each location was accessed during livetime of the tm
@@ -81,11 +77,6 @@ namespace ENTM.TuringMachine
             _tape.Add(new double[_m]);
             _headPositions = new int[_heads];
 
-            if (_recordTimeSteps)
-            {
-                _prevTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
-            }
-
             // clear debug log lists
             _readActivities.Clear();
             _readActivities.Add(0);
@@ -98,10 +89,10 @@ namespace ENTM.TuringMachine
         /// <summary>
         /// Activate the Turing machine
         /// Operation order:
-        ///	write
-        /// jump
-        /// shift
-        /// read
+        ///	1: Write
+        /// 2: Content jump
+        /// 3: Shift
+        /// 4: Read
         /// </summary>
         /// <param name="fromNN">Turing machine input (NN output)</param>
         /// <returns>Turing machine output (NN input)</returns>
@@ -118,7 +109,7 @@ namespace ENTM.TuringMachine
 
             double[][] writeKeys = new double[_heads][];
             double[] interps = new double[_heads];
-            double[] contents = new double[_heads];
+            double[] jumps = new double[_heads];
             double[][] shifts = new double[_heads][];
 
             int p = 0;
@@ -133,7 +124,7 @@ namespace ENTM.TuringMachine
                 interps[i] = fromNN[p];
                 p++;
 
-                contents[i] = fromNN[p];
+                jumps[i] = fromNN[p];
                 p++;
 
                 int s = GetShiftInputs();
@@ -143,29 +134,36 @@ namespace ENTM.TuringMachine
                 Debug.LogHeader($"HEAD {i + 1}", true);
                 Debug.Log($"\nWrite:        \t{Utilities.ToString(writeKeys[i], "f4")}" +
                           $"\nInterpolate:  \t{interps[i].ToString("f4")}" +
-                          $"\nContent:      \t{contents[i].ToString("f4")}" +
+                          $"\nContent:      \t{jumps[i].ToString("f4")}" +
                           $"\nShift:        \t{Utilities.ToString(shifts[i], "f4")}", true);
 
+                // 1: Write!
                 Write(i, writeKeys[i], interps[i]);
             }
 
-            // Perform content jump
             for (int i = 0; i < _heads; i++)
             {
-                PerformContentJump(i, contents[i], writeKeys[i]);
+                // 2: Content jump!
+                PerformContentJump(i, jumps[i], writeKeys[i]);
             }
 
             // Shift and read (no interaction)
             for (int i = 0; i < _heads; i++)
             {
+                // Save write position for recording
                 int writePosition = _headPositions[i];
+
+                // If the memory has been expanded down below 0, which means the memory has shiftet
                 _increasedSizeDown = false;
+
+                // 3: Shift!
                 MoveHead(i, shifts[i]);
 
+                // 4: Read!
                 double[] headResult = GetRead(i); // Show me what you've got! \cite{rickEtAl2014}
                 result[i] = headResult;
 
-                if (_recordTimeSteps)
+                if (RecordTimeSteps)
                 {
                     int readPosition = _headPositions[i];
                     int correctedWritePosition = writePosition - _zeroPosition;
@@ -178,29 +176,16 @@ namespace ENTM.TuringMachine
 
                     int correctedReadPosition = readPosition - _zeroPosition;
 
-                    _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], contents[i], shifts[i], headResult,
-                        writePosition, readPosition, _zeroPosition, _zeroPosition, correctedWritePosition, correctedReadPosition);
+                    _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], headResult,
+                        writePosition, readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
                 }
             }
 
             Debug.Log(PrintState(), true);
             Debug.Log("Sending to NN: " + Utilities.ToString(result, "F4"), true);
             Debug.LogHeader("MINIMAL TURING MACHINE END", true);
-            //		return new double[1][result.length];
+
             return result;
-        }
-
-
-        public bool RecordTimeSteps
-        {
-            get { return _recordTimeSteps; }
-            set { _recordTimeSteps = value; }
-        }
-        public TuringMachineTimeStep PrevTimeStep => _prevTimeStep;
-
-        public TuringMachineTimeStep InitialTimeStep
-        {
-            get { return _prevTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0); }
         }
 
         public double[][] GetDefaultRead()
@@ -403,5 +388,22 @@ namespace ENTM.TuringMachine
 
             return (double[])_tape[_headPositions[head]].Clone();
         }
+
+        #region Replayable
+
+        private TuringMachineTimeStep _prevTimeStep;
+        private bool _increasedSizeDown = false;
+        private int _zeroPosition = 0;
+
+        public bool RecordTimeSteps { get; set; } = false;
+
+        public TuringMachineTimeStep InitialTimeStep
+        {
+            get { return _prevTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 1); }
+        }
+
+        public TuringMachineTimeStep PreviousTimeStep => _prevTimeStep;
+
+        #endregion
     }
 }

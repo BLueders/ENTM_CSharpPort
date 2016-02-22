@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,6 +23,7 @@ namespace ENTM
     class Program
     {
         const string CHAMPION_FILE = "copytask_champion.xml";
+        const string RECORDING_FILE = "copytask_recording.png";
 
         private static NeatEvolutionAlgorithm<NeatGenome> _ea;
         private static CopyTaskExperiment _experiment;
@@ -93,8 +96,13 @@ namespace ENTM
         {
             Debug.On = true;
             Console.WriteLine("\n");
-            Debug.LogHeader("TESTING PHENOME", false);
-            _experiment.Evaluator.Evaluate(phenome, 1);
+            Console.WriteLine("Testing phenome...");
+            _experiment.Evaluator.Evaluate(phenome, 1, true);
+            Bitmap bmp = _experiment.Evaluator.Recorder.ToBitmap();
+
+            bmp.Save(RECORDING_FILE, ImageFormat.Png);
+
+            Console.WriteLine("Done.");
         }
 
         private static void EAUpdateEvent(object sender, EventArgs e)

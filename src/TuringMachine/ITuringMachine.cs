@@ -1,8 +1,9 @@
 ﻿using System.Dynamic;
+using ENTM.Replay;
 
 namespace ENTM.TuringMachine
 {
-    interface ITuringMachine
+    interface ITuringMachine : IReplayable<TuringMachineTimeStep>
     {
         void Reset();
         int ReadHeadCount { get; }
@@ -14,7 +15,5 @@ namespace ENTM.TuringMachine
 
         // Get the info saved
         double[][] TapeValues { get; }
-
-        TuringMachineTimeStep PrevTimeStep { get; }
     }
 }

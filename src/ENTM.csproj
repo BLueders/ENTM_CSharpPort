@@ -38,6 +38,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -47,7 +49,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseEvaluator.cs" />
+    <Compile Include="Replay\EnvironmentTimeStep.cs" />
+    <Compile Include="Replay\IReplayable.cs" />
+    <Compile Include="Replay\Recorder.cs" />
     <Compile Include="TuringMachine\TuringMachineProperties.cs" />
+    <Compile Include="Utility\ColorUtils.cs" />
     <Compile Include="Utility\Debug.cs" />
     <Compile Include="Experiments\CopyTask\CopyTaskEnvironment.cs" />
     <Compile Include="Experiments\CopyTask\CopyTaskEvaluator.cs" />
@@ -68,7 +74,7 @@
     <Compile Include="Utility\ThreadSafeRandom.cs" />
     <Compile Include="TuringMachine\TuringController.cs" />
     <Compile Include="TuringMachine\MinimalTuringMachine.cs" />
-    <Compile Include="TuringMachine\TuringMachineTimeStep.cs" />
+    <Compile Include="Replay\TuringMachineTimeStep.cs" />
     <Compile Include="Utility\Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -96,9 +102,6 @@
       <Project>{4ea80d7b-b680-4ab8-bc4a-b51af33a3fde}</Project>
       <Name>SharpNeatViewLib</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Experiments\copytask.config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

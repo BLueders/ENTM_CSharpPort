@@ -7,7 +7,7 @@
   </Description>
 
 <!-- NEAT -->
-  <PopulationSize>20</PopulationSize>
+  <PopulationSize>100</PopulationSize>
   <Generations>100</Generations>
   <EvaluateParents>true</EvaluateParents>
   <Activation>
@@ -65,7 +65,7 @@
   <GenomeParams>
     <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
          The weight range is strictly enforced - e.g. when creating new connections and mutating existing ones. Default: 5.0 -->
-    <ConnectionWeightRange>10.0</ConnectionWeightRange>
+    <ConnectionWeightRange>5.0</ConnectionWeightRange>
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
@@ -73,7 +73,7 @@
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>0.1</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>0.5</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
     <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
@@ -98,7 +98,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>11</M>
+    <M>5</M>
     
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -116,7 +116,7 @@
     <Iterations>50</Iterations>
 
     <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>8</VectorSize>
+    <VectorSize>2</VectorSize>
 
     <!-- Maximum length of the sequence of bit vectors. 
          If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.

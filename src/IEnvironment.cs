@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using ENTM.Replay;
 
 namespace ENTM
 {
-    public interface IEnvironment
+    public interface IEnvironment : IReplayable<EnvironmentTimeStep>
     {
         /**
          * The Controller supervising this Simulator if
@@ -59,12 +60,15 @@ namespace ENTM
         /**
          * @return The highest possibly obtainable score
          */
-        int MaxScore { get; }
+        double MaxScore { get; }
+
+        double NormalizedScore { get; }
 
         /**
          * @return True in case the simulation must stop now (e.g. you won/lost the entire thing)
          */
         bool IsTerminated { get; }
 
+        int TotalTimeSteps { get; }
     }
 }

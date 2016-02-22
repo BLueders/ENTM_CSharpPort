@@ -18,6 +18,7 @@ namespace ENTM.Utility
 
         private const string HORIZONTAL_LINE = "--------------------";
 
+        [Conditional("DEBUG")]
         public static void LogHeader(string text, bool singleThread)
         {
             Log($"{HORIZONTAL_LINE} {text} {HORIZONTAL_LINE}", singleThread);
