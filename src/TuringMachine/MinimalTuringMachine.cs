@@ -42,9 +42,9 @@ namespace ENTM.TuringMachine
         // Number of combined read/write heads
         private readonly int _heads;
 
-        private bool _recordTimeSteps = true;
-        private TuringMachineTimeStep _lastTimeStep;
-        private TuringMachineTimeStep _internalLastTimeStep;
+        private bool _recordTimeSteps = false;
+        private TuringMachineTimeStep _prevTimeStep;
+
         private bool _increasedSizeDown = false;
         private int _zeroPosition = 0;
 
@@ -76,14 +76,15 @@ namespace ENTM.TuringMachine
 
         public void Reset()
         {
+            Debug.LogHeader("TURING MACHINE RESET", true);
+
             _tape.Clear();
             _tape.Add(new double[_m]);
             _headPositions = new int[_heads];
 
             if (_recordTimeSteps)
             {
-                _internalLastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
-                _lastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
+                _prevTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0);
             }
 
             // clear debug log lists
@@ -175,13 +176,11 @@ namespace ENTM.TuringMachine
                         writePosition++;
                         _zeroPosition++;
                     }
-                    int correctedReadPosition = readPosition - _zeroPosition;
-                    _lastTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], contents[i], shifts[i], headResult, writePosition, readPosition, _zeroPosition, _zeroPosition, correctedWritePosition, correctedReadPosition);
-                    //				                                               (double[] key, double write, double jump, double[] shift, double[] read, int writePosition, int readPosition, int writeZeroPosition, int readZeroPosition  , int correctedWritePosition, int correctedReadPosition){
 
-                    //				correctedReadPosition = readPosition - zeroPosition;
-                    _lastTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], contents[i], shifts[i], headResult, writePosition, readPosition, _zeroPosition, _zeroPosition, correctedWritePosition, correctedReadPosition);
-                    _internalLastTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], contents[i], shifts[i], headResult, writePosition, readPosition, _zeroPosition, _zeroPosition, correctedWritePosition, correctedReadPosition);
+                    int correctedReadPosition = readPosition - _zeroPosition;
+
+                    _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], contents[i], shifts[i], headResult,
+                        writePosition, readPosition, _zeroPosition, _zeroPosition, correctedWritePosition, correctedReadPosition);
                 }
             }
 
@@ -192,25 +191,22 @@ namespace ENTM.TuringMachine
             return result;
         }
 
-        public TuringMachineTimeStep LastTimeStep => _lastTimeStep;
 
         public bool RecordTimeSteps
         {
             get { return _recordTimeSteps; }
             set { _recordTimeSteps = value; }
         }
+        public TuringMachineTimeStep PrevTimeStep => _prevTimeStep;
 
         public TuringMachineTimeStep InitialTimeStep
         {
-            get { return _lastTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0); }
+            get { return _prevTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 0); }
         }
-
-
-
 
         public double[][] GetDefaultRead()
         {
-            Debug.Log(PrintState(), true);
+            //Debug.Log(PrintState(), true);
             return _initialRead;
         }
 
@@ -249,8 +245,9 @@ namespace ENTM.TuringMachine
         {
             switch (_shiftMode)
             {
-                case ShiftMode.Single: return 1;
-                default: return _shiftLength;
+                case ShiftMode.Single:      return 1;
+                case ShiftMode.Multiple:    return _shiftLength;
+                default: throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
             }
         }
 
@@ -326,8 +323,9 @@ namespace ENTM.TuringMachine
             int highest;
             switch (_shiftMode)
             {
-                case ShiftMode.Single: highest = (int)(shift[0] * _shiftLength); break; // single
-                default: highest = Utilities.MaxPos(shift); break; // multiple
+                case ShiftMode.Single:      highest = (int) (shift[0] * _shiftLength);  break;
+                case ShiftMode.Multiple:    highest = Utilities.MaxPos(shift);          break;
+                default: throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
             }
 
             int offset = highest - (_shiftLength / 2);
@@ -337,16 +335,20 @@ namespace ENTM.TuringMachine
 
             while (offset != 0)
             {
+                // Right shift (positive)
                 if (offset > 0)
                 {
-                    if (_n > 0 && _tape.Count >= _n)
+
+                    // Wrap around if memory size is limited and the limit is reached
+                    if (_n > 0 && _tape.Count >= _n && _headPositions[head] == _tape.Count - 1)
                     {
                         _headPositions[head] = 0;
                     }
                     else
                     {
-                        _headPositions[head] = _headPositions[head] + 1;
+                        _headPositions[head] += 1;
 
+                        // Expand the memory to the right (end of array)
                         if (_headPositions[head] >= _tape.Count)
                         {
                             _tape.Add(new double[_m]);
@@ -358,15 +360,18 @@ namespace ENTM.TuringMachine
                     }
 
                 }
+                // Left shift (negative)
                 else
                 {
-                    if (_n > 0 && _tape.Count >= _n)
+                    // Wrap around if memory size is limited and the limit is reached
+                    if (_n > 0 && _tape.Count >= _n && _headPositions[head] == 0)
                     {
                         _headPositions[head] = _tape.Count - 1;
                     }
                     else
                     {
-                        _headPositions[head] = _headPositions[head] - 1;
+                        _headPositions[head] -= 1;
+
                         // if we shift below index 0, we have to add elements to the start of the tape and move all heads accordingly
                         if (_headPositions[head] < 0)
                         {

@@ -15,6 +15,6 @@ namespace ENTM.TuringMachine
         // Get the info saved
         double[][] TapeValues { get; }
 
-        TuringMachineTimeStep LastTimeStep { get; }
+        TuringMachineTimeStep PrevTimeStep { get; }
     }
 }

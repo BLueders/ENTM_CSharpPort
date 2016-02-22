@@ -232,7 +232,7 @@ namespace ENTM.Experiments.CopyTask
                 // Get half the score for storing correctly
                 // comparing the target with the first E elements written to memory that round
                 double[] written = new double[target.Length];
-                Array.Copy((Controller as TuringController).TuringMachine.LastTimeStep.Key, written, target.Length);
+                Array.Copy((Controller as TuringController).TuringMachine.PrevTimeStep.Key, written, target.Length);
 
                 double tmResult = StrictCloseToTarget(target, written);
                 double baseResult = StrictCloseToTarget(target, actual);

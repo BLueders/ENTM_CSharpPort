@@ -20,10 +20,11 @@ namespace ENTM.TuringMachine
         public readonly int CorrectedWritePosition;
         public readonly int CorrectedReadPosition;
 
-        internal TuringMachineTimeStep(double[] key, double write, double jump, double[] shift, double[] read, int writePosition, int readPosition, int writeZeroPosition, int readZeroPosition, int correctedWritePosition, int correctedReadPosition)
+        internal TuringMachineTimeStep(double[] key, double interp, double jump, double[] shift, double[] read, 
+            int writePosition, int readPosition, int writeZeroPosition, int readZeroPosition, int correctedWritePosition, int correctedReadPosition)
         {
             Key = key;
-            WriteInterpolation = write;
+            WriteInterpolation = interp;
             ContentJump = jump;
             Shift = shift;
             Read = read;
