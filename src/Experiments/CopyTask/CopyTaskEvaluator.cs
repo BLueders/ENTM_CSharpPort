@@ -89,6 +89,7 @@ namespace ENTM.Experiments.CopyTask
             long simTime = 0;
 
             TuringController controller = new TuringController(phenome, _turingMachineProps);
+            Environment.Controller = controller;
 
             int turingMachineInputCount = controller.TuringMachine.InputCount;
             int environmentInputCount = Environment.InputCount;

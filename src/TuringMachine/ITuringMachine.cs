@@ -2,7 +2,7 @@
 
 namespace ENTM.TuringMachine
 {
-    interface ITuringMachine
+    public interface ITuringMachine
     {
         void Reset();
         int ReadHeadCount { get; }

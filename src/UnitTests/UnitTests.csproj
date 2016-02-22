@@ -50,18 +50,31 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
+          <Private>False</Private>
+        </Reference>
       </ItemGroup>
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="BlackBoxDummy.cs" />
+    <Compile Include="TuringControllerTests.cs" />
+    <Compile Include="TuringMachineTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CopyTaskEnvironmentTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ENTM.csproj">
       <Project>{951d6bcb-3991-419d-a40c-b64ec35c9451}</Project>
       <Name>ENTM</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharpNeatDomains\SharpNeatDomains.csproj">
+      <Project>{73ab8c8c-6315-4dc7-a3de-3c747f86ac78}</Project>
+      <Name>SharpNeatDomains</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharpNeatLib\SharpNeatLib.csproj">
+      <Project>{abc5c77a-deba-420c-926c-bd3e6f37ae15}</Project>
+      <Name>SharpNeatLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

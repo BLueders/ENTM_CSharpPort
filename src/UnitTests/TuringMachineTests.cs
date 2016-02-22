@@ -4,14 +4,22 @@ using ENTM.TuringMachine;
 namespace UnitTests
 {
     [TestClass]
-    public class UnitTest1
+    public class TuringMachineTests
     {
         MinimalTuringMachine _tm;
 
         [TestInitialize()]
         public void Before()
         {
-            TuringMachineProperties props = new TuringMachineProperties(2, -1, 3, ShiftMode.Multiple, true, 1);
+            TuringMachineProperties props = new TuringMachineProperties
+            {
+                M = 2,
+                N = -1,
+                ShiftLength = 3,
+                ShiftMode = ShiftMode.Multiple,
+                Enabled = true,
+                Heads = 1
+            };
             _tm = new MinimalTuringMachine(props);
         }
 

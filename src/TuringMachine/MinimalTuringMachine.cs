@@ -42,7 +42,7 @@ namespace ENTM.TuringMachine
         // Number of combined read/write heads
         private readonly int _heads;
 
-        private bool _recordTimeSteps = false;
+        private bool _recordTimeSteps = true;
         private TuringMachineTimeStep _lastTimeStep;
         private TuringMachineTimeStep _internalLastTimeStep;
         private bool _increasedSizeDown = false;
