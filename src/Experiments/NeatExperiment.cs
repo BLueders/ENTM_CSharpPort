@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Xml;
+using ENTM.Replay;
 using SharpNeat.Core;
 using SharpNeat.Decoders;
 using SharpNeat.Decoders.Neat;
@@ -46,7 +47,7 @@ namespace ENTM.Experiments
     /// evaluations) then you probably want to implement your own INeatExperiment
     /// class.
     /// </summary>
-    public abstract class NeatExperiment<TEvaluator, TEnviroment> : INeatExperiment
+    public abstract class NeatExperiment<TEvaluator, TEnviroment> : IExperiment
         where TEnviroment : IEnvironment, new()
         where TEvaluator : BaseEvaluator<TEnviroment>, new()
     {
@@ -59,20 +60,32 @@ namespace ENTM.Experiments
         int? _complexityThreshold;
         string _description;
         ParallelOptions _parallelOptions;
-        bool _evaluateParents;
         bool _multiThreading;
 
-        public TEvaluator Evaluator { get; private set; }
+        protected TEvaluator _evaluator;
 
         #region Abstract properties that subclasses must implement
         public abstract int InputCount { get; }
         public abstract int OutputCount { get; }
         #endregion
 
+        /// <summary>
+        /// Evaluate a single phenome a set number of iterations. Use this to test a champion
+        /// </summary>
+        /// <param name="phenome">The phenome to be tested</param>
+        /// <param name="iterations">Number of evaluations</param>
+        /// <param name="record">Determines if the evaluation should be recorded</param>
+        /// <returns></returns>
+        public double Evaluate(IBlackBox phenome, int iterations, bool record)
+        {
+            return _evaluator.Evaluate(phenome, iterations, record);
+        }
+
+        public Recorder Recorder => _evaluator.Recorder;
+
         #region INeatExperiment Members
 
         public string Description => _description;
-        public bool EvaluateParents => _evaluateParents;
 
         public string Name => _name;
 
@@ -106,7 +119,6 @@ namespace ENTM.Experiments
             _complexityThreshold = XmlUtils.TryGetValueAsInt(xmlConfig, "ComplexityThreshold");
             _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description");
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
-            _evaluateParents = XmlUtils.GetValueAsBool(xmlConfig, "EvaluateParents");
             _multiThreading = XmlUtils.TryGetValueAsBool(xmlConfig, "MultiThreading") ?? true;
 
             // Evolutionary algorithm parameters
@@ -137,14 +149,15 @@ namespace ENTM.Experiments
             _neatGenomeParams.AddConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddConnectionMutationProbability");
             _neatGenomeParams.NodeAuxStateMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "NodeAuxStateMutationProbability");
             _neatGenomeParams.DeleteConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DeleteConnectionMutationProbability");
-            
-            Evaluator = new TEvaluator();
-            Evaluator.Initialize(xmlConfig);
+
+            // Create IBlackBox evaluator.
+            _evaluator = new TEvaluator();
+            _evaluator.Initialize(xmlConfig);
         }
 
         /// <summary>
         /// Load a population of genomes from an XmlReader and returns the genomes in a new list.
-        /// The genome2 factory for the genomes can be obtained from any one of the genomes.
+        /// The genome factory for the genomes can be obtained from any one of the genomes.
         /// </summary>
         public List<NeatGenome> LoadPopulation(XmlReader xr)
         {
@@ -162,8 +175,16 @@ namespace ENTM.Experiments
         }
 
         /// <summary>
-        /// Create a genome2 factory for the experiment.
-        /// Create a genome2 factory with our neat genome2 parameters object and the appropriate number of input and output neuron genes.
+        /// Create a genome decoder for the experiment.
+        /// </summary>
+        public IGenomeDecoder<NeatGenome, IBlackBox> CreateGenomeDecoder()
+        {
+            return new NeatGenomeDecoder(_activationScheme);
+        }
+
+        /// <summary>
+        /// Create a genome factory for the experiment.
+        /// Create a genome factory with our neat genome parameters object and the appropriate number of input and output neuron genes.
         /// </summary>
         public IGenomeFactory<NeatGenome> CreateGenomeFactory()
         {
@@ -173,11 +194,11 @@ namespace ENTM.Experiments
         /// <summary>
         /// Create and return a NeatEvolutionAlgorithm object ready for running the NEAT algorithm/search. Various sub-parts
         /// of the algorithm are also constructed and connected up.
-        /// This overload requires no parameters and uses the default population size.
+        /// Uses the experiments default population size defined in the experiment's config XML.
         /// </summary>
         public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm()
         {
-            return CreateEvolutionAlgorithm(DefaultPopulationSize);
+            return CreateEvolutionAlgorithm(_populationSize);
         }
 
         /// <summary>
@@ -188,7 +209,7 @@ namespace ENTM.Experiments
         /// </summary>
         public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(int populationSize)
         {
-            // Create a genome2 factory with our neat genome2 parameters object and the appropriate number of input and output neuron genes.
+            // Create a genome factory with our neat genome parameters object and the appropriate number of input and output neuron genes.
             IGenomeFactory<NeatGenome> genomeFactory = CreateGenomeFactory();
 
             // Create an initial population of randomly generated genomes.
@@ -198,10 +219,11 @@ namespace ENTM.Experiments
             return CreateEvolutionAlgorithm(genomeFactory, genomeList);
         }
 
+
         /// <summary>
         /// Create and return a NeatEvolutionAlgorithm object ready for running the NEAT algorithm/search. Various sub-parts
         /// of the algorithm are also constructed and connected up.
-        /// This overload accepts a pre-built genome2 population and their associated/parent genome2 factory.
+        /// This overload accepts a pre-built genome population and their associated/parent genome factory.
         /// </summary>
         public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(IGenomeFactory<NeatGenome> genomeFactory, List<NeatGenome> genomeList)
         {
@@ -215,43 +237,27 @@ namespace ENTM.Experiments
             // Create the evolution algorithm.
             NeatEvolutionAlgorithm<NeatGenome> ea = new NeatEvolutionAlgorithm<NeatGenome>(_eaParams, speciationStrategy, complexityRegulationStrategy);
 
-            // Create genome2 decoder.
-            IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(_activationScheme);
+            // Create genome decoder.
+            IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = CreateGenomeDecoder();
 
-            // Create a genome2 list evaluator. This packages up the genome2 decoder with the genome2 evaluator.
-            IGenomeListEvaluator<NeatGenome> genomeListEvaluator;
-            if (_multiThreading)
-            {
-                genomeListEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, Evaluator, _parallelOptions);
-            }
-            else
-            {
-                genomeListEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, Evaluator);
-            }
+            IGenomeListEvaluator<NeatGenome> innerEvaluator;
+            if (_multiThreading)    innerEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, _parallelOptions);
+            else                    innerEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator);
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
-            // that were in the population in previous generations (elite genomes). This is determiend by examining each genome2's evaluation info object.
-            if (EvaluateParents)
-            {
-                genomeListEvaluator = new SelectiveGenomeListEvaluator<NeatGenome>(genomeListEvaluator,
-                                     SelectiveGenomeListEvaluator<NeatGenome>.CreatePredicate_OnceOnly());
-            }
-
+            // that were in the population in previous generations (elite genomes). This is determiend by examining each genome's evaluation info object.
+            IGenomeListEvaluator<NeatGenome> selectiveEvaluator = new SelectiveGenomeListEvaluator<NeatGenome>(
+                                                                                    innerEvaluator,
+                                                                                    SelectiveGenomeListEvaluator<NeatGenome>.CreatePredicate_OnceOnly());
             // Initialize the evolution algorithm.
-            ea.Initialize(genomeListEvaluator, genomeFactory, genomeList);
+            ea.Initialize(selectiveEvaluator, genomeFactory, genomeList);
+
 
             // Finished. Return the evolution algorithm
             return ea;
         }
 
-        /// <summary>
-        /// Creates a new genome decoder that can be used to convert a genome into a phenome.
-        /// </summary>
-        public IGenomeDecoder<NeatGenome, IBlackBox> CreateGenomeDecoder()
-        {
-            return new NeatGenomeDecoder(_activationScheme);
-        }
-
         #endregion
+
     }
 }

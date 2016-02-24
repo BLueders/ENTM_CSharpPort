@@ -4,10 +4,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.Xml;
-using ENTM.Experiments.CopyTask;
 using ENTM.Utility;
 using log4net.Config;
 using SharpNeat.EvolutionAlgorithms;
@@ -22,11 +20,12 @@ namespace ENTM
 {
     class Program
     {
-        const string CHAMPION_FILE = "copytask_champion.xml";
-        const string RECORDING_FILE = "copytask_recording.png";
+        const string CONFIG_PATH = "Config/";
+        const string CHAMPION_FILE = "champion.xml";
+        const string RECORDING_FILE = "recording.png";
 
         private static NeatEvolutionAlgorithm<NeatGenome> _ea;
-        private static CopyTaskExperiment _experiment;
+        private static IExperiment _experiment;
 
         public static readonly int MainThreadId = Thread.CurrentThread.ManagedThreadId;
 
@@ -35,14 +34,30 @@ namespace ENTM
             // Initialise log4net (log to console).
             XmlConfigurator.Configure(new FileInfo("log4net.properties"));
 
-            // Experiment classes encapsulate much of the nuts and bolts of setting up a NEAT search.
-            _experiment = new CopyTaskExperiment();
+            Console.WriteLine("Select config");
 
-            // Load config XML.
-            XmlDocument xmlConfig = new XmlDocument();
-            xmlConfig.Load("copytask.config.xml");
-            _experiment.Initialize("Copy Task", xmlConfig.DocumentElement);
+            // Load the config files.
+            // Config files must be copied into the output directory in the CONFIG_PATH folder
+            List<string> configs = GetConfigs();
+            for (int i = 0; i < configs.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}: {configs[i].Replace(CONFIG_PATH, string.Empty)}");
+            }
 
+            do
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                int selection = (int) char.GetNumericValue(key.KeyChar);
+
+                if (selection > 0 && selection <= configs.Count)
+                {
+                    LoadExperiment(configs[selection - 1]);
+                    break;
+                }
+
+                Console.WriteLine("Please select a valid config");
+            } while (true);
+            
             Console.WriteLine($"Controls:" +
                 $"\n-{"Space:", -10} Start/Pause Evolutionary Algorithm" +
                 $"\n-{"D:",-10} Toggle Debug (only available for debug builds)" +
@@ -54,6 +69,27 @@ namespace ENTM
             ProcessInput();
         }
 
+        static List<string> GetConfigs()
+        {
+            return Directory.EnumerateFiles(CONFIG_PATH, "*.xml").ToList();
+        }
+
+        static void LoadExperiment(string configPath)
+        {
+            // Load config XML.
+            XmlDocument xml = new XmlDocument();
+            xml.Load(configPath);
+
+            XmlElement config = xml.DocumentElement;
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            Type experimentType = assembly.GetType(XmlUtils.GetValueAsString(config, "ExperimentClass"), false, false);
+            _experiment = (IExperiment) Activator.CreateInstance(experimentType);
+
+            _experiment.Initialize(XmlUtils.GetValueAsString(config, "Name"), config);
+        }
+        
         /// <summary>
         /// Test the champion of the current EA
         /// </summary>
@@ -64,7 +100,7 @@ namespace ENTM
                 Console.WriteLine("No current champion");
                 return;
             }
-
+            
             _ea.RequestPause();
 
             IGenomeDecoder<NeatGenome, IBlackBox> decoder = _experiment.CreateGenomeDecoder();
@@ -97,10 +133,11 @@ namespace ENTM
             Debug.On = true;
             Console.WriteLine("\n");
             Console.WriteLine("Testing phenome...");
-            _experiment.Evaluator.Evaluate(phenome, 1, true);
-            Bitmap bmp = _experiment.Evaluator.Recorder.ToBitmap();
+            _experiment.Evaluate(phenome, 1, true);
+            Bitmap bmp = _experiment.Recorder.ToBitmap();
 
-            bmp.Save(RECORDING_FILE, ImageFormat.Png);
+            CreateExperimentDirectoryIfNecessary();
+            bmp.Save(string.Format($"{_experiment.Name}/{RECORDING_FILE}"), ImageFormat.Png);
 
             Console.WriteLine("Done.");
         }
@@ -111,7 +148,19 @@ namespace ENTM
 
             // Save the best genome to file
             XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);
-            doc.Save(CHAMPION_FILE);
+
+            CreateExperimentDirectoryIfNecessary();
+
+            string file = string.Format($"{_experiment.Name}/{CHAMPION_FILE}");
+            doc.Save(file);
+        }
+
+        private static void CreateExperimentDirectoryIfNecessary()
+        {
+            if (!Directory.Exists(_experiment.Name))
+            {
+                Directory.CreateDirectory(_experiment.Name);
+            }
         }
 
         private static void EAPauseEvent(object sender, EventArgs e)

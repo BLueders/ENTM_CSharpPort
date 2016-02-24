@@ -13,7 +13,6 @@ namespace ENTM.Experiments.CopyTask
 {
     public class CopyTaskEvaluator : BaseEvaluator<CopyTaskEnvironment>
     {
-        
         private readonly Stopwatch _stopWatch = new Stopwatch();
 
         private TuringMachineProperties _turingMachineProps;
@@ -69,20 +68,9 @@ namespace ENTM.Experiments.CopyTask
 
         public int EnvironmentOutputCount => _copyTaskProps.VectorSize + 2;
 
-        public Recorder Recorder;
+        public override int Iterations => _copyTaskProps.Iterations;
 
-        public override FitnessInfo Evaluate(IBlackBox phenome)
-        {
-            double score = Evaluate(phenome, _copyTaskProps.Iterations, false);
-
-            _evaluationCount++;
-
-            if (score >= MaxScore) _stopConditionSatisfied = true;
-
-            return new FitnessInfo(score, 0);
-        }
-
-        public double Evaluate(IBlackBox phenome, int iterations, bool record)
+        public override double Evaluate(IBlackBox phenome, int iterations, bool record)
         {
             Utility.Debug.LogHeader("STARTING EVAULATION", true);
             double totalScore = 0;
