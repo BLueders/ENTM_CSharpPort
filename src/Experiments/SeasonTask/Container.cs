@@ -6,26 +6,31 @@ using System.Threading.Tasks;
 
 namespace ENTM.Experiments.SeasonsTask
 {
-    struct Season
+    internal struct Year
+    {
+        public Season[] Seasons;
+    }
+
+    internal struct Season
     {
         public int Iteration;
         public int Type;
         public Day[] Days;
     }
 
-    struct Day
+    internal struct Day
     {
         public int Iteration;
         public Food Food;
     }
 
-    struct Food
+    internal struct Food
     {
         public bool IsPoisonous;
         public int Type;
     }
 
-    enum SeasonType
+    internal enum SeasonType
     {
         Summer = 0,
         Winter = 1,
@@ -33,7 +38,7 @@ namespace ENTM.Experiments.SeasonsTask
         Autumn = 3
     }
 
-    enum FruitType
+    internal enum FruitType
     {
         Apple = 0,
         Berry = 1,
