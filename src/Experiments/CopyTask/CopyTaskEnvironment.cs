@@ -95,8 +95,8 @@ namespace ENTM.Experiments.CopyTask
                     break;
 
                 case LengthRule.Random:
-                    //length = ThreadSafeRandom.Next(0, _maxSequenceLength) + 1;
-                    length = random.Next(0, _maxSequenceLength) + 1;
+                    length = ThreadSafeRandom.Next(0, _maxSequenceLength) + 1;
+                    //length = random.Next(0, _maxSequenceLength) + 1;
 
                     break;
                 default:

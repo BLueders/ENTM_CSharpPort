@@ -31,19 +31,20 @@ namespace ENTM.Replay
             int memSize = finalStep.TuringMachineTimeStep.MemorySize;
             int zero = finalStep.TuringMachineTimeStep.ZeroPosition;
 
-            int[] startIndex = new int[10];
+            int[] startIndex = new int[11];
             startIndex[0] = 0;
             startIndex[1] = startIndex[0] + finalStep.EnvironmentTimeStep.Output.Length + 1;
             startIndex[2] = startIndex[1] + finalStep.EnvironmentTimeStep.Input.Length + 1;
-            startIndex[3] = startIndex[2] + 2; // Score
-            startIndex[4] = startIndex[3] + finalStep.TuringMachineTimeStep.Key.Length + 1;
-            startIndex[5] = startIndex[4] + 2; // Interp
-            startIndex[6] = startIndex[5] + 2; // Jump
-            startIndex[7] = startIndex[6] + finalStep.TuringMachineTimeStep.Shift.Length + 1;
-            startIndex[8] = startIndex[7] + finalStep.TuringMachineTimeStep.Read.Length + 1;
-            startIndex[9] = startIndex[8] + memSize + 1;
+            startIndex[3] = startIndex[2] + finalStep.EnvironmentTimeStep.Input.Length + 1;
+            startIndex[4] = startIndex[3] + 2; // Score
+            startIndex[5] = startIndex[4] + finalStep.TuringMachineTimeStep.Key.Length + 1;
+            startIndex[6] = startIndex[5] + 2; // Interp
+            startIndex[7] = startIndex[6] + 2; // Jump
+            startIndex[8] = startIndex[7] + finalStep.TuringMachineTimeStep.Shift.Length + 1;
+            startIndex[9] = startIndex[8] + finalStep.TuringMachineTimeStep.Read.Length + 1;
+            startIndex[10] = startIndex[9] + memSize + 1;
 
-            int h = startIndex[9] + memSize;
+            int h = startIndex[10] + memSize;
 
             Bitmap bmp = new Bitmap(w, h);
             for (int x = 0; x < w; x++)
@@ -75,29 +76,42 @@ namespace ENTM.Replay
                     }
                     else if (y < startIndex[3])
                     {
-                        pixel = doubleToPixelColorScale(t.EnvironmentTimeStep.Score);
+                        if (x > _recordedTimeSteps.Count / 2 + 1)
+                        {
+                            TimeStep input = _recordedTimeSteps[x - (_recordedTimeSteps.Count/2)];
+                            double v = Math.Abs(input.EnvironmentTimeStep.Output[i + 2] - t.EnvironmentTimeStep.Input[i]);
+                            pixel = ColorUtils.BlackAndWhite(v);
+                        }
+                        else
+                        {
+                            pixel = Color.Black;
+                        }
                     }
                     else if (y < startIndex[4])
                     {
-                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Key[i]);
+                        pixel = doubleToPixelColorScale(t.EnvironmentTimeStep.Score);
                     }
                     else if (y < startIndex[5])
                     {
-                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.WriteInterpolation);
+                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Key[i]);
                     }
                     else if (y < startIndex[6])
                     {
-                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.ContentJump);
+                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.WriteInterpolation);
                     }
                     else if (y < startIndex[7])
                     {
-                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Shift[i]);
+                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.ContentJump);
                     }
                     else if (y < startIndex[8])
                     {
-                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Read[i]);
+                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Shift[i]);
                     }
                     else if (y < startIndex[9])
+                    {
+                        pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Read[i]);
+                    }
+                    else if (y < startIndex[10])
                     {
                         pixel = (i - zero) == t.TuringMachineTimeStep.CorrectedWritePosition ? Color.White : Color.Black;
                     }

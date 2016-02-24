@@ -75,9 +75,9 @@ namespace SharpNeat.Domains.BinarySixMultiplexer
         /// Gets human readable explanatory text for the experiment.
         /// </summary>
 		public string Description
-        {
-            get { return _description; }
-        }
+		{
+			get { return _description; }
+		}
 
         /// <summary>
         /// Gets the number of inputs required by the network/black-box that the underlying problem domain is based on.
@@ -98,7 +98,7 @@ namespace SharpNeat.Domains.BinarySixMultiplexer
         /// <summary>
         /// Gets the default population size to use for the experiment.
         /// </summary>
-        public int DefaultPopulationSize
+        public int DefaultPopulationSize 
         {
             get { return _populationSize; }
         }
@@ -148,7 +148,7 @@ namespace SharpNeat.Domains.BinarySixMultiplexer
         /// </summary>
         public List<NeatGenome> LoadPopulation(XmlReader xr)
         {
-            NeatGenomeFactory genomeFactory = (NeatGenomeFactory) CreateGenomeFactory();
+            NeatGenomeFactory genomeFactory = (NeatGenomeFactory)CreateGenomeFactory();
             return NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, genomeFactory);
         }
 
@@ -164,7 +164,7 @@ namespace SharpNeat.Domains.BinarySixMultiplexer
         /// <summary>
         /// Create a genome decoder for the experiment.
         /// </summary>
-        public IGenomeDecoder<NeatGenome, IBlackBox> CreateGenomeDecoder()
+        public IGenomeDecoder<NeatGenome,IBlackBox> CreateGenomeDecoder()
         {
             return new NeatGenomeDecoder(_activationScheme);
         }
