@@ -6,15 +6,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ENTM", "ENTM.csproj", "{951D6BCB-3991-419D-A40C-B64EC35C9451}"
 	ProjectSection(ProjectDependencies) = postProject
 		{ABC5C77A-DEBA-420C-926C-BD3E6F37AE15} = {ABC5C77A-DEBA-420C-926C-BD3E6F37AE15}
-		{4EA80D7B-B680-4AB8-BC4A-B51AF33A3FDE} = {4EA80D7B-B680-4AB8-BC4A-B51AF33A3FDE}
 		{73AB8C8C-6315-4DC7-A3DE-3C747F86AC78} = {73AB8C8C-6315-4DC7-A3DE-3C747F86AC78}
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatLib", "SharpNeatLib\SharpNeatLib.csproj", "{ABC5C77A-DEBA-420C-926C-BD3E6F37AE15}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatViewLib", "SharpNeatViewLib\SharpNeatViewLib.csproj", "{4EA80D7B-B680-4AB8-BC4A-B51AF33A3FDE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatDomains", "SharpNeatDomains\SharpNeatDomains.csproj", "{73AB8C8C-6315-4DC7-A3DE-3C747F86AC78}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F42CBBDF-B740-4E87-8F5D-15710EBD794E}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -23,6 +16,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\Unit
 		{73AB8C8C-6315-4DC7-A3DE-3C747F86AC78} = {73AB8C8C-6315-4DC7-A3DE-3C747F86AC78}
 		{951D6BCB-3991-419D-A40C-B64EC35C9451} = {951D6BCB-3991-419D-A40C-B64EC35C9451}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatLib", "SharpNeatLib\SharpNeatLib.csproj", "{ABC5C77A-DEBA-420C-926C-BD3E6F37AE15}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatViewLib", "SharpNeatViewLib\SharpNeatViewLib.csproj", "{4EA80D7B-B680-4AB8-BC4A-B51AF33A3FDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatDomains", "SharpNeatDomains\SharpNeatDomains.csproj", "{73AB8C8C-6315-4DC7-A3DE-3C747F86AC78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +33,10 @@ Global
 		{951D6BCB-3991-419D-A40C-B64EC35C9451}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{951D6BCB-3991-419D-A40C-B64EC35C9451}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{951D6BCB-3991-419D-A40C-B64EC35C9451}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F42CBBDF-B740-4E87-8F5D-15710EBD794E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F42CBBDF-B740-4E87-8F5D-15710EBD794E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F42CBBDF-B740-4E87-8F5D-15710EBD794E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F42CBBDF-B740-4E87-8F5D-15710EBD794E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ABC5C77A-DEBA-420C-926C-BD3E6F37AE15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ABC5C77A-DEBA-420C-926C-BD3E6F37AE15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABC5C77A-DEBA-420C-926C-BD3E6F37AE15}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -46,10 +49,6 @@ Global
 		{73AB8C8C-6315-4DC7-A3DE-3C747F86AC78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73AB8C8C-6315-4DC7-A3DE-3C747F86AC78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73AB8C8C-6315-4DC7-A3DE-3C747F86AC78}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F42CBBDF-B740-4E87-8F5D-15710EBD794E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F42CBBDF-B740-4E87-8F5D-15710EBD794E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F42CBBDF-B740-4E87-8F5D-15710EBD794E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F42CBBDF-B740-4E87-8F5D-15710EBD794E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
