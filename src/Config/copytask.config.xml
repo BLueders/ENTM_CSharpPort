@@ -1,6 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Config>
   
+  <!-- The name of the experiment -->
+  <Name>CopyTask</Name>
+  
+  <!-- The fully qualified name of the experiment class -->
+  <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
+  
+  <!-- Experiment description -->
   <Description>
     Copy task experiment with turing controller. 
     The controller must record a bit-vector sequence to memory, and read it back.

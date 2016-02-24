@@ -51,9 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseEvaluator.cs" />
-    <Compile Include="Experiments\SeasonTask\Container.cs" />
-    <Compile Include="Experiments\SeasonTask\SeasonEnvironment.cs" />
-    <Compile Include="Experiments\SeasonTask\SeasonExperiment.cs" />
+    <Compile Include="Experiments\IExperiment.cs" />
     <Compile Include="Replay\EnvironmentTimeStep.cs" />
     <Compile Include="Replay\IReplayable.cs" />
     <Compile Include="Replay\Recorder.cs" />
@@ -108,6 +106,11 @@
       <Project>{4ea80d7b-b680-4ab8-bc4a-b51af33a3fde}</Project>
       <Name>SharpNeatViewLib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Config\copytask.config.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
