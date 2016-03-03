@@ -11,16 +11,15 @@ using SharpNeat.Domains;
 
 namespace ENTM.Experiments.CopyTask
 {
-    public class CopyTaskEvaluator : BaseEvaluator<CopyTaskEnvironment>
+    public class CopyTaskEvaluator : TuringEvaluator<CopyTaskEnvironment>
     {
         private readonly Stopwatch _stopWatch = new Stopwatch();
 
-        private TuringMachineProperties _turingMachineProps;
         private CopyTaskProperties _copyTaskProps;
 
         public override void Initialize(XmlElement xmlConfig)
         {
-            _turingMachineProps = new TuringMachineProperties(xmlConfig.SelectSingleNode("TuringMachineParams") as XmlElement);
+            base.Initialize(xmlConfig);
             _copyTaskProps = new CopyTaskProperties(xmlConfig.SelectSingleNode("CopyTaskParams") as XmlElement);
         }
 
@@ -30,43 +29,11 @@ namespace ENTM.Experiments.CopyTask
             return new CopyTaskEnvironment(_copyTaskProps);
         }
 
-        private int _maxScore = -1;
-        public override int MaxScore
-        {
-            get
-            {
-                if (_maxScore < 0)
-                {
-                    _maxScore = (int) (_copyTaskProps.Iterations * _copyTaskProps.MaxSequenceLength * _copyTaskProps.FitnessFactor);
-                }
-                return _maxScore;
-            }
-        }
+        public override int MaxScore => 1;
+        
+        public override int EnvironmentInputCount => _copyTaskProps.VectorSize;
 
-        public int TuringMachineInputCount
-        {
-            get
-            {
-                int shifts = 0;
-                switch (_turingMachineProps.ShiftMode)
-                {
-                    case ShiftMode.Multiple:
-                        shifts = _turingMachineProps.ShiftLength;
-                        break;
-                    case ShiftMode.Single:
-                        shifts = 1;
-                        break;
-                }
-
-                return (_turingMachineProps.M + 2 + shifts) * _turingMachineProps.Heads;
-            }
-        }
-
-        public int TuringMachineOutputCount => _turingMachineProps.M * _turingMachineProps.Heads;
-
-        public int EnvironmentInputCount => _copyTaskProps.VectorSize;
-
-        public int EnvironmentOutputCount => _copyTaskProps.VectorSize + 2;
+        public override int EnvironmentOutputCount => _copyTaskProps.VectorSize + 2;
 
         public override int Iterations => _copyTaskProps.Iterations;
 
@@ -80,7 +47,7 @@ namespace ENTM.Experiments.CopyTask
             //long contTime = 0;
             //long simTime = 0;
 
-            TuringController controller = new TuringController(phenome, _turingMachineProps);
+            TuringController controller = new TuringController(phenome, TuringMachineProperties);
             Environment.Controller = controller;
 
             int turingMachineInputCount = controller.TuringMachine.InputCount;
@@ -115,13 +82,13 @@ namespace ENTM.Experiments.CopyTask
                     double[] nnOutput = controller.ActivateNeuralNetwork(enviromentOutput, turingMachineOutput);
 
                     //nnTime += _stopWatch.ElapsedMilliseconds;
-                    //_stopWatch.Restart();
+                    //_stopWatch.ResetIteration();
 
                     // CopyTask can rely on the TM acting first
                     turingMachineOutput = controller.ProcessNNOutputs(Utilities.ArrayCopyOfRange(nnOutput, environmentInputCount, turingMachineInputCount));
 
                     //contTime += _stopWatch.ElapsedMilliseconds;
-                    //_stopWatch.Restart();
+                    //_stopWatch.ResetIteration();
 
                     enviromentOutput = Environment.PerformAction(Utilities.ArrayCopyOfRange(nnOutput, 0, environmentInputCount));
 
@@ -130,7 +97,7 @@ namespace ENTM.Experiments.CopyTask
                     //steps++;
 
                     //_stopWatch.Stop();
-                    //_stopWatch.Reset();
+                    //_stopWatch.ResetAll();
 
                     if (record)
                     {
@@ -142,14 +109,12 @@ namespace ENTM.Experiments.CopyTask
 
                 Utility.Debug.Log($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }
-
-
             return Math.Max(0d, totalScore / iterations);
         }
 
         public override void Reset()
         {
-            Environment.Restart();
+            Environment.ResetIteration();
         }
     }
 }

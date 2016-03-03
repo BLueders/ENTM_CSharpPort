@@ -2,15 +2,16 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>CopyTask</Name>
+  <Name>SeasonTask</Name>
   
   <!-- The fully qualified name of the experiment class -->
-  <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
+  <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
   
   <!-- Experiment description -->
   <Description>
-    Copy task experiment with turing controller. 
-    The controller must record a bit-vector sequence to memory, and read it back.
+    Season task experiment with turing controller. 
+    In multible seasons the controller must learn wich foods are edible and which are poisonous for each. 
+    Then recall the information when it encounters that season again to decide wich to eat.
   </Description>
 
 <!-- NEAT -->
@@ -105,7 +106,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>5</M>
+    <M>4</M>
     
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -117,8 +118,8 @@
     <Heads>1</Heads>
   </TuringMachineParams>
 
-  <!-- Copy Task Parameters -->
-  <CopyTaskParams>
+  <!-- Season Task Parameters -->
+  <SeasonTaskParams>
     
     <!-- Evaluation iterations -->
     <Iterations>50</Iterations>
@@ -126,27 +127,15 @@
     <!-- The seed used for random environment generations -->
     <RandomSeed>0</RandomSeed>
 
-    <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>2</VectorSize>
+    <FitnessFactor>1</FitnessFactor>
+    <Years>3</Years>
+    <Seasons>2</Seasons>
+    <Days>5</Days>
+    <FoodTypes>4</FoodTypes>
+    <PoisonFoods>2</PoisonFoods>
 
-    <!-- Maximum length of the sequence of bit vectors. 
-         If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
-         If LengthRule is Fixed, sequence will always be MaxLength. -->
-    <MaxLength>10</MaxLength>
-
-    <!-- "Random" or "Fixed" sequence lengts -->
-    <LengthRule>Random</LengthRule>
-
-    <!-- What fitness function to evalutate with.½
-        StrictCloseToTarget
-        PartialScore
-        Emilarity
-        ClosestBinary
-        CompleteBinary
-    -->
-    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
-    
-  </CopyTaskParams>
+    }
+  </SeasonTaskParams>
 
 </Config>
 

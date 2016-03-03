@@ -50,8 +50,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseEvaluator.cs" />
+    <Compile Include="BaseEnvironment.cs" />
+    <Compile Include="TuringEvaluator.cs" />
     <Compile Include="Experiments\IExperiment.cs" />
+    <Compile Include="Experiments\SeasonTask\Container.cs" />
+    <Compile Include="Experiments\SeasonTask\SeasonTaskEnvironment.cs" />
+    <Compile Include="Experiments\SeasonTask\SeasonTaskEvaluator.cs" />
+    <Compile Include="Experiments\SeasonTask\SeasonTaskExperiment.cs" />
+    <Compile Include="Experiments\SeasonTask\SeasonTaskProperties.cs" />
     <Compile Include="Replay\EnvironmentTimeStep.cs" />
     <Compile Include="Replay\IReplayable.cs" />
     <Compile Include="Replay\Recorder.cs" />
@@ -108,6 +114,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\seasontask.config.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Config\copytask.config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -48,8 +48,8 @@ namespace ENTM.Experiments
     /// class.
     /// </summary>
     public abstract class NeatExperiment<TEvaluator, TEnviroment> : IExperiment
-        where TEnviroment : IEnvironment, new()
-        where TEvaluator : BaseEvaluator<TEnviroment>, new()
+        where TEnviroment : IEnvironment
+        where TEvaluator : TuringEvaluator<TEnviroment>, new()
     {
         NeatEvolutionAlgorithmParameters _eaParams;
         NeatGenomeParameters _neatGenomeParams;

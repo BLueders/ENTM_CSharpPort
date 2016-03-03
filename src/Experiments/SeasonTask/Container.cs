@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ENTM.Experiments.SeasonsTask
+namespace ENTM.Experiments.SeasonTask
 {
     internal struct Year
     {
@@ -13,21 +13,23 @@ namespace ENTM.Experiments.SeasonsTask
 
     internal struct Season
     {
-        public int Iteration;
-        public int Type;
         public Day[] Days;
     }
 
     internal struct Day
     {
-        public int Iteration;
-        public Food Food;
+        public Food[] Foods;
     }
 
     internal struct Food
     {
         public bool IsPoisonous;
         public int Type;
+
+        public override string ToString()
+        {
+            return $"{Type}";
+        }
     }
 
     internal enum SeasonType

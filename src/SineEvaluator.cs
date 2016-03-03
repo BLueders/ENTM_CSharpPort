@@ -58,7 +58,7 @@ namespace ENTM
         }
 
         /// <summary>
-        /// Reset the internal state of the evaluation scheme if any exists.
+        /// ResetAll the internal state of the evaluation scheme if any exists.
         /// Note. This method does nothing.
         /// </summary>
         public void Reset()
