@@ -23,7 +23,7 @@ namespace UnitTests
         public void Before()
         {
             _cpTaskEnv = CreateEnvironment(FitnessFunction.StrictCloseToTarget);
-            _cpTaskEnv.Restart();
+            _cpTaskEnv.ResetAll();
         }
 
         private CopyTaskEnvironment CreateEnvironment(FitnessFunction fitnessFunction)
@@ -35,7 +35,6 @@ namespace UnitTests
                 FitnessFunction = fitnessFunction,
                 MaxSequenceLength = 10,
                 LengthRule = LengthRule.Fixed,
-                FitnessFactor = 1
             };
             return new CopyTaskEnvironment(props);
         }
@@ -97,14 +96,14 @@ namespace UnitTests
         public void TestScoreStrictCloseToTarget()
         {
             _cpTaskEnv = CreateEnvironment(FitnessFunction.StrictCloseToTarget);
-            _cpTaskEnv.Restart();
+            _cpTaskEnv.ResetAll();
             // All values are correct
             double[][] actions = Utilities.DeepCopy(_cpTaskEnv.Sequence);
             double score = CalcScore(actions);
             Assert.AreEqual(_cpTaskEnv.CurrentScore, _cpTaskEnv.MaxScore, "Max score assert");
 
             // All values are wrong
-            _cpTaskEnv.Restart();
+            _cpTaskEnv.ResetAll();
             actions = Utilities.DeepCopy(_cpTaskEnv.Sequence);
             for (int i = 0; i < actions.Length; i++)
             {
@@ -121,7 +120,7 @@ namespace UnitTests
         public void TestScoreClosestBinary()
         {
             _cpTaskEnv = CreateEnvironment(FitnessFunction.ClosestBinary);
-            _cpTaskEnv.Restart();
+            _cpTaskEnv.ResetAll();
             // All values are correct
             double[][] actions = new double[_cpTaskEnv.Sequence.Length][];
             for (int i = 0; i < _cpTaskEnv.Sequence.Length; i++)
@@ -137,7 +136,7 @@ namespace UnitTests
             Assert.AreEqual(score, _cpTaskEnv.MaxScore, "Max score assert");
 
             // All values are wrong
-            _cpTaskEnv.Restart();
+            _cpTaskEnv.ResetAll();
             actions = new double[_cpTaskEnv.Sequence.Length][];
             for (int i = 0; i < _cpTaskEnv.Sequence.Length; i++)
             {

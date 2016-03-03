@@ -11,7 +11,7 @@
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved -->
-  <MaxGenerations>100</MaxGenerations>
+  <MaxGenerations>500</MaxGenerations>
   
   <!-- Experiment description -->
   <Description>
@@ -20,7 +20,7 @@
   </Description>
 
   <!-- NEAT -->
-  <PopulationSize>100</PopulationSize>
+  <PopulationSize>200</PopulationSize>
 
   <EvaluateParents>true</EvaluateParents>
   

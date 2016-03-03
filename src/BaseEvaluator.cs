@@ -54,8 +54,6 @@ namespace ENTM
 
         public abstract void Initialize(XmlElement properties);
 
-        public abstract int MaxScore { get; }
-
         protected ulong _evaluationCount = 0;
         protected bool _stopConditionSatisfied = false;
 
@@ -70,13 +68,25 @@ namespace ENTM
             return score;
         }
 
+        public void Reset()
+        {
+            Environment.ResetIteration();
+            Controller.Reset();
+        }
+
         public abstract FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record);
         public abstract int Iterations { get; }
-        public abstract void Reset();
 
         public Recorder Recorder;
 
         public ulong EvaluationCount => _evaluationCount;
         public bool StopConditionSatisfied => _stopConditionSatisfied;
+
+        public abstract int MaxScore { get; }
+
+        public abstract int EnvironmentInputCount { get; }
+        public abstract int EnvironmentOutputCount { get; }
+        public abstract int ControllerInputCount { get; }
+        public abstract int ControllerOutputCount { get; }
     }
 }

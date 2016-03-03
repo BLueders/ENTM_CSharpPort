@@ -54,7 +54,7 @@ namespace ENTM.Experiments
     /// class.
     /// </summary>
     public abstract class BaseExperiment<TEvaluator, TEnviroment, TController> : ITuringExperiment
-        where TEnviroment : IEnvironment, new()
+        where TEnviroment : IEnvironment
         where TEvaluator : BaseEvaluator<TEnviroment, TController>, new()
         where TController : IController
     {
@@ -77,10 +77,7 @@ namespace ENTM.Experiments
 
         protected TEvaluator _evaluator;
 
-        #region Abstract properties that subclasses must implement
-        public abstract int InputCount { get; }
-        public abstract int OutputCount { get; }
-        #endregion
+
 
         private string ChampionFile => $"{Name}/{_identifier}/{string.Format(CHAMPION_FILE, _number)}";
         private string RecordingFile => $"{Name}/{_identifier}/{string.Format(RECORDING_FILE, _number)}";
@@ -95,6 +92,15 @@ namespace ENTM.Experiments
 
         public TimeSpan TimeSpent => _timer?.Elapsed ?? TimeSpan.Zero;
 
+        public int InputCount => EnvironmentOutputCount + ControllerOutputCount + 1;
+        public int OutputCount => EnvironmentInputCount + ControllerInputCount;
+
+        #region Abstract properties that subclasses must implement
+        public abstract int EnvironmentInputCount { get; }
+        public abstract int EnvironmentOutputCount { get; }
+        public abstract int ControllerInputCount { get; }
+        public abstract int ControllerOutputCount { get; }
+        #endregion
 
         /// <summary>
         /// Notifies listeners that the experiment has started

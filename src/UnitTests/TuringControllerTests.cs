@@ -50,7 +50,7 @@ namespace UnitTests
             };
 
             ((BlackBoxDummy)_controller.BlackBox).SetOutputValues(outputValues);
-            double[] result = _controller.ActivateNeuralNetwork(new double[4], new double[5]);
+            double[] result = _controller.ActivateNeuralNetwork(new double[4]);
             CollectionAssert.AreEqual(outputValues[0], result, "Output from NN activation");
         }
     }
