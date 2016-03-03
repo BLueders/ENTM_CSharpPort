@@ -28,16 +28,16 @@ namespace ENTM
 
 
         /**
-         * Reset the simulator to some initial state (for new agents
+         * ResetAll the simulator to some initial state (for new agents
          * to be tested under same circumstances
          */
-        void Reset();
+        void ResetAll();
 
         /**
          * Move the agent back to start for a new round of evaluation
          * (can be different from the previous state).
          */
-        void Restart();
+        void ResetIteration();
 
         /**
          * Get values for the first input to the neural network

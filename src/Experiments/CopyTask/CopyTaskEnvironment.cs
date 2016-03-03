@@ -5,24 +5,20 @@ using ENTM.Utility;
 
 namespace ENTM.Experiments.CopyTask
 {
-    public class CopyTaskEnvironment : IEnvironment, IReplayable<EnvironmentTimeStep>
+    public class CopyTaskEnvironment : BaseEnvironment
     {
-        private FitnessFunction _fitnessFunction;
-
-        // A constant to multiply the fitness with
-        private double _fitnessFactor;
+        private readonly FitnessFunction _fitnessFunction;
 
         // Determines if the length of the sequence should be fixed or random
-        private LengthRule _lengthRule;
+        private readonly LengthRule _lengthRule;
 
         // The length of an element in the sequence (usually M - 1)
-        private int _vectorSize;
+        private readonly int _vectorSize;
 
         // The maximum length that the sequence can be (if random), else the actual sequence length.
-        private int _maxSequenceLength;
+        private readonly int _maxSequenceLength;
 
-        private double[][] _sequence;
-        public double[][] Sequence => _sequence;
+        public double[][] Sequence { get; private set; }
 
         // Current time step
         private int _step;
@@ -30,34 +26,36 @@ namespace ENTM.Experiments.CopyTask
         // Current fitness score
         private double _score;
 
-        public IController Controller { get; set; }
+        public override IController Controller { get; set; }
 
         /// <summary>
         /// The size of the bit vector
         /// </summary>
-        public int InputCount => _vectorSize;
+        public override int InputCount => _vectorSize;
 
         /// <summary>
         /// The input we give the controller in each iteration will be empty when we expect the controller to read back the sequence.
         /// The two extra ones are START and DELIMITER bits.
         /// </summary>
-        public int OutputCount => _vectorSize + 2;
+        public override int OutputCount => _vectorSize + 2;
 
-        public double CurrentScore => _score * _fitnessFactor * ((double) _maxSequenceLength / (double) _sequence.Length);
+        public override double CurrentScore => _score * ((double) _maxSequenceLength / (double) Sequence.Length);
 
-        public double MaxScore => _fitnessFactor * _maxSequenceLength;
+        public override double MaxScore => _maxSequenceLength;
 
-        public double NormalizedScore => CurrentScore / MaxScore;
+        public override double NormalizedScore => CurrentScore / MaxScore;
 
         /// <summary>
         /// Terminate when the write and read sequences are complete
         /// </summary>
-        public bool IsTerminated => _step >= TotalTimeSteps;
+        public override bool IsTerminated => _step >= TotalTimeSteps;
 
         /// <summary>
         /// Read + Write + start and delimiter
         /// </summary>
-        public int TotalTimeSteps => 2 * _sequence.Length + 2;
+        public override int TotalTimeSteps => 2 * Sequence.Length + 2;
+
+        public override int RandomSeed { get; }
 
         public CopyTaskEnvironment(CopyTaskProperties props)
         {
@@ -65,26 +63,19 @@ namespace ENTM.Experiments.CopyTask
             _maxSequenceLength = props.MaxSequenceLength;
             _lengthRule = props.LengthRule;
             _fitnessFunction = props.FitnessFunction;
-            _fitnessFactor = props.FitnessFactor;
+            RandomSeed = props.RandomSeed;
         }
 
-        public CopyTaskEnvironment()
+        public override void ResetAll()
         {
-            // Default constructor required for generic instantiation
+            Debug.LogHeader("COPY TASK RESET ALL", true);
         }
 
-        public void Reset()
+        public override void ResetIteration()
         {
-            Debug.LogHeader("COPY TASK RESET", true);
-        }
+            base.ResetIteration();
 
-        private Random random;
-
-        public void Restart()
-        {
-            Debug.LogHeader("COPY TASK RESTART", true);
-
-            random = new Random(0);
+            Debug.LogHeader("COPY TASK NEW ITERATION", true);
 
             int length;
 
@@ -109,15 +100,15 @@ namespace ENTM.Experiments.CopyTask
                       $"\n{"Vector Size:", -16} {_vectorSize}" +
                       $"\n{"Max score:", -16} {MaxScore}", true);
 
-            Debug.Log($"Sequence:\n{Utilities.ToString(_sequence, "f1")}", true);
+            Debug.Log($"Sequence:\n{Utilities.ToString(Sequence, "f1")}", true);
 
             _step = 1;
             _score = 0d;
         }
 
-        public double[] InitialObservation => GetObservation(0);
+        public override double[] InitialObservation => GetObservation(0);
 
-        public double[] PerformAction(double[] action)
+        public override double[] PerformAction(double[] action)
         {
             Debug.LogHeader("COPYTASK START", true);
             Debug.Log($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
@@ -127,12 +118,12 @@ namespace ENTM.Experiments.CopyTask
 
             double thisScore = 0;
             // Compare and score (if reading)
-            if (_step >= _sequence.Length + 2)
+            if (_step >= Sequence.Length + 2)
             {
                 // The controllers "action" is the reading after 2 + |seq| steps
 
-                int index = _step - _sequence.Length - 2; // actual sequence index to compare to
-                double[] correct = _sequence[index];
+                int index = _step - Sequence.Length - 2; // actual sequence index to compare to
+                double[] correct = Sequence[index];
                 double[] received = action;
                 thisScore = Evaluate(correct, received);
                 _score += thisScore;
@@ -140,8 +131,8 @@ namespace ENTM.Experiments.CopyTask
                 Debug.Log($"{"Reading:",-16} {Utilities.ToString(received, "F2")}" +
                             $"\n{"Actual:",-16} {Utilities.ToString(correct, "F2")}" +
                             $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
-                            $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - _sequence.Length - 1}" +
-                            $"\n{"Max Score:",-16} {_sequence.Length.ToString("F0")}", true);
+                            $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - Sequence.Length - 1}" +
+                            $"\n{"Max Score:",-16} {Sequence.Length.ToString("F0")}", true);
             }
 
             Debug.LogHeader("COPYTASK END", true);
@@ -159,15 +150,13 @@ namespace ENTM.Experiments.CopyTask
 
         private void CreateSequence(int length)
         {
-            _sequence = new double[length][];
-            for (int i = 0; i < _sequence.Length; i++)
+            Sequence = new double[length][];
+            for (int i = 0; i < Sequence.Length; i++)
             {
-                _sequence[i] = new double[_vectorSize];
-                for (int j = 0; j < _sequence[i].Length; j++)
+                Sequence[i] = new double[_vectorSize];
+                for (int j = 0; j < Sequence[i].Length; j++)
                 {
-                    //_sequence[i][j] = ThreadSafeRandom.Next(0, 2);
-                    _sequence[i][j] = random.Next(0, 2);
-                    //_sequence[i][j] = (j + i) % 3 % 2;
+                    Sequence[i][j] = SealedRandom.Next(0, 2);
                 }
             }
         }
@@ -182,14 +171,14 @@ namespace ENTM.Experiments.CopyTask
                 // Send start vector
                 observation[0] = 1; // START bit
             }
-            else if (step <= _sequence.Length)
+            else if (step <= Sequence.Length)
             {
                 Debug.Log($"{"Type:",-16} WRITE", true);
 
                 // sending the sequence
-                Array.Copy(_sequence[step - 1], 0, observation, 2, _sequence[step - 1].Length);
+                Array.Copy(Sequence[step - 1], 0, observation, 2, Sequence[step - 1].Length);
             }
-            else if (step == _sequence.Length + 1)
+            else if (step == Sequence.Length + 1)
             {
                 Debug.Log($"{"Type:",-16} DELIMITER", true);
 
@@ -331,17 +320,17 @@ namespace ENTM.Experiments.CopyTask
 
         private EnvironmentTimeStep _prevTimeStep;
 
-        public bool RecordTimeSteps { get; set; } = false;
+        public override bool RecordTimeSteps { get; set; } = false;
 
-        public EnvironmentTimeStep InitialTimeStep
+        public override EnvironmentTimeStep InitialTimeStep
         {
             get
             {
-                return _prevTimeStep = new EnvironmentTimeStep(new double[_vectorSize], GetObservation(0), _score);
+                return _prevTimeStep = new EnvironmentTimeStep(new double[InputCount], GetObservation(0), _score);
             }
         }
 
-        public EnvironmentTimeStep PreviousTimeStep => _prevTimeStep;
+        public override EnvironmentTimeStep PreviousTimeStep => _prevTimeStep;
 
         #endregion
     }
