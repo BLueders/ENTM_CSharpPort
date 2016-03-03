@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -51,7 +51,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseEvaluator.cs" />
-    <Compile Include="Experiments\IExperiment.cs" />
+    <Compile Include="Experiments\ITuringExperiment.cs" />
+    <Compile Include="NoveltySearch\NoveltySearchListEvaluator.cs" />
     <Compile Include="Replay\EnvironmentTimeStep.cs" />
     <Compile Include="Replay\IReplayable.cs" />
     <Compile Include="Replay\Recorder.cs" />
@@ -72,7 +73,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Experiments\CopyTask\CopyTaskProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Experiments\NeatExperiment.cs" />
+    <Compile Include="Experiments\BaseExperiment.cs" />
     <Compile Include="SineEvaluator.cs" />
     <Compile Include="Utility\ThreadSafeRandom.cs" />
     <Compile Include="TuringMachine\TuringController.cs" />
@@ -102,17 +103,14 @@
       <Project>{abc5c77a-deba-420c-926c-bd3e6f37ae15}</Project>
       <Name>SharpNeatLib</Name>
     </ProjectReference>
-    <ProjectReference Include="SharpNeatViewLib\SharpNeatViewLib.csproj">
-      <Project>{4ea80d7b-b680-4ab8-bc4a-b51af33a3fde}</Project>
-      <Name>SharpNeatViewLib</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Config\copytask.config.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Config\copytask.config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>XCOPY "$(SolutionDir)Config" "$(TargetDir)\Config\" /S /Y</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

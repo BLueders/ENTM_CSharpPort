@@ -169,5 +169,10 @@ namespace ENTM.Utility
             Array.Copy(array2, 0, newArray, array1.Length, array2.Length);
             return newArray;
         }
+
+        public static string TimeSpanToString(TimeSpan time)
+        {
+            return string.Format($"{time.Hours:D2}h:{time.Minutes:D2}m:{time.Seconds:D2}s:{time.Milliseconds:D3}ms");
+        }
     }
 }

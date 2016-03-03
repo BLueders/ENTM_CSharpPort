@@ -8,5 +8,6 @@ namespace ENTM
         double[] InitialInput { get; }
         double[] ActivateNeuralNetwork(double[] enviromentInput, double[] controllerInput);
         double[] ProcessNNOutputs(double[] fromNN);
+        double[] NoveltyVector { get; }
     }
 }

@@ -6,7 +6,9 @@ using ENTM.Replay;
 
 namespace ENTM
 {
-    public abstract class BaseEvaluator<TEnvironment> : IPhenomeEvaluator<IBlackBox> where TEnvironment : IEnvironment
+    public abstract class BaseEvaluator<TEnvironment, TController> : IPhenomeEvaluator<IBlackBox> 
+        where TEnvironment : IEnvironment
+        where TController : IController
     {
         
         private ThreadLocal<TEnvironment> _environment;
@@ -33,6 +35,23 @@ namespace ENTM
         /// <returns>a new instance of TEnvironment</returns>
         protected abstract TEnvironment NewEnvironment();
 
+        private ThreadLocal<TController> _controller;
+
+        public TController Controller
+        {
+            get
+            {
+                if (_controller == null)
+                {
+                    _controller = new ThreadLocal<TController>(NewController);
+                }
+
+                return _controller.Value;
+            }
+        }
+
+        protected abstract TController NewController();
+
         public abstract void Initialize(XmlElement properties);
 
         public abstract int MaxScore { get; }
@@ -42,16 +61,16 @@ namespace ENTM
 
         public FitnessInfo Evaluate(IBlackBox phenome)
         {
-            double score = Evaluate(phenome, Iterations, false);
+            FitnessInfo score = Evaluate(phenome, Iterations, false);
 
             _evaluationCount++;
 
-            if (score >= MaxScore) _stopConditionSatisfied = true;
+            if (score._fitness >= MaxScore) _stopConditionSatisfied = true;
 
-            return new FitnessInfo(score, 0);
+            return score;
         }
 
-        public abstract double Evaluate(IBlackBox phenome, int iterations, bool record);
+        public abstract FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record);
         public abstract int Iterations { get; }
         public abstract void Reset();
 

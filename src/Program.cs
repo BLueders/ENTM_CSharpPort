@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
 using ENTM.Utility;
 using log4net.Config;
-using SharpNeat.EvolutionAlgorithms;
-using SharpNeat.Genomes.Neat;
 using SharpNeat.Domains;
-using SharpNeat.Core;
-using SharpNeat.Phenomes;
 using ENTM.Experiments;
 using System.Threading;
 
@@ -21,11 +15,14 @@ namespace ENTM
     class Program
     {
         const string CONFIG_PATH = "Config/";
-        const string CHAMPION_FILE = "champion.xml";
-        const string RECORDING_FILE = "recording.png";
 
-        private static NeatEvolutionAlgorithm<NeatGenome> _ea;
-        private static IExperiment _experiment;
+        private static bool _terminated = false;
+        private static Type _experimentType;
+        private static  XmlElement _config;
+        private static ITuringExperiment _experiment;
+        private static string _identifier = DateTime.Now.ToString("MMddyyyy-HHmmss");
+        private static int _currentExperiment = 0;
+        private static int _experiementCount;
 
         public static readonly int MainThreadId = Thread.CurrentThread.ManagedThreadId;
 
@@ -57,152 +54,69 @@ namespace ENTM
 
                 Console.WriteLine("Please select a valid config");
             } while (true);
-            
+
+            InitializeExperiment();
+
             Console.WriteLine($"Controls:" +
                 $"\n-{"Space:", -10} Start/Pause Evolutionary Algorithm" +
                 $"\n-{"D:",-10} Toggle Debug (only available for debug builds)" +
                 $"\n-{"C:",-10} Test current champion" +
-                $"\n-{"S:",-10} Test saved champion (from champion xml)" +
+                $"\n-{"S:",-10} Test saved champion (from champion.xml)" +
                 $"\n-{"Esc:",-10} Exit");
 
             // Start listening for input
             ProcessInput();
         }
 
-        static List<string> GetConfigs()
+        private static List<string> GetConfigs()
         {
             return Directory.EnumerateFiles(CONFIG_PATH, "*.xml").ToList();
         }
 
-        static void LoadExperiment(string configPath)
+        private static void LoadExperiment(string configPath)
         {
             // Load config XML.
             XmlDocument xml = new XmlDocument();
             xml.Load(configPath);
 
-            XmlElement config = xml.DocumentElement;
+            _config = xml.DocumentElement;
 
             Assembly assembly = Assembly.GetExecutingAssembly();
 
-            Type experimentType = assembly.GetType(XmlUtils.GetValueAsString(config, "ExperimentClass"), false, false);
-            _experiment = (IExperiment) Activator.CreateInstance(experimentType);
-
-            _experiment.Initialize(XmlUtils.GetValueAsString(config, "Name"), config);
+            _experimentType = assembly.GetType(XmlUtils.GetValueAsString(_config, "ExperimentClass"), false, false);
+            _experiementCount = XmlUtils.TryGetValueAsInt(_config, "ExperimentCount") ?? 1;
         }
-        
-        /// <summary>
-        /// Test the champion of the current EA
-        /// </summary>
-        private static void TestCurrentChampion()
+
+        private static void InitializeExperiment()
         {
-            if (_ea?.CurrentChampGenome == null)
+            _currentExperiment++;
+
+            _experiment = (ITuringExperiment) Activator.CreateInstance(_experimentType);
+            _experiment.ExperimentStartedEvent += ExperimentStartedEvent;
+            _experiment.ExperimentCompleteEvent += ExperimentCompleteEvent;
+
+            _experiment.Initialize(XmlUtils.GetValueAsString(_config, "Name"), _config, _identifier, _currentExperiment);
+        }
+
+        private static void ExperimentStartedEvent(object sender, EventArgs e)
+        {
+            Console.WriteLine("Started experiment " + _currentExperiment);
+        }
+
+        private static void ExperimentCompleteEvent(object sender, EventArgs e)
+        {
+            Console.WriteLine("Time spent: " + Utilities.TimeSpanToString(_experiment.TimeSpent));
+            if (_currentExperiment < _experiementCount)
             {
-                Console.WriteLine("No current champion");
-                return;
-            }
-            
-            _ea.RequestPause();
+                _experiment.TestCurrentChampion();
 
-            IGenomeDecoder<NeatGenome, IBlackBox> decoder = _experiment.CreateGenomeDecoder();
-
-            IBlackBox champion = decoder.Decode(_ea.CurrentChampGenome);
-            TestPhenome(champion);
-        }
-
-        private static void TestSavedChampion()
-        {
-            // Load genome from the xml file
-            XmlDocument xmlChamp = new XmlDocument();
-            xmlChamp.Load(CHAMPION_FILE);
-            NeatGenome champGenome = NeatGenomeXmlIO.LoadGenome(xmlChamp.DocumentElement, false);
-
-            // Create and set the genome factory
-            champGenome.GenomeFactory = _experiment.CreateGenomeFactory() as NeatGenomeFactory;
-
-            // Create the genome decoder
-            IGenomeDecoder<NeatGenome, IBlackBox> decoder = _experiment.CreateGenomeDecoder();
-            
-            // Decode the genome (genotype => phenotype)
-            IBlackBox champion = decoder.Decode(champGenome);
-
-            TestPhenome(champion);
-        }
-
-        private static void TestPhenome(IBlackBox phenome)
-        {
-            Debug.On = true;
-            Console.WriteLine("\n");
-            Console.WriteLine("Testing phenome...");
-            _experiment.Evaluate(phenome, 1, true);
-            Bitmap bmp = _experiment.Recorder.ToBitmap();
-
-            CreateExperimentDirectoryIfNecessary();
-            bmp.Save(string.Format($"{_experiment.Name}/{RECORDING_FILE}"), ImageFormat.Png);
-
-            Console.WriteLine("Done.");
-        }
-
-        private static void EAUpdateEvent(object sender, EventArgs e)
-        {
-            Console.WriteLine($"gen={_ea.CurrentGeneration}, bestFitness={_ea.Statistics._maxFitness.ToString("F4")}, meanFitness={_ea.Statistics._meanFitness.ToString("F4")}");
-
-            // Save the best genome to file
-            XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);
-
-            CreateExperimentDirectoryIfNecessary();
-
-            string file = string.Format($"{_experiment.Name}/{CHAMPION_FILE}");
-            doc.Save(file);
-        }
-
-        private static void CreateExperimentDirectoryIfNecessary()
-        {
-            if (!Directory.Exists(_experiment.Name))
-            {
-                Directory.CreateDirectory(_experiment.Name);
-            }
-        }
-
-        private static void EAPauseEvent(object sender, EventArgs e)
-        {
-            Console.WriteLine("EA was paused");
-        }
-
-        private static void StartStopEA()
-        {
-            if (_ea == null)
-            {
-                Console.WriteLine("Creating EA...");
-                // Create evolution algorithm and attach events.
-                _ea = _experiment.CreateEvolutionAlgorithm();
-                _ea.UpdateEvent += EAUpdateEvent;
-                _ea.PausedEvent += EAPauseEvent;
-
-                _ea.StartContinue();
+                InitializeExperiment();
+                _experiment.StartStopEA();
             }
             else
             {
-                switch (_ea.RunState)
-                {
-                    case SharpNeat.Core.RunState.NotReady:
-                        Console.WriteLine("EA not ready!");
-                        break;
-
-                    case SharpNeat.Core.RunState.Ready:
-                    case SharpNeat.Core.RunState.Paused:
-                        Console.WriteLine("Starting EA...");
-                        _ea.StartContinue();
-                        break;
-
-                    case SharpNeat.Core.RunState.Running:
-                        Console.WriteLine("Pausing EA...");
-                        _ea.RequestPause();
-                        break;
-
-                    case SharpNeat.Core.RunState.Terminated:
-                        Console.WriteLine("EA was terminated");
-                        break;
-                }
+                _terminated = true;
+                Console.WriteLine("All experiments completed. Press any key to exit...");
             }
         }
 
@@ -211,10 +125,13 @@ namespace ENTM
             do
             {
                 ConsoleKey key = Console.ReadKey(true).Key;
+
+                if (_terminated) break;
+
                 switch (key)
                 {
                     case ConsoleKey.Spacebar:
-                        StartStopEA();
+                        _experiment.StartStopEA();
                         break;
 
                     case ConsoleKey.D:
@@ -228,11 +145,11 @@ namespace ENTM
                         break;
 
                     case ConsoleKey.C:
-                        TestCurrentChampion();
+                        _experiment.TestCurrentChampion();
                         break;
 
                     case ConsoleKey.S:
-                        TestSavedChampion();
+                        _experiment.TestSavedChampion();
                         break;
 
                     case ConsoleKey.Escape:

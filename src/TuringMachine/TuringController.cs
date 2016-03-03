@@ -1,22 +1,26 @@
-﻿using SharpNeat.Phenomes;
+﻿using System;
+using System.Collections.Generic;
+using SharpNeat.Phenomes;
 using ENTM.Utility;
 
 namespace ENTM.TuringMachine
 {
     public class TuringController : IController
     {
-        public IBlackBox BlackBox { get; }
+        public IBlackBox BlackBox { get; set; }
 
         public ITuringMachine TuringMachine { get; }
 
-        public TuringController(IBlackBox blackBox, TuringMachineProperties props)
+        public TuringController(TuringMachineProperties props)
         {
             TuringMachine = new MinimalTuringMachine(props);
-            BlackBox = blackBox;
         }
+
+        private double[] _controllerInput;
 
         public double[] ActivateNeuralNetwork(double[] environmentInput, double[] controllerInput)
         {
+            if (BlackBox == null) throw new ArgumentNullException("BlackBox was null! Remember to set the BlackBox object before activating");
 
             double[] input = Utilities.JoinArrays(environmentInput, controllerInput);
 
@@ -49,5 +53,7 @@ namespace ENTM.TuringMachine
         {
             TuringMachine.Reset();
         }
+
+        public double[] NoveltyVector => TuringMachine.NoveltyVector;
     }
 }

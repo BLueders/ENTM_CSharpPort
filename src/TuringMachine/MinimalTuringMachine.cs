@@ -45,6 +45,8 @@ namespace ENTM.TuringMachine
 
         private double[][] _initialRead;
 
+        private double[] _noveltyVector;
+
         // Number of times each location was accessed during livetime of the tm
         private List<int> _writeActivities = new List<int>();
         private List<int> _readActivities = new List<int>();
@@ -76,6 +78,7 @@ namespace ENTM.TuringMachine
             _tape.Clear();
             _tape.Add(new double[_m]);
             _headPositions = new int[_heads];
+            _noveltyVector = new double[0];
 
             // clear debug log lists
             _readActivities.Clear();
@@ -193,6 +196,8 @@ namespace ENTM.TuringMachine
             //Debug.Log(PrintState(), true);
             return _initialRead;
         }
+
+        public double[] NoveltyVector { get; }
 
         public int ReadHeadCount => 1;
 

@@ -6,21 +6,32 @@
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
+
+  <!-- How many experiments will be performed (serially) -->
+  <ExperimentCount>10</ExperimentCount>
+
+  <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved -->
+  <MaxGenerations>100</MaxGenerations>
   
   <!-- Experiment description -->
   <Description>
-    Copy task experiment with turing controller. 
+    Copy task experiment with turing controller.
     The controller must record a bit-vector sequence to memory, and read it back.
   </Description>
 
-<!-- NEAT -->
+  <!-- NEAT -->
   <PopulationSize>100</PopulationSize>
-  <Generations>100</Generations>
+
   <EvaluateParents>true</EvaluateParents>
+  
+  <!-- The network activation scheme to use -->
   <Activation>
+    
     <!-- "Acyclic", "CyclicFixedIters" or "CyclicRelax"
-         Acyclic networks do not support recurrent connections
-    -->
+         Acyclic:           Does not support recurrent connections. Network is fully activated each activation.
+         CyclicFixedIters:  Each iteration will iterate signals one step from input -> output.
+         CyclicRelax:       Activate the network until all node output has remained unchanged between iterations within the threshold, 
+                            or until the maximum iteration count is reached. -->
     <Scheme>Acyclic</Scheme>
 
     <!-- CyclicFixedIters only -->
@@ -33,9 +44,18 @@
     <MaxIters>5</MaxIters>
   
   </Activation>
+  
+  <!-- "Absolute" or "Relative"
+       Absolute: Defines an absolute ceiling on complexity.
+       Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   <ComplexityThreshold>50</ComplexityThreshold>
+  
+  <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
+  
+  <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
+  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
 
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
@@ -72,7 +92,7 @@
   <GenomeParams>
     <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
          The weight range is strictly enforced - e.g. when creating new connections and mutating existing ones. Default: 5.0 -->
-    <ConnectionWeightRange>5.0</ConnectionWeightRange>
+    <ConnectionWeightRange>10.0</ConnectionWeightRange>
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
@@ -80,10 +100,10 @@
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>0.5</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>1.0</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.6</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
     <AddNodeMutationProbability>0.005</AddNodeMutationProbability>
@@ -100,7 +120,10 @@
 
   <!-- Turing Machine Parameters-->
   <TuringMachineParams>
+    
+    <!-- If set to false, the Turing machine will always return a 0 vector -->
     <Enabled>true</Enabled>
+    
     <!-- Maximum memory size (-1 for unlimited) -->
     <N>-1</N>
 
@@ -120,7 +143,7 @@
   <!-- Copy Task Parameters -->
   <CopyTaskParams>
     <!-- Evaluation iterations -->
-    <Iterations>50</Iterations>
+    <Iterations>20</Iterations>
 
     <!-- The size of the bit vectors to be copied. -->
     <VectorSize>2</VectorSize>
@@ -133,7 +156,7 @@
     <!-- "Random" or "Fixed" sequence lengts -->
     <LengthRule>Random</LengthRule>
 
-    <!-- What fitness function to evalutate with.½
+    <!-- What fitness function to evalutate with.
         StrictCloseToTarget
         PartialScore
         Emilarity

@@ -1,9 +1,8 @@
-﻿using SharpNeat.Core;
-using SharpNeat.Phenomes;
+﻿using ENTM.TuringMachine;
 
 namespace ENTM.Experiments.CopyTask
 {
-    public class CopyTaskExperiment : NeatExperiment<CopyTaskEvaluator, CopyTaskEnvironment>
+    public class CopyTaskExperiment : BaseExperiment<CopyTaskEvaluator, CopyTaskEnvironment, TuringController>
     {
         // The read output from the controller. +1 for bias input!
         public override int InputCount => _evaluator.EnvironmentOutputCount + _evaluator.TuringMachineOutputCount + 1;

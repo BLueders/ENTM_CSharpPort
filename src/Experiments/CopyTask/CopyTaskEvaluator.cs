@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml;
 using ENTM.Replay;
@@ -7,11 +6,10 @@ using ENTM.TuringMachine;
 using ENTM.Utility;
 using SharpNeat.Core;
 using SharpNeat.Phenomes;
-using SharpNeat.Domains;
 
 namespace ENTM.Experiments.CopyTask
 {
-    public class CopyTaskEvaluator : BaseEvaluator<CopyTaskEnvironment>
+    public class CopyTaskEvaluator : BaseEvaluator<CopyTaskEnvironment, TuringController>
     {
         private readonly Stopwatch _stopWatch = new Stopwatch();
 
@@ -28,6 +26,11 @@ namespace ENTM.Experiments.CopyTask
         {
             // This is called from the ThreadLocal Environment, so a new environment is instantiated for each thread
             return new CopyTaskEnvironment(_copyTaskProps);
+        }
+
+        protected override TuringController NewController()
+        {
+            return new TuringController(_turingMachineProps);
         }
 
         private int _maxScore = -1;
@@ -70,21 +73,20 @@ namespace ENTM.Experiments.CopyTask
 
         public override int Iterations => _copyTaskProps.Iterations;
 
-        public override double Evaluate(IBlackBox phenome, int iterations, bool record)
+        public override FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record)
         {
+            if (phenome == null) Console.WriteLine("Warning! Trying to evalutate null phenome!");
+
             Utility.Debug.LogHeader("STARTING EVAULATION", true);
             double totalScore = 0;
-            //int steps = 0;
 
-            //long nnTime = 0;
-            //long contTime = 0;
-            //long simTime = 0;
+            Controller.BlackBox = phenome;
+            Environment.Controller = Controller;
 
-            TuringController controller = new TuringController(phenome, _turingMachineProps);
-            Environment.Controller = controller;
-
-            int turingMachineInputCount = controller.TuringMachine.InputCount;
+            int turingMachineInputCount = Controller.TuringMachine.InputCount;
             int environmentInputCount = Environment.InputCount;
+
+            AuxFitnessInfo[] noveltyScore = new AuxFitnessInfo[10];
 
             // For each iteration
             for (int i = 0; i < iterations; i++)
@@ -92,9 +94,8 @@ namespace ENTM.Experiments.CopyTask
                 Utility.Debug.LogHeader($"EVALUATION ITERATION {i}", true);
 
                 Reset();
-                controller.Reset();
 
-                double[] turingMachineOutput = controller.InitialInput;
+                double[] turingMachineOutput = Controller.InitialInput;
                 double[] enviromentOutput = Environment.InitialObservation;
 
                 if (record)
@@ -102,39 +103,26 @@ namespace ENTM.Experiments.CopyTask
                     Recorder = new Recorder();
                     Recorder.Start();
 
-                    controller.TuringMachine.RecordTimeSteps = true;
+                    Controller.TuringMachine.RecordTimeSteps = true;
                     Environment.RecordTimeSteps = true;
 
-                    Recorder.Record(Environment.InitialTimeStep, controller.TuringMachine.InitialTimeStep);
+                    Recorder.Record(Environment.InitialTimeStep, Controller.TuringMachine.InitialTimeStep);
                 }
 
                 while (!Environment.IsTerminated)
                 {
-                    //_stopWatch.Start();
+                    double[] nnOutput = Controller.ActivateNeuralNetwork(enviromentOutput, turingMachineOutput);
 
-                    double[] nnOutput = controller.ActivateNeuralNetwork(enviromentOutput, turingMachineOutput);
-
-                    //nnTime += _stopWatch.ElapsedMilliseconds;
-                    //_stopWatch.Restart();
+                    //TODO: Move ANN logic into controller class
 
                     // CopyTask can rely on the TM acting first
-                    turingMachineOutput = controller.ProcessNNOutputs(Utilities.ArrayCopyOfRange(nnOutput, environmentInputCount, turingMachineInputCount));
-
-                    //contTime += _stopWatch.ElapsedMilliseconds;
-                    //_stopWatch.Restart();
+                    turingMachineOutput = Controller.ProcessNNOutputs(Utilities.ArrayCopyOfRange(nnOutput, environmentInputCount, turingMachineInputCount));
 
                     enviromentOutput = Environment.PerformAction(Utilities.ArrayCopyOfRange(nnOutput, 0, environmentInputCount));
 
-                    //simTime += _stopWatch.ElapsedMilliseconds;
-
-                    //steps++;
-
-                    //_stopWatch.Stop();
-                    //_stopWatch.Reset();
-
                     if (record)
                     {
-                        Recorder.Record(Environment.PreviousTimeStep, controller.TuringMachine.PreviousTimeStep);
+                        Recorder.Record(Environment.PreviousTimeStep, Controller.TuringMachine.PreviousTimeStep);
                     }
                 }
 
@@ -143,13 +131,18 @@ namespace ENTM.Experiments.CopyTask
                 Utility.Debug.Log($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }
 
+            // Unregister the phenome
+            Controller.BlackBox = null;
 
-            return Math.Max(0d, totalScore / iterations);
+            double environmentScore = Math.Max(0d, totalScore / iterations);
+
+            return new FitnessInfo(environmentScore, noveltyScore);
         }
 
         public override void Reset()
         {
             Environment.Restart();
+            Controller.Reset();
         }
     }
 }

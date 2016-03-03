@@ -23,8 +23,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
+using ENTM.NoveltySearch;
 using ENTM.Replay;
 using SharpNeat.Core;
 using SharpNeat.Decoders;
@@ -36,6 +41,7 @@ using SharpNeat.EvolutionAlgorithms.ComplexityRegulation;
 using SharpNeat.Genomes.Neat;
 using SharpNeat.Phenomes;
 using SharpNeat.SpeciationStrategies;
+using Debug = ENTM.Utility.Debug;
 
 namespace ENTM.Experiments
 {
@@ -47,14 +53,21 @@ namespace ENTM.Experiments
     /// evaluations) then you probably want to implement your own INeatExperiment
     /// class.
     /// </summary>
-    public abstract class NeatExperiment<TEvaluator, TEnviroment> : IExperiment
+    public abstract class BaseExperiment<TEvaluator, TEnviroment, TController> : ITuringExperiment
         where TEnviroment : IEnvironment, new()
-        where TEvaluator : BaseEvaluator<TEnviroment>, new()
+        where TEvaluator : BaseEvaluator<TEnviroment, TController>, new()
+        where TController : IController
     {
+        const string CHAMPION_FILE = "champion{0:D4}.xml";
+        const string RECORDING_FILE = "recording{0:D4}.png";
+
         NeatEvolutionAlgorithmParameters _eaParams;
         NeatGenomeParameters _neatGenomeParams;
+        private NeatEvolutionAlgorithm<NeatGenome> _ea;
+
+
         string _name;
-        int _populationSize;
+        int _populationSize, _maxGenerations;
         NetworkActivationScheme _activationScheme;
         string _complexityRegulationStr;
         int? _complexityThreshold;
@@ -69,6 +82,196 @@ namespace ENTM.Experiments
         public abstract int OutputCount { get; }
         #endregion
 
+        private string ChampionFile => $"{Name}/{_identifier}/{string.Format(CHAMPION_FILE, _number)}";
+        private string RecordingFile => $"{Name}/{_identifier}/{string.Format(RECORDING_FILE, _number)}";
+
+        public bool ExperimentCompleted { get; private set; } = false;
+
+        private string _identifier;
+        private int _number;
+
+        public Recorder Recorder => _evaluator.Recorder;
+        private Stopwatch _timer;
+
+        public TimeSpan TimeSpent => _timer?.Elapsed ?? TimeSpan.Zero;
+
+
+        /// <summary>
+        /// Notifies listeners that the experiment has started
+        /// </summary>
+        public event EventHandler ExperimentStartedEvent;
+
+        /// <summary>
+        /// Notifies listeners that the experiment is complete - that is; maximum generations or fitness was reached
+        /// </summary>
+        public event EventHandler ExperimentCompleteEvent;
+
+        /// <summary>
+        /// Test the champion of the current EA
+        /// </summary>
+        public FitnessInfo TestCurrentChampion()
+        {
+            if (_ea?.CurrentChampGenome == null)
+            {
+                Console.WriteLine("No current champion");
+                return FitnessInfo.Zero;
+            }
+
+            IGenomeDecoder<NeatGenome, IBlackBox> decoder = CreateGenomeDecoder();
+
+            IBlackBox champion = decoder.Decode(_ea.CurrentChampGenome);
+
+            return TestPhenome(champion);
+        }
+
+        public FitnessInfo TestSavedChampion()
+        {
+            // Load genome from the xml file
+            XmlDocument xmlChampion = new XmlDocument();
+            xmlChampion.Load(ChampionFile);
+
+            NeatGenome championGenome = NeatGenomeXmlIO.LoadGenome(xmlChampion.DocumentElement, false);
+
+            // Create and set the genome factory
+            championGenome.GenomeFactory = CreateGenomeFactory() as NeatGenomeFactory;
+
+            // Create the genome decoder
+            IGenomeDecoder<NeatGenome, IBlackBox> decoder = CreateGenomeDecoder();
+
+            // Decode the genome (genotype => phenotype)
+            IBlackBox champion = decoder.Decode(championGenome);
+
+            return TestPhenome(champion);
+        }
+
+        private FitnessInfo TestPhenome(IBlackBox phenome)
+        {
+            _ea.RequestPause();
+
+            Debug.On = true;
+            Console.WriteLine("\n");
+            Console.WriteLine("Testing phenome...");
+            FitnessInfo result = Evaluate(phenome, 1, true);
+
+            Bitmap bmp = Recorder.ToBitmap();
+
+            CreateExperimentDirectoryIfNecessary();
+            bmp.Save(RecordingFile, ImageFormat.Png);
+
+            Console.WriteLine("Done.");
+
+            return result;
+        }
+
+        private void EAUpdateEvent(object sender, EventArgs e)
+        {
+            Console.WriteLine($"gen={_ea.CurrentGeneration}, bestFitness={_ea.Statistics._maxFitness.ToString("F4")}, meanFitness={_ea.Statistics._meanFitness.ToString("F4")}");
+
+            // Save the best genome to file
+            XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);
+
+            CreateExperimentDirectoryIfNecessary();
+
+            string file = string.Format(ChampionFile);
+            doc.Save(file);
+
+            if (_ea.CurrentGeneration >= _maxGenerations || _evaluator.StopConditionSatisfied)
+            {
+                ExperimentCompleted = true;
+                _ea.RequestPause();
+            }
+        }
+
+        private void CreateExperimentDirectoryIfNecessary()
+        {
+            if (!Directory.Exists(CurrentDirectory))
+            {
+                Directory.CreateDirectory(CurrentDirectory);
+            }
+        }
+
+        private void EAPauseEvent(object sender, EventArgs e)
+        {
+            _timer.Stop();
+
+            if (ExperimentCompleted)
+            {
+                Console.WriteLine("Experiment completed");
+
+                if (ExperimentCompleteEvent != null)
+                {
+                    try
+                    {
+                        ExperimentCompleteEvent(this, EventArgs.Empty);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
+                        Console.WriteLine("ExperimentCompleteEvent listener threw exception: " + ex.Message);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("EA was paused");
+            }
+        }
+
+        public void StartStopEA()
+        {
+            if (_ea == null)
+            {
+                _timer = new Stopwatch();
+                _timer.Start();
+
+                Console.WriteLine("Creating EA...");
+                // Create evolution algorithm and attach events.
+                _ea = CreateEvolutionAlgorithm();
+                _ea.UpdateEvent += EAUpdateEvent;
+                _ea.PausedEvent += EAPauseEvent;
+
+                if (ExperimentStartedEvent != null)
+                {
+                    try
+                    {
+                        ExperimentStartedEvent(this, EventArgs.Empty);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
+                        Console.WriteLine("ExperimentStartedEvent listener threw exception: " + ex.Message);
+                    }
+                }
+
+                _ea.StartContinue();
+            }
+            else
+            {
+                switch (_ea.RunState)
+                {
+                    case SharpNeat.Core.RunState.NotReady:
+                        Console.WriteLine("EA not ready!");
+                        break;
+
+                    case SharpNeat.Core.RunState.Ready:
+                    case SharpNeat.Core.RunState.Paused:
+                        Console.WriteLine("Starting EA...");
+                        _timer.Start();
+                        _ea.StartContinue();
+                        break;
+
+                    case SharpNeat.Core.RunState.Running:
+                        Console.WriteLine("Pausing EA...");
+                        _ea.RequestPause();
+                        break;
+
+                    case SharpNeat.Core.RunState.Terminated:
+                        Console.WriteLine("EA was terminated");
+                        break;
+                }
+            }
+        }
+
         /// <summary>
         /// Evaluate a single phenome a set number of iterations. Use this to test a champion
         /// </summary>
@@ -76,18 +279,18 @@ namespace ENTM.Experiments
         /// <param name="iterations">Number of evaluations</param>
         /// <param name="record">Determines if the evaluation should be recorded</param>
         /// <returns></returns>
-        public double Evaluate(IBlackBox phenome, int iterations, bool record)
+        public FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record)
         {
             return _evaluator.Evaluate(phenome, iterations, record);
         }
-
-        public Recorder Recorder => _evaluator.Recorder;
 
         #region INeatExperiment Members
 
         public string Description => _description;
 
         public string Name => _name;
+
+        public string CurrentDirectory => string.Format($"{Name}/{_identifier}");
 
         /// <summary>
         /// Gets the default population size to use for the experiment
@@ -108,12 +311,28 @@ namespace ENTM.Experiments
         public NeatEvolutionAlgorithmParameters NeatEvolutionAlgorithmParameters => _eaParams;
 
         /// <summary>
+        /// Initialize the experiment with an identifier unique to a series of experiments, and the experiment number in that series.
+        /// Used for persistence
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="xmlConfig"></param>
+        /// <param name="identifier"></param>
+        /// <param name="number"></param>
+        public void Initialize(string name, XmlElement xmlConfig, string identifier, int number)
+        {
+            _identifier = identifier;
+            _number = number; 
+            Initialize(name, xmlConfig);
+        }
+
+        /// <summary>
         /// Initialize the experiment with some optional XML configutation data.
         /// </summary>
         public void Initialize(string name, XmlElement xmlConfig)
         {
             _name = name;
             _populationSize = XmlUtils.GetValueAsInt(xmlConfig, "PopulationSize");
+            _maxGenerations = XmlUtils.GetValueAsInt(xmlConfig, "MaxGenerations");
             _activationScheme = ExperimentUtils.CreateActivationScheme(xmlConfig, "Activation");
             _complexityRegulationStr = XmlUtils.TryGetValueAsString(xmlConfig, "ComplexityRegulationStrategy");
             _complexityThreshold = XmlUtils.TryGetValueAsInt(xmlConfig, "ComplexityThreshold");
@@ -240,9 +459,8 @@ namespace ENTM.Experiments
             // Create genome decoder.
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = CreateGenomeDecoder();
 
-            IGenomeListEvaluator<NeatGenome> innerEvaluator;
-            if (_multiThreading)    innerEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, _parallelOptions);
-            else                    innerEvaluator = new SerialGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator);
+            
+            IGenomeListEvaluator<NeatGenome> innerEvaluator = new NoveltySearchListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, _multiThreading, _parallelOptions);
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
             // that were in the population in previous generations (elite genomes). This is determiend by examining each genome's evaluation info object.
@@ -252,12 +470,9 @@ namespace ENTM.Experiments
             // Initialize the evolution algorithm.
             ea.Initialize(selectiveEvaluator, genomeFactory, genomeList);
 
-
             // Finished. Return the evolution algorithm
             return ea;
         }
-
         #endregion
-
     }
 }

@@ -13,6 +13,9 @@ namespace ENTM.TuringMachine
         double[][] ProcessInput(double[] input);
         double[][] GetDefaultRead();
 
+        // Get an internal state vector to determine a novelty score
+        double[] NoveltyVector { get; }
+
         // Get the info saved
         double[][] TapeValues { get; }
     }
