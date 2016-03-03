@@ -113,11 +113,11 @@ namespace ENTM.Replay
                     }
                     else if (y < startIndex[10])
                     {
-                        pixel = (i - zero) == t.TuringMachineTimeStep.CorrectedWritePosition ? Color.White : Color.Black;
+                        pixel = (memSize- i - 1 - zero) == t.TuringMachineTimeStep.CorrectedWritePosition ? Color.White : Color.Black;
                     }
                     else
                     {
-                        pixel = (i - zero) == t.TuringMachineTimeStep.CorrectedReadPosition ? Color.White : Color.Black;
+                        pixel = (memSize- i - 1 - zero) == t.TuringMachineTimeStep.CorrectedReadPosition ? Color.White : Color.Black;
                     }
 
                     EndOfInner:
