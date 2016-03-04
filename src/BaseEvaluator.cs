@@ -10,13 +10,48 @@ namespace ENTM
         where TEnvironment : IEnvironment
         where TController : IController
     {
-        
+        protected ulong _evaluationCount = 0;
+        public ulong EvaluationCount => _evaluationCount;
+
+        protected bool _stopConditionSatisfied = false;
+        public bool StopConditionSatisfied => _stopConditionSatisfied;
+
+        public Recorder Recorder;
+
+        public abstract void Initialize(XmlElement properties);
+
+        /// <summary>
+        /// If we need to do some initialization, like change the parameters before testing a phenome, we can override this and do it here
+        /// </summary>
+        protected virtual void SetupTest()
+        {
+            
+        }
+
+        /// <summary>
+        /// Return the evaluator to its original state after a test
+        /// </summary>
+        protected virtual void TearDownTest()
+        {
+            
+        }
+
+        public abstract int Iterations { get; }
+        public abstract int MaxScore { get; }
+
+        public abstract int EnvironmentInputCount { get; }
+        public abstract int EnvironmentOutputCount { get; }
+        public abstract int ControllerInputCount { get; }
+        public abstract int ControllerOutputCount { get; }
+
+        public abstract FitnessInfo Evaluate(TController controller, int iterations, bool record);
+
         private ThreadLocal<TEnvironment> _environment;
 
         /// <summary>
         /// ThreadLocal environment instance
         /// </summary>
-        public TEnvironment Environment
+        protected TEnvironment Environment
         {
             get
             {
@@ -37,7 +72,7 @@ namespace ENTM
 
         private ThreadLocal<TController> _controller;
 
-        public TController Controller
+        protected TController Controller
         {
             get
             {
@@ -52,18 +87,45 @@ namespace ENTM
 
         protected abstract TController NewController();
 
-        public abstract void Initialize(XmlElement properties);
-
-        protected ulong _evaluationCount = 0;
-        protected bool _stopConditionSatisfied = false;
-
         public FitnessInfo Evaluate(IBlackBox phenome)
         {
-            FitnessInfo score = Evaluate(phenome, Iterations, false);
+            // Register the phenome
+            Controller.Phenome = phenome;
+
+            // Evaluate the controller / phenome
+            FitnessInfo score = Evaluate(Controller, Iterations, false);
+
+            // Unregister the phenome
+            Controller.Phenome = null;
 
             _evaluationCount++;
 
-            if (score._fitness >= MaxScore) _stopConditionSatisfied = true;
+            if (score._fitness >= MaxScore)
+            {
+                _stopConditionSatisfied = true;
+            }
+
+            return score;
+        }
+
+        /// <summary>
+        /// Evaluate a single phenome only once. Use this to test a champion.
+        /// </summary>
+        /// <param name="phenome">The phenome to be tested</param>
+        /// <param name="iterations">Number of evaluations</param>
+        /// <param name="record">Determines if the evaluation should be recorded</param>
+        /// <returns></returns>
+        public FitnessInfo TestPhenome(IBlackBox phenome)
+        {
+            SetupTest();
+
+            Controller.Phenome = phenome;
+
+            FitnessInfo score = Evaluate(Controller, 1, true);
+
+            Controller.Phenome = null;
+
+            TearDownTest();
 
             return score;
         }
@@ -73,20 +135,5 @@ namespace ENTM
             Environment.ResetIteration();
             Controller.Reset();
         }
-
-        public abstract FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record);
-        public abstract int Iterations { get; }
-
-        public Recorder Recorder;
-
-        public ulong EvaluationCount => _evaluationCount;
-        public bool StopConditionSatisfied => _stopConditionSatisfied;
-
-        public abstract int MaxScore { get; }
-
-        public abstract int EnvironmentInputCount { get; }
-        public abstract int EnvironmentOutputCount { get; }
-        public abstract int ControllerInputCount { get; }
-        public abstract int ControllerOutputCount { get; }
     }
 }

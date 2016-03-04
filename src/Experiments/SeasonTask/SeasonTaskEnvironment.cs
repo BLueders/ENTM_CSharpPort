@@ -46,7 +46,7 @@ namespace ENTM.Experiments.SeasonTask
 
         public override bool IsTerminated => _step >= TotalTimeSteps;
         public override int TotalTimeSteps => Sequence.Length * 3;
-        public override int RandomSeed { get; }
+        public override int RandomSeed { get; set; }
 
         public override IController Controller { get; set; }
         // to deterime if the food was eaten (>0.5) or not (<0.5)

@@ -25,6 +25,19 @@ namespace ENTM.Experiments.CopyTask
             return new CopyTaskEnvironment(_copyTaskProps);
         }
 
+        protected override void SetupTest()
+        {
+            Environment.LengthRule = LengthRule.Fixed;
+            Environment.RandomSeed = System.Environment.TickCount;
+        }
+
+        protected override void TearDownTest()
+        {
+            Environment.LengthRule = _copyTaskProps.LengthRule;
+            Environment.MaxSequenceLength = _copyTaskProps.MaxSequenceLength;
+            Environment.RandomSeed = _copyTaskProps.RandomSeed;
+        }
+
         public override int MaxScore => 1;
 
         public override int EnvironmentInputCount => _copyTaskProps.VectorSize;

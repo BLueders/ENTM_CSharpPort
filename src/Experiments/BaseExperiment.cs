@@ -77,8 +77,6 @@ namespace ENTM.Experiments
 
         protected TEvaluator _evaluator;
 
-
-
         private string ChampionFile => $"{Name}/{_identifier}/{string.Format(CHAMPION_FILE, _number)}";
         private string RecordingFile => $"{Name}/{_identifier}/{string.Format(RECORDING_FILE, _number)}";
 
@@ -86,6 +84,8 @@ namespace ENTM.Experiments
 
         private string _identifier;
         private int _number;
+        private bool _didStart = false;
+        private bool _abort = false;
 
         public Recorder Recorder => _evaluator.Recorder;
         private Stopwatch _timer;
@@ -155,18 +155,23 @@ namespace ENTM.Experiments
             _ea.RequestPause();
 
             Debug.On = true;
-            Console.WriteLine("\n");
             Console.WriteLine("Testing phenome...");
-            FitnessInfo result = Evaluate(phenome, 1, true);
+
+            FitnessInfo result = _evaluator.TestPhenome(phenome);
 
             Bitmap bmp = Recorder.ToBitmap();
 
             CreateExperimentDirectoryIfNecessary();
             bmp.Save(RecordingFile, ImageFormat.Png);
 
-            Console.WriteLine("Done.");
+            Console.WriteLine($"Done. Achieved fitness: {result._fitness:F4}");
 
             return result;
+        }
+
+        public void AbortCurrentExperiment()
+        {
+            if (_didStart) _abort = true;
         }
 
         private void EAUpdateEvent(object sender, EventArgs e)
@@ -181,7 +186,8 @@ namespace ENTM.Experiments
             string file = string.Format(ChampionFile);
             doc.Save(file);
 
-            if (_ea.CurrentGeneration >= _maxGenerations || _evaluator.StopConditionSatisfied)
+            // Check if the experiment has been aborted, the maximum generations count have been reached, or if the maximum fitness has been reached
+            if (_abort || (_maxGenerations > 0 && _ea.CurrentGeneration >= _maxGenerations) || _evaluator.StopConditionSatisfied)
             {
                 ExperimentCompleted = true;
                 _ea.RequestPause();
@@ -202,7 +208,15 @@ namespace ENTM.Experiments
 
             if (ExperimentCompleted)
             {
-                Console.WriteLine("Experiment completed");
+                if (_abort)
+                {
+                    _abort = false;
+                    Console.WriteLine("Experiment aborted");
+                }
+                else
+                {
+                    Console.WriteLine("Experiment completed");
+                }
 
                 if (ExperimentCompleteEvent != null)
                 {
@@ -228,9 +242,11 @@ namespace ENTM.Experiments
             if (_ea == null)
             {
                 _timer = new Stopwatch();
+                _didStart = true;
+
                 _timer.Start();
 
-                Console.WriteLine("Creating EA...");
+                Console.WriteLine("\nCreating EA...");
                 // Create evolution algorithm and attach events.
                 _ea = CreateEvolutionAlgorithm();
                 _ea.UpdateEvent += EAUpdateEvent;
@@ -276,18 +292,6 @@ namespace ENTM.Experiments
                         break;
                 }
             }
-        }
-
-        /// <summary>
-        /// Evaluate a single phenome a set number of iterations. Use this to test a champion
-        /// </summary>
-        /// <param name="phenome">The phenome to be tested</param>
-        /// <param name="iterations">Number of evaluations</param>
-        /// <param name="record">Determines if the evaluation should be recorded</param>
-        /// <returns></returns>
-        public FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record)
-        {
-            return _evaluator.Evaluate(phenome, iterations, record);
         }
 
         #region INeatExperiment Members

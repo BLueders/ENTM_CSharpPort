@@ -7,7 +7,7 @@ namespace ENTM.TuringMachine
 {
     public class TuringController : IController
     {
-        public IBlackBox BlackBox { get; set; }
+        public IBlackBox Phenome { get; set; }
 
         public ITuringMachine TuringMachine { get; }
 
@@ -22,9 +22,9 @@ namespace ENTM.TuringMachine
 
         public double[] ActivateNeuralNetwork(double[] environmentOutput)
         {
-            if (BlackBox == null)
+            if (Phenome == null)
             {
-                Console.WriteLine("BlackBox was null! Remember to set the BlackBox object before activating");
+                Console.WriteLine("Phenome was null! Remember to set the BlackBox object before activating");
                 return null;
                 //throw new ArgumentNullException("BlackBox was null! Remember to set the BlackBox object before activating");
             }
@@ -38,12 +38,12 @@ namespace ENTM.TuringMachine
             Debug.Log($"Neural Network Input:  {Utilities.ToString(nnInput, "f4")}", true);
 
             // Activate the neural network
-            BlackBox.ResetState();
-            BlackBox.InputSignalArray.CopyFrom(nnInput, 0, nnInput.Length);
-            BlackBox.Activate();
+            Phenome.ResetState();
+            Phenome.InputSignalArray.CopyFrom(nnInput, 0, nnInput.Length);
+            Phenome.Activate();
 
-            double[] nnOutput = new double[BlackBox.OutputSignalArray.Length];
-            BlackBox.OutputSignalArray.CopyTo(nnOutput, 0);
+            double[] nnOutput = new double[Phenome.OutputSignalArray.Length];
+            Phenome.OutputSignalArray.CopyTo(nnOutput, 0);
 
             Debug.Log($"Neural Network Output: {Utilities.ToString(nnOutput, "f4")}", true);
 
