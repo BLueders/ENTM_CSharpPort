@@ -77,13 +77,15 @@ namespace ENTM.Experiments
 
         protected TEvaluator _evaluator;
 
-        private string ChampionFile => $"{Name}/{_identifier}/{string.Format(CHAMPION_FILE, _number)}";
-        private string RecordingFile => $"{Name}/{_identifier}/{string.Format(RECORDING_FILE, _number)}";
+        private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
+        private string RecordingFile => $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number)}";
 
         public bool ExperimentCompleted { get; private set; } = false;
 
+        // Used for folder structure
         private string _identifier;
-        private int _number;
+        private int _subIdentifier, _number;
+
         private bool _didStart = false;
         private bool _abort = false;
 
@@ -106,6 +108,16 @@ namespace ENTM.Experiments
         /// Notifies listeners that the experiment has started
         /// </summary>
         public event EventHandler ExperimentStartedEvent;
+
+        /// <summary>
+        /// Notifies listeners that the experiment was paused
+        /// </summary>
+        public event EventHandler ExperimentPausedEvent;
+
+        /// <summary>
+        /// Notifies listeners that the experiment was resumed
+        /// </summary>
+        public event EventHandler ExperimentResumedEvent;
 
         /// <summary>
         /// Notifies listeners that the experiment is complete - that is; maximum generations or fitness was reached
@@ -176,7 +188,12 @@ namespace ENTM.Experiments
 
         private void EAUpdateEvent(object sender, EventArgs e)
         {
-            Console.WriteLine($"gen={_ea.CurrentGeneration}, bestFitness={_ea.Statistics._maxFitness.ToString("F4")}, meanFitness={_ea.Statistics._meanFitness.ToString("F4")}");
+            Console.WriteLine($"Generation: {_ea.CurrentGeneration}, " +
+                              $"Best Fitness: {_ea.Statistics._maxFitness:F4}, " +
+                              $"Mean Fitness: {_ea.Statistics._meanFitness:F4}, " +
+                              $"Max Complexity: {_ea.Statistics._maxComplexity:F4}, " +
+                              $"Mean Complexity: {_ea.Statistics._meanComplexity:F4}"
+                              );
 
             // Save the best genome to file
             XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);
@@ -234,6 +251,18 @@ namespace ENTM.Experiments
             else
             {
                 Console.WriteLine("EA was paused");
+                if (ExperimentPausedEvent != null)
+                {
+                    try
+                    {
+                        ExperimentPausedEvent(this, EventArgs.Empty);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
+                        Console.WriteLine("ExperimentPausedEvent listener threw exception: " + ex.Message);
+                    }
+                }
             }
         }
 
@@ -279,6 +308,19 @@ namespace ENTM.Experiments
                     case SharpNeat.Core.RunState.Paused:
                         Console.WriteLine("Starting EA...");
                         _timer.Start();
+
+                        if (ExperimentResumedEvent != null)
+                        {
+                            try
+                            {
+                                ExperimentResumedEvent(this, EventArgs.Empty);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
+                                Console.WriteLine("ExperimentResumedEvent listener threw exception: " + ex.Message);
+                            }
+                        }
                         _ea.StartContinue();
                         break;
 
@@ -300,7 +342,7 @@ namespace ENTM.Experiments
 
         public string Name => _name;
 
-        public string CurrentDirectory => string.Format($"{Name}/{_identifier}");
+        public string CurrentDirectory => string.Format($"{Name}/{_identifier}/{_subIdentifier}/");
 
         /// <summary>
         /// Gets the default population size to use for the experiment
@@ -328,9 +370,10 @@ namespace ENTM.Experiments
         /// <param name="xmlConfig"></param>
         /// <param name="identifier"></param>
         /// <param name="number"></param>
-        public void Initialize(string name, XmlElement xmlConfig, string identifier, int number)
+        public void Initialize(string name, XmlElement xmlConfig, string identifier, int subIdentifier, int number)
         {
             _identifier = identifier;
+            _subIdentifier = subIdentifier;
             _number = number; 
             Initialize(name, xmlConfig);
         }

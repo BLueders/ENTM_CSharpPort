@@ -78,11 +78,12 @@ namespace ENTM.Experiments.SeasonTask
         public override void ResetAll()
         {
             Debug.LogHeader("SEASON TASK RESET ALL", true);
+
+            ResetRandom();
         }
 
         public override void ResetIteration()
         {
-            base.ResetIteration();
 
             Debug.LogHeader("SEASON TASK NEW ITERATION", true);
 

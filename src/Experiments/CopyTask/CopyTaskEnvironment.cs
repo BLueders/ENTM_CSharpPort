@@ -55,7 +55,7 @@ namespace ENTM.Experiments.CopyTask
         /// </summary>
         public override int TotalTimeSteps => 2 * Sequence.Length + 2;
 
-        public override int RandomSeed { get; set; }
+        public sealed override int RandomSeed { get; set; }
 
         public CopyTaskEnvironment(CopyTaskProperties props)
         {
@@ -69,12 +69,11 @@ namespace ENTM.Experiments.CopyTask
         public override void ResetAll()
         {
             Debug.LogHeader("COPY TASK RESET ALL", true);
+            ResetRandom();
         }
 
         public override void ResetIteration()
         {
-            base.ResetIteration();
-
             Debug.LogHeader("COPY TASK NEW ITERATION", true);
 
             int length;
@@ -153,10 +152,13 @@ namespace ENTM.Experiments.CopyTask
             Sequence = new double[length][];
             for (int i = 0; i < Sequence.Length; i++)
             {
+                bool hasOnes = false;
                 Sequence[i] = new double[_vectorSize];
                 for (int j = 0; j < Sequence[i].Length; j++)
                 {
-                    Sequence[i][j] = SealedRandom.Next(0, 2);
+                    double value = SealedRandom.Next(0, 2);
+                    if (value == 1) hasOnes = true;
+                    Sequence[i][j] = value;
                 }
             }
         }

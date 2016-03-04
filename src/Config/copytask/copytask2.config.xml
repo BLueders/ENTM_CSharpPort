@@ -14,10 +14,10 @@
   </Description>
   
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>10</ExperimentCount>
+  <ExperimentCount>2</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>1000</MaxGenerations>
+  <MaxGenerations>20</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -126,7 +126,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>4</M>
+    <M>5</M>
     
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -148,7 +148,7 @@
     <RandomSeed>0</RandomSeed>
 
     <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>1</VectorSize>
+    <VectorSize>2</VectorSize>
 
     <!-- Maximum length of the sequence of bit vectors. 
          If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.

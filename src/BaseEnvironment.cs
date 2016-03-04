@@ -16,8 +16,9 @@ namespace ENTM
         public abstract int InputCount { get; }
         public abstract int OutputCount { get; }
         public abstract void ResetAll();
+        public abstract void ResetIteration();
 
-        public virtual void ResetIteration()
+        public void ResetRandom()
         {
             _sealedRandom = new Random(RandomSeed);
         }
@@ -33,6 +34,18 @@ namespace ENTM
         public abstract int RandomSeed { get; set; }
 
         private Random _sealedRandom;
-        public Random SealedRandom => _sealedRandom;
+
+        public Random SealedRandom
+        {
+            get
+            {
+                if (_sealedRandom == null)
+                {
+                    Console.WriteLine("Warning! Random was null, resetting...");
+                    ResetRandom();
+                }
+                return _sealedRandom;
+            }
+        } 
     }
 }

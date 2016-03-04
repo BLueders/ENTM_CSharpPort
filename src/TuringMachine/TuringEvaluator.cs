@@ -48,6 +48,9 @@ namespace ENTM.TuringMachine
             if (controller == null) Console.WriteLine("Warning! Trying to evalutate null phenome!");
 
             Utility.Debug.LogHeader("STARTING EVAULATION", true);
+
+            Environment.ResetAll();
+
             double totalScore = 0;
 
             Environment.Controller = controller;

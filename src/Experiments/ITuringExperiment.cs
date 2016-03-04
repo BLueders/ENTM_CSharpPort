@@ -12,7 +12,7 @@ namespace ENTM.Experiments
 
         TimeSpan TimeSpent { get; }
 
-        void Initialize(string name, XmlElement xmlConfig, string identifier, int number);
+        void Initialize(string name, XmlElement xmlConfig, string identifier, int subIdentifier, int number);
 
         void StartStopEA();
 
@@ -23,6 +23,8 @@ namespace ENTM.Experiments
         void AbortCurrentExperiment();
 
         event EventHandler ExperimentStartedEvent;
+        event EventHandler ExperimentPausedEvent;
+        event EventHandler ExperimentResumedEvent;
         event EventHandler ExperimentCompleteEvent;
 
     }
