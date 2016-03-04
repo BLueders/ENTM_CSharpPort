@@ -77,7 +77,7 @@ namespace ENTM.Experiments.SeasonTask
 
         public override void ResetAll()
         {
-            Debug.LogHeader("SEASON TASK RESET ALL", true);
+            Debug.DLogHeader("SEASON TASK RESET ALL", true);
 
             ResetRandom();
         }
@@ -85,11 +85,11 @@ namespace ENTM.Experiments.SeasonTask
         public override void ResetIteration()
         {
 
-            Debug.LogHeader("SEASON TASK NEW ITERATION", true);
+            Debug.DLogHeader("SEASON TASK NEW ITERATION", true);
 
             CreateSequence();
 
-            Debug.Log($"{"Years:",-16} {_years}" +
+            Debug.DLog($"{"Years:",-16} {_years}" +
             $"\n{"Seasons:",-16} {_seasons}" +
             $"\n{"Days:",-16} {_days}" +
             $"\n{"Foods:",-16} {_foodTypes}, Poisonous: {Utilities.ToString(_poisonousFoodTypes)}" +

@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
+using log4net;
 using SharpNeat.Core;
 using SharpNeat.Decoders;
 using SharpNeat.Decoders.Neat;
@@ -58,6 +59,8 @@ namespace ENTM.Experiments
         where TEvaluator : BaseEvaluator<TEnviroment, TController>, new()
         where TController : IController
     {
+        private static readonly ILog _logger = LogManager.GetLogger(typeof(ITuringExperiment));
+
         const string CHAMPION_FILE = "champion{0:D4}.xml";
         const string RECORDING_FILE = "recording{0:D4}.png";
 
@@ -167,7 +170,7 @@ namespace ENTM.Experiments
             _ea.RequestPause();
 
             Debug.On = true;
-            Console.WriteLine("Testing phenome...");
+            _logger.Info("Testing phenome...");
 
             FitnessInfo result = _evaluator.TestPhenome(phenome);
 
@@ -176,7 +179,7 @@ namespace ENTM.Experiments
             CreateExperimentDirectoryIfNecessary();
             bmp.Save(RecordingFile, ImageFormat.Png);
 
-            Console.WriteLine($"Done. Achieved fitness: {result._fitness:F4}");
+            _logger.Info($"Done. Achieved fitness: {result._fitness:F4}");
 
             return result;
         }
@@ -188,11 +191,10 @@ namespace ENTM.Experiments
 
         private void EAUpdateEvent(object sender, EventArgs e)
         {
-            Console.WriteLine($"Generation: {_ea.CurrentGeneration}, " +
-                              $"Best Fitness: {_ea.Statistics._maxFitness:F4}, " +
-                              $"Mean Fitness: {_ea.Statistics._meanFitness:F4}, " +
-                              $"Max Complexity: {_ea.Statistics._maxComplexity:F4}, " +
-                              $"Mean Complexity: {_ea.Statistics._meanComplexity:F4}"
+            _logger.Info($"Generation: {_ea.CurrentGeneration}, " +
+                              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
+                              $"Complexity - Max: {_ea.Statistics._maxComplexity:F4} Mean: {_ea.Statistics._meanComplexity:F4}, " +
+                              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}"
                               );
 
             // Save the best genome to file
@@ -228,11 +230,11 @@ namespace ENTM.Experiments
                 if (_abort)
                 {
                     _abort = false;
-                    Console.WriteLine("Experiment aborted");
+                    _logger.Info("Experiment aborted");
                 }
                 else
                 {
-                    Console.WriteLine("Experiment completed");
+                    _logger.Info("Experiment completed");
                 }
 
                 if (ExperimentCompleteEvent != null)
@@ -244,13 +246,13 @@ namespace ENTM.Experiments
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        Console.WriteLine("ExperimentCompleteEvent listener threw exception: " + ex.Message);
+                        _logger.Info("ExperimentCompleteEvent listener threw exception: " + ex.Message);
                     }
                 }
             }
             else
             {
-                Console.WriteLine("EA was paused");
+                _logger.Info("EA was paused");
                 if (ExperimentPausedEvent != null)
                 {
                     try
@@ -260,7 +262,7 @@ namespace ENTM.Experiments
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        Console.WriteLine("ExperimentPausedEvent listener threw exception: " + ex.Message);
+                        _logger.Info("ExperimentPausedEvent listener threw exception: " + ex.Message);
                     }
                 }
             }
@@ -275,7 +277,7 @@ namespace ENTM.Experiments
 
                 _timer.Start();
 
-                Console.WriteLine("\nCreating EA...");
+                _logger.Info("\nCreating EA...");
                 // Create evolution algorithm and attach events.
                 _ea = CreateEvolutionAlgorithm();
                 _ea.UpdateEvent += EAUpdateEvent;
@@ -290,7 +292,7 @@ namespace ENTM.Experiments
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        Console.WriteLine("ExperimentStartedEvent listener threw exception: " + ex.Message);
+                        _logger.Info("ExperimentStartedEvent listener threw exception: " + ex.Message);
                     }
                 }
 
@@ -301,12 +303,12 @@ namespace ENTM.Experiments
                 switch (_ea.RunState)
                 {
                     case SharpNeat.Core.RunState.NotReady:
-                        Console.WriteLine("EA not ready!");
+                        _logger.Info("EA not ready!");
                         break;
 
                     case SharpNeat.Core.RunState.Ready:
                     case SharpNeat.Core.RunState.Paused:
-                        Console.WriteLine("Starting EA...");
+                        _logger.Info("Starting EA...");
                         _timer.Start();
 
                         if (ExperimentResumedEvent != null)
@@ -318,19 +320,19 @@ namespace ENTM.Experiments
                             catch (Exception ex)
                             {
                                 // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                                Console.WriteLine("ExperimentResumedEvent listener threw exception: " + ex.Message);
+                                _logger.Info("ExperimentResumedEvent listener threw exception: " + ex.Message);
                             }
                         }
                         _ea.StartContinue();
                         break;
 
                     case SharpNeat.Core.RunState.Running:
-                        Console.WriteLine("Pausing EA...");
+                        _logger.Info("Pausing EA...");
                         _ea.RequestPause();
                         break;
 
                     case SharpNeat.Core.RunState.Terminated:
-                        Console.WriteLine("EA was terminated");
+                        _logger.Info("EA was terminated");
                         break;
                 }
             }

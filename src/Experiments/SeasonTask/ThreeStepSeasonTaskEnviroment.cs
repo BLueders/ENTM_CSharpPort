@@ -21,24 +21,24 @@ namespace ENTM.Experiments.SeasonTask
 
         public override double[] PerformAction(double[] action)
         {
-            Debug.LogHeader("SEASON TASK START", true);
-            Debug.Log($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
-            Debug.Log($"{"Step:",-16} {_step}", true);
+            Debug.DLogHeader("SEASON TASK START", true);
+            Debug.DLog($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
+            Debug.DLog($"{"Step:",-16} {_step}", true);
             double thisScore = 0;
             double[] observation = new double[0];
             int task = _step % 3; // 0 = food step, 1 = eat step, 2 = reward step
             switch (task)
             {
                 case 0:
-                    Debug.Log("Task: Food Step", true);
+                    Debug.DLog("Task: Food Step", true);
                     observation = GetOutput(_step, -1);
                     break;
                 case 1:
-                    Debug.Log("Task: Eat Step", true);
+                    Debug.DLog("Task: Eat Step", true);
                     observation = GetOutput(_step, -1);
                     break;
                 case 2:
-                    Debug.Log("Task: Reward Step", true);
+                    Debug.DLog("Task: Reward Step", true);
                     double eatVal = action[0];
                     thisScore = Evaluate(eatVal, (_step / 3) - 1);
                     observation = GetOutput(_step, thisScore);
@@ -46,7 +46,7 @@ namespace ENTM.Experiments.SeasonTask
                     {
                         _score += thisScore;
                     }
-                    Debug.Log($"{"Eating:",-16} {eatVal}" +
+                    Debug.DLog($"{"Eating:",-16} {eatVal}" +
                                 $"\n{"Poisonous:",-16} {Sequence[_step - 1].IsPoisonous}" +
                                 $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
                                 $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - 1}" +
@@ -56,7 +56,7 @@ namespace ENTM.Experiments.SeasonTask
                     break;
             }
 
-            Debug.LogHeader("SEASON TASK END", true);
+            Debug.DLogHeader("SEASON TASK END", true);
 
             if (RecordTimeSteps)
             {

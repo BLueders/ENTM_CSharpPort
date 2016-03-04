@@ -11,21 +11,21 @@ namespace ENTM.Utility
         public static bool On { get; set; } = true;
 
         [Conditional("DEBUG")]
-        public static void Log(string text)
+        public static void DLog(string text)
         {
-            Log(text, false);
+            DLog(text, false);
         }
 
         private const string HORIZONTAL_LINE = "--------------------";
 
         [Conditional("DEBUG")]
-        public static void LogHeader(string text, bool singleThread)
+        public static void DLogHeader(string text, bool singleThread)
         {
-            Log($"{HORIZONTAL_LINE} {text} {HORIZONTAL_LINE}", singleThread);
+            DLog($"{HORIZONTAL_LINE} {text} {HORIZONTAL_LINE}", singleThread);
         }
 
         [Conditional("DEBUG")]
-        public static void Log(string text, bool singleThread)
+        public static void DLog(string text, bool singleThread)
         {
             // Do not print if we debug on a single thread and we are not on that thread
             if (!On || (singleThread && !IsDebugTread)) return;

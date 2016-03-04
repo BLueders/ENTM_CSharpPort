@@ -133,7 +133,7 @@ namespace ENTM.NoveltySearch
                 avgs[j] = totals[j] / fitness.Count;
             }
 
-            Debug.Log("Averages: " + Utilities.ToString(avgs));
+            Debug.DLog("Averages: " + Utilities.ToString(avgs));
 
             // Calculate distance from average
             foreach (TGenome genome in fitness.Keys)

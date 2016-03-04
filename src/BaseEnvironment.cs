@@ -4,11 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ENTM.Replay;
+using ENTM.TuringMachine;
+using log4net;
 
 namespace ENTM
 {
     public abstract class BaseEnvironment : IEnvironment
     {
+        private static readonly ILog _logger = LogManager.GetLogger(typeof(BaseEnvironment));
+
         public abstract bool RecordTimeSteps { get; set; }
         public abstract EnvironmentTimeStep InitialTimeStep { get; }
         public abstract EnvironmentTimeStep PreviousTimeStep { get; }
@@ -41,7 +45,7 @@ namespace ENTM
             {
                 if (_sealedRandom == null)
                 {
-                    Console.WriteLine("Warning! Random was null, resetting...");
+                    _logger.Warn("Random was null, resetting...");
                     ResetRandom();
                 }
                 return _sealedRandom;

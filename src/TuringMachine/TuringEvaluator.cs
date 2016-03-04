@@ -47,7 +47,7 @@ namespace ENTM.TuringMachine
         {
             if (controller == null) Console.WriteLine("Warning! Trying to evalutate null phenome!");
 
-            Utility.Debug.LogHeader("STARTING EVAULATION", true);
+            Utility.Debug.DLogHeader("STARTING EVAULATION", true);
 
             Environment.ResetAll();
 
@@ -60,7 +60,7 @@ namespace ENTM.TuringMachine
             // Iteration loop
             for (int i = 0; i < iterations; i++)
             {
-                Utility.Debug.LogHeader($"EVALUATION ITERATION {i}", true);
+                Utility.Debug.DLogHeader($"EVALUATION ITERATION {i}", true);
 
                 Reset();
 
@@ -97,7 +97,7 @@ namespace ENTM.TuringMachine
 
                 totalScore += Environment.NormalizedScore;
 
-                Utility.Debug.Log($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
+                Utility.Debug.DLog($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }
 
             double environmentScore = Math.Max(0d, totalScore / iterations);

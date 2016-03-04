@@ -10,11 +10,15 @@ using log4net.Config;
 using SharpNeat.Domains;
 using ENTM.Experiments;
 using System.Threading;
+using log4net;
 
 namespace ENTM
 {
     class Program
     {
+        private static readonly ILog logger = LogManager.GetLogger(typeof(Program));
+
+        const string LOG4NET_CONFIG = "log4net.properties";
         const string CONFIG_PATH = "Config/";
 
         private static Stopwatch _stopwatch;
@@ -34,16 +38,17 @@ namespace ENTM
 
         public static readonly int MainThreadId = Thread.CurrentThread.ManagedThreadId;
 
+
         static void Main(string[] args)
         {
-            // Initialise log4net (log to console).
-            XmlConfigurator.Configure(new FileInfo("log4net.properties"));
+            XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
 
             Console.WriteLine("Select config");
 
             ListOptions();
 
             InitializeExperiment(_configs[0]);
+            
 
             Console.WriteLine($"\nControls:" +
                 $"\n-{"Space:", -10} Start/Pause Evolutionary Algorithm" +
@@ -157,24 +162,24 @@ namespace ENTM
 
         private static void ExperimentStartedEvent(object sender, EventArgs e)
         {
-            Console.WriteLine($"Started experiment {_experiment.Name} {_currentExperiment}");
+            logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}");
         }
 
         private static void ExperimentPausedEvent(object sender, EventArgs e)
         {
-            Console.WriteLine($"Paused experiment {_experiment.Name} {_currentExperiment}");
+            logger.Info($"Paused experiment {_experiment.Name} {_currentExperiment}");
             _stopwatch.Stop();
         }
 
         private static void ExperimentResumedEvent(object sender, EventArgs e)
         {
-            Console.WriteLine($"Resumed experiment {_experiment.Name} {_currentExperiment}");
+            logger.Info($"Resumed experiment {_experiment.Name} {_currentExperiment}");
             _stopwatch.Start();
         }
 
         private static void ExperimentCompleteEvent(object sender, EventArgs e)
         {
-            Console.WriteLine($"Time spent: {Utilities.TimeSpanToString(_experiment.TimeSpent)}");
+            logger.Info($"Time spent: {Utilities.TimeSpanToString(_experiment.TimeSpent)}");
 
             _experiment.TestCurrentChampion();
 
@@ -190,7 +195,8 @@ namespace ENTM
                 else
                 {
                     _terminated = true;
-                    Console.WriteLine($"All experiments completed. Total time spent: {Utilities.TimeSpanToString(_stopwatch.Elapsed)} Press any key to exit...");
+                    logger.Info($"All experiments completed. Total time spent: {Utilities.TimeSpanToString(_stopwatch.Elapsed)}");
+                    Console.WriteLine("\nPress any key to exit...");
                 }
             }
 

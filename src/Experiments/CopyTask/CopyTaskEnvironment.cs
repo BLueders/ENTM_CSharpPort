@@ -68,13 +68,13 @@ namespace ENTM.Experiments.CopyTask
 
         public override void ResetAll()
         {
-            Debug.LogHeader("COPY TASK RESET ALL", true);
+            Debug.DLogHeader("COPY TASK RESET ALL", true);
             ResetRandom();
         }
 
         public override void ResetIteration()
         {
-            Debug.LogHeader("COPY TASK NEW ITERATION", true);
+            Debug.DLogHeader("COPY TASK NEW ITERATION", true);
 
             int length;
 
@@ -95,11 +95,11 @@ namespace ENTM.Experiments.CopyTask
 
             CreateSequence(length);
 
-            Debug.Log($"{"Sequence Length:", -16} {length}" +
+            Debug.DLog($"{"Sequence Length:", -16} {length}" +
                       $"\n{"Vector Size:", -16} {_vectorSize}" +
                       $"\n{"Max score:", -16} {MaxScore}", true);
 
-            Debug.Log($"Sequence:\n{Utilities.ToString(Sequence, "f1")}", true);
+            Debug.DLog($"Sequence:\n{Utilities.ToString(Sequence, "f1")}", true);
 
             _step = 1;
             _score = 0d;
@@ -109,9 +109,9 @@ namespace ENTM.Experiments.CopyTask
 
         public override double[] PerformAction(double[] action)
         {
-            Debug.LogHeader("COPYTASK START", true);
-            Debug.Log($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
-            Debug.Log($"{"Step:",-16} {_step}", true);
+            Debug.DLogHeader("COPYTASK START", true);
+            Debug.DLog($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
+            Debug.DLog($"{"Step:",-16} {_step}", true);
 
             double[] result = GetObservation(_step);
 
@@ -127,14 +127,14 @@ namespace ENTM.Experiments.CopyTask
                 thisScore = Evaluate(correct, received);
                 _score += thisScore;
 
-                Debug.Log($"{"Reading:",-16} {Utilities.ToString(received, "F2")}" +
+                Debug.DLog($"{"Reading:",-16} {Utilities.ToString(received, "F2")}" +
                             $"\n{"Actual:",-16} {Utilities.ToString(correct, "F2")}" +
                             $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
                             $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - Sequence.Length - 1}" +
                             $"\n{"Max Score:",-16} {Sequence.Length.ToString("F0")}", true);
             }
 
-            Debug.LogHeader("COPYTASK END", true);
+            Debug.DLogHeader("COPYTASK END", true);
 
             if (RecordTimeSteps)
             {
@@ -169,31 +169,31 @@ namespace ENTM.Experiments.CopyTask
 
             if (step == 0)
             {
-                Debug.Log($"{"Type:",-16} START", true);
+                Debug.DLog($"{"Type:",-16} START", true);
                 // Send start vector
                 observation[0] = 1; // START bit
             }
             else if (step <= Sequence.Length)
             {
-                Debug.Log($"{"Type:",-16} WRITE", true);
+                Debug.DLog($"{"Type:",-16} WRITE", true);
 
                 // sending the sequence
                 Array.Copy(Sequence[step - 1], 0, observation, 2, Sequence[step - 1].Length);
             }
             else if (step == Sequence.Length + 1)
             {
-                Debug.Log($"{"Type:",-16} DELIMITER", true);
+                Debug.DLog($"{"Type:",-16} DELIMITER", true);
 
                 // DELIMITER bit
                 observation[1] = 1;
             }
             else
             {
-                Debug.Log($"{"Type:",-16} READ", true);
+                Debug.DLog($"{"Type:",-16} READ", true);
                 // When we are reading we just send zeros
             }
 
-            Debug.Log($"{"Observation:",-16} {Utilities.ToString(observation, "f0")}", true);
+            Debug.DLog($"{"Observation:",-16} {Utilities.ToString(observation, "f0")}", true);
 
             return observation;
         }
@@ -247,7 +247,7 @@ namespace ENTM.Experiments.CopyTask
                 double baseResult = StrictCloseToTarget(target, actual);
 
 
-                Debug.Log($"Target={Utilities.ToString(target, "f4")} Actual={Utilities.ToString(actual, "f4")} Written={Utilities.ToString(written, "f4")} | TM Score={tmResult} Output Score={baseResult}\n", true);
+                Debug.DLog($"Target={Utilities.ToString(target, "f4")} Actual={Utilities.ToString(actual, "f4")} Written={Utilities.ToString(written, "f4")} | TM Score={tmResult} Output Score={baseResult}\n", true);
 
 
                 return 0.5 * tmResult + 0.5 * baseResult;

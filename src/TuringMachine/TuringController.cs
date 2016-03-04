@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using SharpNeat.Phenomes;
 using ENTM.Utility;
+using log4net;
 
 namespace ENTM.TuringMachine
 {
     public class TuringController : IController
     {
+        private static readonly ILog _logger = LogManager.GetLogger(typeof(TuringController));
+
         public IBlackBox Phenome { get; set; }
 
         public ITuringMachine TuringMachine { get; }
@@ -24,7 +27,7 @@ namespace ENTM.TuringMachine
         {
             if (Phenome == null)
             {
-                Console.WriteLine("Phenome was null! Remember to set the BlackBox object before activating");
+                _logger.Warn("Phenome was null! Remember to set the BlackBox object before activating");
                 return null;
                 //throw new ArgumentNullException("BlackBox was null! Remember to set the BlackBox object before activating");
             }
@@ -35,7 +38,7 @@ namespace ENTM.TuringMachine
             // Cap values at 1
             Utilities.ClampArray01(nnInput); // FIXME: This might be a symptom in the GTM.
 
-            Debug.Log($"Neural Network Input:  {Utilities.ToString(nnInput, "f4")}", true);
+            Debug.DLog($"Neural Network Input:  {Utilities.ToString(nnInput, "f4")}", true);
 
             // Activate the neural network
             Phenome.ResetState();
@@ -45,7 +48,7 @@ namespace ENTM.TuringMachine
             double[] nnOutput = new double[Phenome.OutputSignalArray.Length];
             Phenome.OutputSignalArray.CopyTo(nnOutput, 0);
 
-            Debug.Log($"Neural Network Output: {Utilities.ToString(nnOutput, "f4")}", true);
+            Debug.DLog($"Neural Network Output: {Utilities.ToString(nnOutput, "f4")}", true);
 
             // Environment inputs are first of the NN outputs
             double[] environmentInput = Utilities.ArrayCopyOfRange(nnOutput, 0, nnOutput.Length - _turingInputLength);

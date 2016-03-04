@@ -73,7 +73,7 @@ namespace ENTM.TuringMachine
 
         public void Reset()
         {
-            Debug.LogHeader("TURING MACHINE RESET", true);
+            Debug.DLogHeader("TURING MACHINE RESET", true);
 
             _tape.Clear();
             _tape.Add(new double[_m]);
@@ -86,7 +86,7 @@ namespace ENTM.TuringMachine
             _writeActivities.Clear();
             _writeActivities.Add(0);
 
-            Debug.Log(PrintState(), true);
+            Debug.DLog(PrintState(), true);
         }
 
         /// <summary>
@@ -102,8 +102,8 @@ namespace ENTM.TuringMachine
 
         public double[][] ProcessInput(double[] fromNN)
         {
-            Debug.LogHeader("MINIMAL TURING MACHINE START", true);
-            Debug.Log($"From NN: {Utilities.ToString(fromNN, "f4")}", true);
+            Debug.DLogHeader("MINIMAL TURING MACHINE START", true);
+            Debug.DLog($"From NN: {Utilities.ToString(fromNN, "f4")}", true);
 
             if (!_enabled)
                 return _initialRead;
@@ -139,8 +139,8 @@ namespace ENTM.TuringMachine
                 shifts[i] = Take(fromNN, p, s);
                 p += s;
 
-                Debug.LogHeader($"HEAD {i + 1}", true);
-                Debug.Log($"\nWrite:        \t{Utilities.ToString(writeKeys[i], "f4")}" +
+                Debug.DLogHeader($"HEAD {i + 1}", true);
+                Debug.DLog($"\nWrite:        \t{Utilities.ToString(writeKeys[i], "f4")}" +
                           $"\nInterpolate:  \t{interps[i].ToString("f4")}" +
                           $"\nContent:      \t{jumps[i].ToString("f4")}" +
                           $"\nShift:        \t{Utilities.ToString(shifts[i], "f4")}", true);
@@ -190,9 +190,9 @@ namespace ENTM.TuringMachine
                 }
             }
 
-            Debug.Log(PrintState(), true);
-            Debug.Log("Sending to NN: " + Utilities.ToString(result, "F4"), true);
-            Debug.LogHeader("MINIMAL TURING MACHINE END", true);
+            Debug.DLog(PrintState(), true);
+            Debug.DLog("Sending to NN: " + Utilities.ToString(result, "F4"), true);
+            Debug.DLogHeader("MINIMAL TURING MACHINE END", true);
 
             return result;
         }
@@ -301,14 +301,14 @@ namespace ENTM.TuringMachine
                     }
                 }
 
-                Debug.Log($"Content Jump Head {head} from {_headPositions[head]} to {bestPos}", true);
+                Debug.DLog($"Content Jump Head {head} from {_headPositions[head]} to {bestPos}", true);
 
                 _headPositions[head] = bestPos;
 
             }
             else
             {
-                Debug.Log("No content jump", true);
+                Debug.DLog("No content jump", true);
             }
         }
 
@@ -387,7 +387,7 @@ namespace ENTM.TuringMachine
                     }
                 }
 
-                Debug.Log($"Shift Head {head} by {offset} to {_headPositions[head]}", true);
+                Debug.DLog($"Shift Head {head} by {offset} to {_headPositions[head]}", true);
                 offset = offset > 0 ? offset - 1 : offset + 1; // Go closer to 0
             }
         }

@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="log4net.properties" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -117,13 +118,18 @@
     <Content Include="Config\copytask.config.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Config\CopyTask\copytask6.config.xml" />
+    <Content Include="Config\CopyTask\copytask5.config.xml" />
+    <Content Include="Config\CopyTask\copytask4.config.xml" />
+    <Content Include="Config\CopyTask\copytask3.config.xml" />
     <Content Include="Config\CopyTask\copytask2.config.xml" />
     <Content Include="Config\CopyTask\copytask1.config.xml" />
     <Content Include="Config\seasontask.config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>XCOPY "$(SolutionDir)Config" "$(TargetDir)\Config\" /S /Y</PostBuildEvent>
+    <PostBuildEvent>XCOPY "$(SolutionDir)Config" "$(TargetDir)\Config\" /S /Y
+COPY "$(SolutionDir)log4net.properties" "$(TargetDir)\" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
