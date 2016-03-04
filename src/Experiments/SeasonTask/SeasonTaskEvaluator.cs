@@ -21,7 +21,7 @@ namespace ENTM.Experiments.SeasonTask
 
         protected override SeasonTaskEnvironment NewEnvironment()
         {
-            return new SeasonTaskEnvironment(_seasonTaskProps);
+            return new TwoStepSeasonTaskEnviroment(_seasonTaskProps);
         }
 
         public override void Initialize(XmlElement xmlConfig)

@@ -14,7 +14,13 @@
     Then recall the information when it encounters that season again to decide wich to eat.
   </Description>
 
-<!-- NEAT -->
+  <!-- How many experiments will be performed (serially) -->
+  <ExperimentCount>10</ExperimentCount>
+
+  <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved -->
+  <MaxGenerations>500</MaxGenerations>
+
+  <!-- NEAT -->
   <PopulationSize>100</PopulationSize>
   <Generations>100</Generations>
   <EvaluateParents>true</EvaluateParents>
@@ -106,7 +112,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>4</M>
+    <M>5</M>
     
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -131,8 +137,8 @@
     <Years>3</Years>
     <Seasons>2</Seasons>
     <Days>5</Days>
-    <FoodTypes>4</FoodTypes>
-    <PoisonFoods>2</PoisonFoods>
+    <FoodTypes>2</FoodTypes>
+    <PoisonFoods>1</PoisonFoods>
 
     }
   </SeasonTaskParams>

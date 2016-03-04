@@ -9,38 +9,44 @@ using ENTM.Utility;
 
 namespace ENTM.Experiments.SeasonTask
 {
-    class SeasonTaskEnvironment : BaseEnvironment
+    abstract class SeasonTaskEnvironment : BaseEnvironment
     {
         // Describes how many repetitions of each season there will be
-        private readonly int _years;
+        protected readonly int _years;
 
         // How many different seasons are there each year
-        private readonly int _seasons;
+        protected readonly int _seasons;
 
         // How many different days are there each season
-        private readonly int _days;
+        protected readonly int _days;
 
         // How many different foods there are to select from each season
-        private readonly int _foodTypes;
-        private List<int> _poisonousFoodTypes;
+        protected readonly int _foodTypes;
+        protected List<int> _poisonousFoodTypes;
 
         // How many of the foods are poisonous each season
-        private int _poisonFoods;
+        protected int _poisonFoods;
 
         // Current time step
-        private int _step;
+        protected int _step;
 
         // Current fitness score
-        private double _score;
+        protected double _score;
 
-        public Food[] Sequence { get; private set; }
+        public Food[] Sequence { get; protected set; }
 
-        private readonly double _fitnessFactor;
+        protected readonly double _fitnessFactor;
 
         public override double CurrentScore => _score * _fitnessFactor; // * ((double)_foodTypes * _seasons * _years / (double)_sequence.Length);
 
         // do not score first day of each season of the first year, this is where the food is encountered the first time and for learning
         public override double MaxScore => _fitnessFactor * _foodTypes * _days * _seasons * _years - (_fitnessFactor * _seasons * _foodTypes);
+
+        // jk. do not score first day of each season of the first year. There we encounter each food the first time and cant know if its poisonous.
+        protected bool IsFirstDayOfSeasonInFirstYear(int step)
+        {
+            return step < _foodTypes*_days*_seasons && step%(_foodTypes*_days) < _foodTypes;
+        }
 
         public override double NormalizedScore => CurrentScore / MaxScore;
 
@@ -94,89 +100,14 @@ namespace ENTM.Experiments.SeasonTask
             _score = 0d;
         }
 
-        public override double[] PerformAction(double[] action)
-        {
-            Debug.LogHeader("SEASON TASK START", true);
-            Debug.Log($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
-            Debug.Log($"{"Step:",-16} {_step}", true);
-            double thisScore = 0;
-            double[] observation = new double[0];
-            int task = _step % 3; // 0 = food step, 1 = eat step, 2 = reward step
-            switch (task)
-            {
-                case 0:
-                    Debug.Log("Task: Food Step", true);
-                    observation = GetOutput(_step, -1);
-                    break;
-                case 1:
-                    Debug.Log("Task: Eat Step", true);
-                    observation = GetOutput(_step, -1);
-                    break;
-                case 2:
-                    Debug.Log("Task: Reward Step", true);
-                    double eatVal = action[0];
-                    thisScore = Evaluate(eatVal, (_step - 1) / 3);
-                    observation = GetOutput(_step, thisScore);
-                    _score += thisScore;
-                    Debug.Log($"{"Eating:",-16} {eatVal}" +
-                                $"\n{"Poisonous:",-16} {Sequence[_step].IsPoisonous}" +
-                                $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
-                                $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - 1}" +
-                                $"\n{"Max Score:",-16} {Sequence.Length.ToString("F4")}", true);
-                    break;
-                default:
-                    break;
-            }
+        public abstract override double[] PerformAction(double[] action);
+        protected abstract double[] GetOutput(int step, double evaluation);
 
-            Debug.LogHeader("SEASON TASK END", true);
-
-            if (RecordTimeSteps)
-            {
-                _prevTimeStep = new EnvironmentTimeStep(action, observation, thisScore);
-            }
-
-            _step++;
-            return observation;
-        }
-
-        /* // original implementation with only one kind of task, eat and reward in one step
-        public override double[] PerformAction(double[] action)
-        {
-            Debug.LogHeader("SEASON TASK START", true);
-            Debug.Log($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
-            Debug.Log($"{"Step:",-16} {_step}", true);
-            double thisScore = 0;
-            double[] observation = GetOutput(_step);
-            if (_step != 0)
-            {
-                double eatVal = action[0];
-                thisScore = Evaluate(eatVal, _step);
-                _score += thisScore;
-                Debug.Log($"{"Eating:",-16} {eatVal}" +
-                            $"\n{"Poisonous:",-16} {Sequence[_step].IsPoisonous}" +
-                            $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
-                            $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - 1}" +
-                            $"\n{"Max Score:",-16} {Sequence.Length.ToString("F4")}", true);
-            }
-
-            Debug.LogHeader("SEASON TASK END", true);
-
-            if (RecordTimeSteps)
-            {
-                _prevTimeStep = new EnvironmentTimeStep(action, observation, thisScore);
-            }
-
-            _step++;
-            return observation;
-        }
-        */
-        private double Evaluate(double eatVal, int step)
+        protected double Evaluate(double eatVal, int step)
         {
             const double tolerance = 0.3;
 
-            // self explanatory lol
-            // jk. do not score first day of each season of the first year. There we encounter each food the first time and cant know if its poisonous.
-            if (step < _foodTypes * _days * _seasons && step % (_foodTypes * _days) < _foodTypes)
+            if (step < 0)
             {
                 return 0;
             }
@@ -192,32 +123,8 @@ namespace ENTM.Experiments.SeasonTask
             }
             return 0;
         }
-
-        private double[] GetOutput(int step, double evaluation)
-        {
-            double[] observation = new double[OutputCount];
-            int task = step % 3; // 0 = food step, 1 = eat step, 2 = reward step
-            switch (task)
-            {
-                case 0:
-                    Food currentFood = Sequence[step / 3];
-                    observation[currentFood.Type] = 1; // return the current food
-                    break;
-                case 1:
-                    return observation;
-                case 2:
-                    if (evaluation == 0)
-                        observation[observation.Length - 1] = 1;
-                    else
-                        observation[observation.Length - 2] = 1;
-                    break;
-                default:
-                    break;
-            }
-            return observation;
-        }
-
-        private void CreateSequence()
+       
+        protected void CreateSequence()
         {
             // determine the poisonous food types of this iteration for each season
             _poisonousFoodTypes = new List<int>();
@@ -266,9 +173,10 @@ namespace ENTM.Experiments.SeasonTask
                 }
             }
         }
+
         #region RecordTimesteps
         public override bool RecordTimeSteps { get; set; }
-        private EnvironmentTimeStep _prevTimeStep;
+        protected EnvironmentTimeStep _prevTimeStep;
         public override EnvironmentTimeStep InitialTimeStep
         {
             get

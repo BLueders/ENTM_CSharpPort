@@ -52,6 +52,8 @@
   <ItemGroup>
     <Compile Include="BaseEvaluator.cs" />
     <Compile Include="Experiments\ITuringExperiment.cs" />
+    <Compile Include="Experiments\SeasonTask\TwoStepSeasonTaskEnviroment.cs" />
+    <Compile Include="Experiments\SeasonTask\ThreeStepSeasonTaskEnviroment.cs" />
     <Compile Include="NoveltySearch\NoveltySearchListEvaluator.cs" />
     <Compile Include="BaseEnvironment.cs" />
     <Compile Include="Experiments\SeasonTask\Container.cs" />
@@ -112,7 +114,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Config\copytask.config.xml" />
+    <Content Include="Config\copytask.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\seasontask.config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
