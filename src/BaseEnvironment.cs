@@ -16,6 +16,7 @@ namespace ENTM
         public abstract int InputCount { get; }
         public abstract int OutputCount { get; }
         public abstract void ResetAll();
+
         public virtual void ResetIteration()
         {
             _sealedRandom = new Random(RandomSeed);
@@ -29,7 +30,7 @@ namespace ENTM
         public abstract bool IsTerminated { get; }
         public abstract int TotalTimeSteps { get; }
 
-        public abstract int RandomSeed { get; }
+        public abstract int RandomSeed { get; set; }
 
         private Random _sealedRandom;
         public Random SealedRandom => _sealedRandom;

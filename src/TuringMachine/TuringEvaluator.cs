@@ -43,19 +43,18 @@ namespace ENTM.TuringMachine
         // Read key for the turing machine for each head
         public override int ControllerOutputCount => _turingMachineProps.M * _turingMachineProps.Heads;
 
-        public override FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record)
+        public override FitnessInfo Evaluate(TuringController controller, int iterations, bool record)
         {
-            if (phenome == null) Console.WriteLine("Warning! Trying to evalutate null phenome!");
+            if (controller == null) Console.WriteLine("Warning! Trying to evalutate null phenome!");
 
             Utility.Debug.LogHeader("STARTING EVAULATION", true);
             double totalScore = 0;
 
-            Controller.BlackBox = phenome;
-            Environment.Controller = Controller;
+            Environment.Controller = controller;
 
             AuxFitnessInfo[] noveltyScore = new AuxFitnessInfo[10];
 
-            // For each iteration
+            // Iteration loop
             for (int i = 0; i < iterations; i++)
             {
                 Utility.Debug.LogHeader($"EVALUATION ITERATION {i}", true);
@@ -69,16 +68,17 @@ namespace ENTM.TuringMachine
                     Recorder = new Recorder();
                     Recorder.Start();
 
-                    Controller.TuringMachine.RecordTimeSteps = true;
+                    controller.TuringMachine.RecordTimeSteps = true;
                     Environment.RecordTimeSteps = true;
 
-                    Recorder.Record(Environment.InitialTimeStep, Controller.TuringMachine.InitialTimeStep);
+                    Recorder.Record(Environment.InitialTimeStep, controller.TuringMachine.InitialTimeStep);
                 }
 
+                // Environment loop
                 while (!Environment.IsTerminated)
                 {
                     // Activate the controller with the environment output
-                    double[] environmentInput = Controller.ActivateNeuralNetwork(enviromentOutput);
+                    double[] environmentInput = controller.ActivateNeuralNetwork(enviromentOutput);
 
                     // Oh shit, some parallel error happened, bail out. This only occurs in the first generation sometimes
                     if (environmentInput == null) return new FitnessInfo(0, noveltyScore);
@@ -88,7 +88,7 @@ namespace ENTM.TuringMachine
 
                     if (record)
                     {
-                        Recorder.Record(Environment.PreviousTimeStep, Controller.TuringMachine.PreviousTimeStep);
+                        Recorder.Record(Environment.PreviousTimeStep, controller.TuringMachine.PreviousTimeStep);
                     }
                 }
 
@@ -96,9 +96,6 @@ namespace ENTM.TuringMachine
 
                 Utility.Debug.Log($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }
-
-            // Unregister the phenome
-            Controller.BlackBox = null;
 
             double environmentScore = Math.Max(0d, totalScore / iterations);
 

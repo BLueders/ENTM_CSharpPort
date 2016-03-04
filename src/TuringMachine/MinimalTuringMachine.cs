@@ -115,6 +115,11 @@ namespace ENTM.TuringMachine
             double[] jumps = new double[_heads];
             double[][] shifts = new double[_heads][];
 
+             // Save write position for recording
+            int[] writePositions = null;
+
+            if (RecordTimeSteps) writePositions = new int[_heads];
+            
             int p = 0;
             // First all writes
             for (int i = 0; i < _heads; i++)
@@ -142,6 +147,9 @@ namespace ENTM.TuringMachine
 
                 // 1: Write!
                 Write(i, writeKeys[i], interps[i]);
+
+                if (RecordTimeSteps) writePositions[i] = _headPositions[i];
+
             }
 
             for (int i = 0; i < _heads; i++)
@@ -153,9 +161,7 @@ namespace ENTM.TuringMachine
             // Shift and read (no interaction)
             for (int i = 0; i < _heads; i++)
             {
-                // Save write position for recording
-                int writePosition = _headPositions[i];
-
+               
                 // If the memory has been expanded down below 0, which means the memory has shiftet
                 _increasedSizeDown = false;
 
@@ -169,18 +175,18 @@ namespace ENTM.TuringMachine
                 if (RecordTimeSteps)
                 {
                     int readPosition = _headPositions[i];
-                    int correctedWritePosition = writePosition - _zeroPosition;
+                    int correctedWritePosition = writePositions[i] - _zeroPosition;
 
                     if (_increasedSizeDown)
                     {
-                        writePosition++;
+                        writePositions[i]++;
                         _zeroPosition++;
                     }
 
                     int correctedReadPosition = readPosition - _zeroPosition;
 
                     _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], headResult,
-                        writePosition, readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
+                        writePositions[i], readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
                 }
             }
 

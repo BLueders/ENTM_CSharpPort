@@ -10,8 +10,8 @@
   <!-- How many experiments will be performed (serially) -->
   <ExperimentCount>10</ExperimentCount>
 
-  <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved -->
-  <MaxGenerations>500</MaxGenerations>
+  <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
+  <MaxGenerations>1000</MaxGenerations>
   
   <!-- Experiment description -->
   <Description>
@@ -52,7 +52,7 @@
   <ComplexityThreshold>50</ComplexityThreshold>
   
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
-  <MultiThreading>true</MultiThreading>
+  <MultiThreading>false</MultiThreading>
   
   <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
   <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
@@ -128,7 +128,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>5</M>
+    <M>4</M>
     
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -144,13 +144,13 @@
   <CopyTaskParams>
     
     <!-- Evaluation iterations -->
-    <Iterations>20</Iterations>
+    <Iterations>1</Iterations>
 
     <!-- The seed used for random environment generations -->
     <RandomSeed>0</RandomSeed>
 
     <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>2</VectorSize>
+    <VectorSize>1</VectorSize>
 
     <!-- Maximum length of the sequence of bit vectors. 
          If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
@@ -158,7 +158,7 @@
     <MaxLength>10</MaxLength>
 
     <!-- "Random" or "Fixed" sequence lengts -->
-    <LengthRule>Random</LengthRule>
+    <LengthRule>Fixed</LengthRule>
 
     <!-- What fitness function to evalutate with.
         StrictCloseToTarget

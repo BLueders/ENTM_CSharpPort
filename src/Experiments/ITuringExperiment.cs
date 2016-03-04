@@ -20,6 +20,8 @@ namespace ENTM.Experiments
 
         FitnessInfo TestSavedChampion();
 
+        void AbortCurrentExperiment();
+
         event EventHandler ExperimentStartedEvent;
         event EventHandler ExperimentCompleteEvent;
 

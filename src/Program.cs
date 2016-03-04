@@ -59,10 +59,11 @@ namespace ENTM
 
             Console.WriteLine($"Controls:" +
                 $"\n-{"Space:", -10} Start/Pause Evolutionary Algorithm" +
-                $"\n-{"D:",-10} Toggle Debug (only available for debug builds)" +
-                $"\n-{"C:",-10} Test current champion" +
-                $"\n-{"S:",-10} Test saved champion (from champion.xml)" +
-                $"\n-{"Esc:",-10} Exit");
+                $"\n-{"D:", -10} Toggle Debug (only available for debug builds)" +
+                $"\n-{"C:", -10} Test current champion" +
+                $"\n-{"S:", -10} Test saved champion (from champion.xml)" +
+                $"\n-{"A:", -10} Abort current experiment and continue with the next, if any" +
+                $"\n-{"Esc:", -10} Exit");
 
             // Start listening for input
             ProcessInput();
@@ -100,15 +101,17 @@ namespace ENTM
 
         private static void ExperimentStartedEvent(object sender, EventArgs e)
         {
-            Console.WriteLine("Started experiment " + _currentExperiment);
+            Console.WriteLine($"Started experiment {_currentExperiment}");
         }
 
         private static void ExperimentCompleteEvent(object sender, EventArgs e)
         {
-            Console.WriteLine("Time spent: " + Utilities.TimeSpanToString(_experiment.TimeSpent));
+            Console.WriteLine($"Time spent: {Utilities.TimeSpanToString(_experiment.TimeSpent)}");
+
+            _experiment.TestCurrentChampion();
+
             if (_currentExperiment < _experiementCount)
             {
-                _experiment.TestCurrentChampion();
 
                 InitializeExperiment();
                 _experiment.StartStopEA();
@@ -150,6 +153,10 @@ namespace ENTM
 
                     case ConsoleKey.S:
                         _experiment.TestSavedChampion();
+                        break;
+
+                    case ConsoleKey.A:
+                        _experiment.AbortCurrentExperiment();
                         break;
 
                     case ConsoleKey.Escape:
