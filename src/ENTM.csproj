@@ -125,6 +125,10 @@
     <Content Include="Config\CopyTask\copytask2.config.xml" />
     <Content Include="Config\CopyTask\copytask1.config.xml" />
     <Content Include="Config\seasontask.config.xml" />
+    <Content Include="Config\SeasonTask\seasontask3.config.xml" />
+    <Content Include="Config\SeasonTask\seasontask4.config.xml" />
+    <Content Include="Config\SeasonTask\seasontask2.config.xml" />
+    <Content Include="Config\SeasonTask\seasontask1.config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
