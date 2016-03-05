@@ -47,7 +47,7 @@
        Absolute: Defines an absolute ceiling on complexity.
        Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
-  <ComplexityThreshold>150</ComplexityThreshold>
+  <ComplexityThreshold>600</ComplexityThreshold>
   
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>

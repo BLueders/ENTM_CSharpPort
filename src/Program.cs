@@ -45,7 +45,9 @@ namespace ENTM
 
             Console.WriteLine("Select config");
 
-            ListOptions();
+            Console.WriteLine($"A: All (this folder): Execute all experiments serially");
+
+            Browse();
 
             InitializeExperiment(_configs[0]);
             
@@ -54,7 +56,7 @@ namespace ENTM
                 $"\n-{"Space:", -10} Start/Pause Evolutionary Algorithm" +
                 $"\n-{"D:", -10} Toggle Debug (only available for debug builds)" +
                 $"\n-{"C:", -10} Test current champion" +
-                $"\n-{"S:", -10} Test saved champion (from champion.xml)" +
+                $"\n-{"S:", -10} Test saved champion (from xml)" +
                 $"\n-{"A:", -10} Abort current experiment and continue with the next, if any" +
                 $"\n-{"Esc:", -10} Exit");
 
@@ -62,7 +64,7 @@ namespace ENTM
             ProcessInput();
         }
 
-        private static void ListOptions()
+        private static void Browse()
         {
             Console.WriteLine($"\nCurrent directory: {_currentDir}");
 
@@ -80,13 +82,12 @@ namespace ENTM
 
             // Load the config files.
             // Config files must be copied into the output directory in the CONFIG_PATH folder
-            string[] configs = Directory.EnumerateFiles(_currentDir, "*.xml").ToArray();
-            for (int i = 0; i < configs.Length; i++)
+            string[] xmls = Directory.EnumerateFiles(_currentDir, "*.xml").ToArray();
+            for (int i = 0; i < xmls.Length; i++)
             {
-                Console.WriteLine($"{select++}: {configs[i].Replace(_currentDir, string.Empty)}");
+                Console.WriteLine($"{select++}: {xmls[i].Replace(_currentDir, string.Empty)}");
             }
 
-            Console.WriteLine($"A: All (this folder): Execute all experiments serially");
 
             do
             {
@@ -94,7 +95,7 @@ namespace ENTM
 
                 if (key.Key == ConsoleKey.A)
                 {
-                    LoadExperiments(configs.ToArray());
+                    LoadExperiments(xmls.ToArray());
                     break;
                 }
 
@@ -102,7 +103,7 @@ namespace ENTM
                 if (selection == 0)
                 {
                     _currentDir = _dirStack.Pop();
-                    ListOptions();
+                    Browse();
                     break;
                 }
 
@@ -112,14 +113,14 @@ namespace ENTM
                     {
                         _dirStack.Push(_currentDir);
                         _currentDir = folders[selection - 1];
-                        ListOptions();
+                        Browse();
                         break;
                     }
 
-                    if (selection <= folders.Length + configs.Length)
+                    if (selection <= folders.Length + xmls.Length)
                     {
                         selection -= folders.Length;
-                        LoadExperiments(new[] { configs[selection - 1] });
+                        LoadExperiments(new[] { xmls[selection - 1] });
                         break;
                     }
                 } 

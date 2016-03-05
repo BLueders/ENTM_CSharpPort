@@ -58,15 +58,16 @@ namespace ENTM.Utility
         {
             return string.Join("\n", col.Select(x => ToString(x, format)).ToArray());
         }
-        /**
-         * Normalized manhattan distance:
-         * Compares two vectors and calculates a similarity between them.
-         * Only works for strictly positive numbers each between 0.0 and 1.0.
-         * @param v1 the first vector
-         * @param v2 the second vector
-         * @return A number between 0.0 and 1.0 of how similar the two vectors
-         * are (in the space of each variable being between 0.0 and 1.0).
-         */
+
+        /// <summary>
+        /// Normalized manhattan distance:
+        /// Compares two vectors and calculates a similarity between them.
+        /// Only works for strictly positive numbers each between 0.0 and 1.0.
+        /// </summary>
+        /// <param name="v1">The first vector</param>
+        /// <param name="v2">The second vector</param>
+        /// <returns>A number between 0.0 and 1.0 of how similar the two vectors are 
+        /// (in the space of each variable being between 0.0 and 1.0).
         public static double Emilarity(double[] v1, double[] v2)
         {
             if (v1.Length != v2.Length)
@@ -77,11 +78,11 @@ namespace ENTM.Utility
             return 1.0 - (numerator / v1.Length);
         }
 
-        /**
-	     * Find the index of the element with the highest value
-	     * @param array The array to search through
-	     * @return The index of the element with the highest value
-	     */
+        /// <summary>
+        /// Find the index of the element with the highest value
+        /// </summary>
+        /// <param name="array">The array to search through</param>
+        /// <returns>The index of the element with the highest value</returns>
         public static int MaxPos(double[] array)
         {
             int maxpos = 0;

@@ -68,7 +68,6 @@ namespace ENTM.Experiments.CopyTask
 
         public override void ResetAll()
         {
-            _logger.Debug("Reset all!");
             Debug.DLogHeader("COPY TASK RESET ALL", true);
             ResetRandom();
         }

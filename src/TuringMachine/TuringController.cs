@@ -26,11 +26,7 @@ namespace ENTM.TuringMachine
         public double[] ActivateNeuralNetwork(double[] environmentOutput)
         {
             if (Phenome == null)
-            {
-                _logger.Warn("Phenome was null! Remember to set the BlackBox object before activating");
-                return null;
-                //throw new ArgumentNullException("BlackBox was null! Remember to set the BlackBox object before activating");
-            }
+                throw new ArgumentNullException("BlackBox was null! Remember to set the BlackBox object before activating");
 
             // NN Input is the output from the environment, and the output from the turing machine in the previous activation
             double[] nnInput = Utilities.JoinArrays(environmentOutput, _turingMachineOutput);

@@ -14,10 +14,10 @@
   </Description>
   
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>2</ExperimentCount>
+  <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>10</MaxGenerations>
+  <MaxGenerations>5000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>

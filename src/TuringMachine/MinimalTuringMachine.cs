@@ -28,7 +28,7 @@ namespace ENTM.TuringMachine
         // The length of the memory at each location.
         private readonly int _m;
 
-        // The number of memory locations in the FINITE tape.
+        // The number of memory locations in the FINITE tape. If this is -1, the tape is infinite (theoretically)
         private readonly int _n;
 
         // The maximum distance you can jump with shifting.
@@ -48,8 +48,8 @@ namespace ENTM.TuringMachine
         private double[] _noveltyVector;
 
         // Number of times each location was accessed during livetime of the tm
-        private List<int> _writeActivities = new List<int>();
-        private List<int> _readActivities = new List<int>();
+        // private List<int> _writeActivities = new List<int>();
+        // private List<int> _readActivities = new List<int>();
 
         public MinimalTuringMachine(TuringMachineProperties props)
         {
@@ -81,10 +81,10 @@ namespace ENTM.TuringMachine
             _noveltyVector = new double[0];
 
             // clear debug log lists
-            _readActivities.Clear();
-            _readActivities.Add(0);
-            _writeActivities.Clear();
-            _writeActivities.Add(0);
+            //_readActivities.Clear();
+            //_readActivities.Add(0);
+            //_writeActivities.Clear();
+            //_writeActivities.Add(0);
 
             Debug.DLog(PrintState(), true);
         }
@@ -105,8 +105,7 @@ namespace ENTM.TuringMachine
             Debug.DLogHeader("MINIMAL TURING MACHINE START", true);
             Debug.DLog($"From NN: {Utilities.ToString(fromNN, "f4")}", true);
 
-            if (!_enabled)
-                return _initialRead;
+            if (!_enabled) return _initialRead;
 
             double[][] result = new double[_heads][];
 
@@ -121,6 +120,7 @@ namespace ENTM.TuringMachine
             if (RecordTimeSteps) writePositions = new int[_heads];
             
             int p = 0;
+
             // First all writes
             for (int i = 0; i < _heads; i++)
             {
@@ -255,7 +255,7 @@ namespace ENTM.TuringMachine
                 builder.Append("| ");
                 builder.Append(Utilities.ToString(_tape[i]));
                 builder.Append("|");
-                builder.Append($" reads: {_readActivities[i]}, writes: {_writeActivities[i]}");
+                //builder.Append($" reads: {_readActivities[i]}, writes: {_writeActivities[i]}");
                 builder.Append("\n");
             }
             builder.Append("\nHeadPositions: ");
@@ -268,7 +268,7 @@ namespace ENTM.TuringMachine
             _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
 
             //Log write activities
-            _writeActivities[_headPositions[head]]++;
+            //_writeActivities[_headPositions[head]]++;
         }
 
         private double[] Interpolate(double[] first, double[] second, double interp)
@@ -286,24 +286,26 @@ namespace ENTM.TuringMachine
             if (contentJump >= 0.5)
             {
                 // JUMPING POINTER TO BEST MATCH
-                int bestPos = 0;
-                double similarity = -1d;
+                int best = 0;
+                double similarity = double.MinValue;
                 for (int i = 0; i < _tape.Count; i++)
                 {
                     double curSim = Utilities.Emilarity(key, _tape[i]);
 
                     //Debug.Log("Pos " + i + ": sim =" + curSim + (curSim > similarity ? " better" : ""), true);
 
+                    // We deterministically select the first max value, if more than one is found
                     if (curSim > similarity)
                     {
                         similarity = curSim;
-                        bestPos = i;
+                        best = i;
                     }
                 }
 
-                Debug.DLog($"Content Jump Head {head} from {_headPositions[head]} to {bestPos}", true);
+                Debug.DLog($"Content Jump Head {head} from {_headPositions[head]} to {best}", true);
 
-                _headPositions[head] = bestPos;
+                // Jump the head to the best position found
+                _headPositions[head] = best;
 
             }
             else
@@ -349,8 +351,8 @@ namespace ENTM.TuringMachine
                             _tape.Add(new double[_m]);
 
                             // extend debug logs for read and write activities
-                            _writeActivities.Add(0);
-                            _readActivities.Add(0);
+                            //_writeActivities.Add(0);
+                            //_readActivities.Add(0);
                         }
                     }
 
@@ -373,8 +375,8 @@ namespace ENTM.TuringMachine
                             _tape.Insert(0, new double[_m]);
 
                             // extend debug logs for read and write activities
-                            _writeActivities.Insert(0, 0);
-                            _readActivities.Insert(0, 0);
+                            // _writeActivities.Insert(0, 0);
+                            // _readActivities.Insert(0, 0);
 
                             // Moving all heads accordingly
                             for (int i = 0; i < _heads; i++)
@@ -388,6 +390,7 @@ namespace ENTM.TuringMachine
                 }
 
                 Debug.DLog($"Shift Head {head} by {offset} to {_headPositions[head]}", true);
+
                 offset = offset > 0 ? offset - 1 : offset + 1; // Go closer to 0
             }
         }
@@ -395,7 +398,7 @@ namespace ENTM.TuringMachine
         private double[] GetRead(int head)
         {
             // log debug read activity
-            _readActivities[_headPositions[head]]++;
+            //_readActivities[_headPositions[head]]++;
 
             return (double[])_tape[_headPositions[head]].Clone();
         }

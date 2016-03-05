@@ -70,7 +70,7 @@ namespace ENTM
         }
 
         /// <summary>
-        /// Override must return a new instantiated environment, which will be used for the ThreadLocal environment
+        /// Override must return a new environment instance, which will be used for the ThreadLocal environment
         /// </summary>
         /// <returns>a new instance of TEnvironment</returns>
         protected abstract TEnvironment NewEnvironment();
@@ -92,6 +92,10 @@ namespace ENTM
             }
         }
 
+        /// <summary>
+        /// Override must return a new controller instance, which will be used for all evaluations on the current thread
+        /// </summary>
+        /// <returns>a new instance of TEnvironment</returns>
         protected abstract TController NewController();
 
         public FitnessInfo Evaluate(IBlackBox phenome)

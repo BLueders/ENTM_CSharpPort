@@ -64,6 +64,9 @@ namespace ENTM.Experiments
         const string CHAMPION_FILE = "champion{0:D4}.xml";
         const string RECORDING_FILE = "recording{0:D4}.png";
 
+        private const int LOG_INTERVAL = 100;
+        private uint _lastLog;
+
         NeatEvolutionAlgorithmParameters _eaParams;
         NeatGenomeParameters _neatGenomeParams;
         private NeatEvolutionAlgorithm<NeatGenome> _ea;
@@ -188,14 +191,19 @@ namespace ENTM.Experiments
         {
             if (_didStart) _abort = true;
         }
-
+ 
         private void EAUpdateEvent(object sender, EventArgs e)
         {
-            _logger.Info($"Generation: {_ea.CurrentGeneration}, " +
-                              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
-                              $"Complexity - Max: {_ea.Statistics._maxComplexity:F4} Mean: {_ea.Statistics._meanComplexity:F4}, " +
-                              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}"
-                              );
+            if (_lastLog == 0 || _ea.CurrentGeneration - _lastLog >= LOG_INTERVAL)
+            {
+                _lastLog = _ea.CurrentGeneration;
+                _logger.Info($"Generation: {_ea.CurrentGeneration}, " +
+                  $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
+                  $"Complexity - Max: {_ea.Statistics._maxComplexity:F4} Mean: {_ea.Statistics._meanComplexity:F4}, " +
+                  $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}"
+                  );
+            }
+
 
             // Save the best genome to file
             XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);

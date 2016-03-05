@@ -45,7 +45,7 @@ namespace ENTM.TuringMachine
 
         public override FitnessInfo Evaluate(TuringController controller, int iterations, bool record)
         {
-            if (controller == null) Console.WriteLine("Warning! Trying to evalutate null phenome!");
+            if (controller == null) throw new ArgumentNullException("Controller was null");
 
             Utility.Debug.DLogHeader("STARTING EVAULATION", true);
 
@@ -80,11 +80,9 @@ namespace ENTM.TuringMachine
                 // Environment loop
                 while (!Environment.IsTerminated)
                 {
-                    // Activate the controller with the environment output
+                    // Activate the controller with the environment output. 
+                    // The turing controller will handle the turing machine I/O
                     double[] environmentInput = controller.ActivateNeuralNetwork(enviromentOutput);
-
-                    // Oh shit, some parallel error happened, bail out. This only occurs in the first generation sometimes
-                    if (environmentInput == null) return new FitnessInfo(0, noveltyScore);
 
                     // Activate the environment with the output from the controller (NN)
                     enviromentOutput = Environment.PerformAction(environmentInput);
@@ -100,6 +98,7 @@ namespace ENTM.TuringMachine
                 Utility.Debug.DLog($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }
 
+            // Calculate the total normalized score (0-1)
             double environmentScore = Math.Max(0d, totalScore / iterations);
 
             return new FitnessInfo(environmentScore, noveltyScore);
