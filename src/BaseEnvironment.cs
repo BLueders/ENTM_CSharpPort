@@ -11,7 +11,7 @@ namespace ENTM
 {
     public abstract class BaseEnvironment : IEnvironment
     {
-        private static readonly ILog _logger = LogManager.GetLogger(typeof(BaseEnvironment));
+        protected static readonly ILog _logger = LogManager.GetLogger(typeof(BaseEnvironment));
 
         public abstract bool RecordTimeSteps { get; set; }
         public abstract EnvironmentTimeStep InitialTimeStep { get; }
@@ -24,7 +24,11 @@ namespace ENTM
 
         public void ResetRandom()
         {
+            _logger.Warn("Random was reset");
+
             _sealedRandom = new Random(RandomSeed);
+
+            _logger.Debug("is null: " + (_sealedRandom == null) + " address " + (&_sealedRandom));
         }
 
         public abstract double[] InitialObservation { get; }

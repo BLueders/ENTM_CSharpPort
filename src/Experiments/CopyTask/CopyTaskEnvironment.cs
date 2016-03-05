@@ -68,6 +68,7 @@ namespace ENTM.Experiments.CopyTask
 
         public override void ResetAll()
         {
+            _logger.Debug("Reset all!");
             Debug.DLogHeader("COPY TASK RESET ALL", true);
             ResetRandom();
         }
@@ -149,6 +150,7 @@ namespace ENTM.Experiments.CopyTask
 
         private void CreateSequence(int length)
         {
+
             Sequence = new double[length][];
             for (int i = 0; i < Sequence.Length; i++)
             {
