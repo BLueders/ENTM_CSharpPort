@@ -24,11 +24,7 @@ namespace ENTM
 
         public void ResetRandom()
         {
-            _logger.Warn("Random was reset");
-
             _sealedRandom = new Random(RandomSeed);
-
-            _logger.Debug("is null: " + (_sealedRandom == null) + " address " + (&_sealedRandom));
         }
 
         public abstract double[] InitialObservation { get; }
@@ -48,10 +44,7 @@ namespace ENTM
             get
             {
                 if (_sealedRandom == null)
-                {
-                    _logger.Warn("Random was null, resetting...");
-                    ResetRandom();
-                }
+                    throw new ArgumentNullException("Random object was null, ResetRandom() was not called on this Thread");
                 return _sealedRandom;
             }
         } 

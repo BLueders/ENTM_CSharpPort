@@ -6,7 +6,7 @@ using ENTM.Replay;
 
 namespace ENTM
 {
-    public abstract class BaseEvaluator<TEnvironment, TController> : IPhenomeEvaluator<IBlackBox> 
+    public abstract class BaseEvaluator<TEnvironment, TController> : IPhenomeEvaluator<IBlackBox>
         where TEnvironment : IEnvironment
         where TController : IController
     {
@@ -25,7 +25,7 @@ namespace ENTM
         /// </summary>
         protected virtual void SetupTest()
         {
-            
+
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace ENTM
         /// </summary>
         protected virtual void TearDownTest()
         {
-            
+
         }
 
         public abstract int Iterations { get; }
@@ -46,6 +46,9 @@ namespace ENTM
 
         public abstract FitnessInfo Evaluate(TController controller, int iterations, bool record);
 
+        private static readonly object _lockEnvironment = new object();
+        private static readonly object _lockController = new object();
+
         private ThreadLocal<TEnvironment> _environment;
 
         /// <summary>
@@ -55,12 +58,14 @@ namespace ENTM
         {
             get
             {
-                if (_environment == null)
+                lock (_lockEnvironment)
                 {
-                    _environment = new ThreadLocal<TEnvironment>(NewEnvironment);
+                    if (_environment == null)
+                    {
+                        _environment = new ThreadLocal<TEnvironment>(NewEnvironment);
+                    }
+                    return _environment.Value;
                 }
-
-                return _environment.Value;
             }
         }
 
@@ -76,12 +81,14 @@ namespace ENTM
         {
             get
             {
-                if (_controller == null)
+                lock (_lockController)
                 {
-                    _controller = new ThreadLocal<TController>(NewController);
+                    if (_controller == null)
+                    {
+                        _controller = new ThreadLocal<TController>(NewController);
+                    }
+                    return _controller.Value;
                 }
-
-                return _controller.Value;
             }
         }
 
