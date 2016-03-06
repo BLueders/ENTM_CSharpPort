@@ -86,7 +86,15 @@ namespace ENTM.NoveltySearch
         public void Evaluate(IList<TGenome> genomeList)
         {
             IDictionary<TGenome, FitnessInfo> fitness = _evalMethod(genomeList);
-            CalculateNoveltyScores(fitness);
+
+            if (NoveltySearchEnabled)
+            {
+                CalculateNoveltyScores(fitness);
+            }
+            else
+            {
+                ApplyEnvironmentScoresOnly(fitness);
+            }
         }
 
         #endregion
@@ -106,10 +114,8 @@ namespace ENTM.NoveltySearch
             {   // Non-viable genome.
                 return FitnessInfo.Zero;
             }
-            else
-            {
-                return _phenomeEvaluator.Evaluate(phenome);
-            }
+
+            return _phenomeEvaluator.Evaluate(phenome);
         }
 
         private void CalculateNoveltyScores(IDictionary<TGenome, FitnessInfo> fitness)
@@ -148,6 +154,14 @@ namespace ENTM.NoveltySearch
 
                 //genome.EvaluationInfo.SetFitness(result);
                 genome.EvaluationInfo.SetFitness(scores._fitness);
+            }
+        }
+
+        private void ApplyEnvironmentScoresOnly(IDictionary<TGenome, FitnessInfo> fitness)
+        {
+            foreach (TGenome genome in fitness.Keys)
+            {
+                genome.EvaluationInfo.SetFitness(fitness[genome]._fitness);
             }
         }
 

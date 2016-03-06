@@ -148,11 +148,11 @@ namespace ENTM.Experiments
             return TestPhenome(champion);
         }
 
-        public FitnessInfo TestSavedChampion()
+        public FitnessInfo TestSavedChampion(string xmlPath)
         {
             // Load genome from the xml file
             XmlDocument xmlChampion = new XmlDocument();
-            xmlChampion.Load(ChampionFile);
+            xmlChampion.Load(xmlPath);
 
             NeatGenome championGenome = NeatGenomeXmlIO.LoadGenome(xmlChampion.DocumentElement, false);
 
@@ -170,7 +170,8 @@ namespace ENTM.Experiments
 
         private FitnessInfo TestPhenome(IBlackBox phenome)
         {
-            _ea.RequestPause();
+            if (_ea != null) _ea.RequestPause();
+            else CreateEA();
 
             Debug.On = true;
             _logger.Info("Testing phenome...");
@@ -280,31 +281,9 @@ namespace ENTM.Experiments
         {
             if (_ea == null)
             {
-                _timer = new Stopwatch();
-                _didStart = true;
-
-                _timer.Start();
-
-                _logger.Info("\nCreating EA...");
-                // Create evolution algorithm and attach events.
-                _ea = CreateEvolutionAlgorithm();
-                _ea.UpdateEvent += EAUpdateEvent;
-                _ea.PausedEvent += EAPauseEvent;
-
-                if (ExperimentStartedEvent != null)
-                {
-                    try
-                    {
-                        ExperimentStartedEvent(this, EventArgs.Empty);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        _logger.Info("ExperimentStartedEvent listener threw exception: " + ex.Message);
-                    }
-                }
-
+                CreateEA();
                 _ea.StartContinue();
+
             }
             else
             {
@@ -346,13 +325,41 @@ namespace ENTM.Experiments
             }
         }
 
+        private void CreateEA()
+        {
+            _timer = new Stopwatch();
+            _didStart = true;
+
+            _timer.Start();
+
+            _logger.Info("\nCreating EA...");
+            // Create evolution algorithm and attach events.
+            _ea = CreateEvolutionAlgorithm();
+            _ea.UpdateEvent += EAUpdateEvent;
+            _ea.PausedEvent += EAPauseEvent;
+
+            if (ExperimentStartedEvent != null)
+            {
+                try
+                {
+                    ExperimentStartedEvent(this, EventArgs.Empty);
+                }
+                catch (Exception ex)
+                {
+                    // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
+                    _logger.Info("ExperimentStartedEvent listener threw exception: " + ex.Message);
+                }
+            }
+
+        }
+
         #region INeatExperiment Members
 
         public string Description => _description;
 
         public string Name => _name;
 
-        public string CurrentDirectory => string.Format($"{Name}/{_identifier}/{_subIdentifier}/");
+        public string CurrentDirectory => string.Format($"{Program.ROOT_PATH}{Name}/{_identifier}/{_subIdentifier}/");
 
         /// <summary>
         /// Gets the default population size to use for the experiment

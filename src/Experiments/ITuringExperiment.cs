@@ -18,7 +18,7 @@ namespace ENTM.Experiments
 
         FitnessInfo TestCurrentChampion();
 
-        FitnessInfo TestSavedChampion();
+        FitnessInfo TestSavedChampion(string xmlChampion);
 
         void AbortCurrentExperiment();
 

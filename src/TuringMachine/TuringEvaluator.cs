@@ -35,7 +35,7 @@ namespace ENTM.TuringMachine
                         break;
                 }
 
-                // Write key size (M) + 2 (write interp and content jump) + shifts for each head (probably only one)
+                // Write key size (M) + 2 (write interp and content jump) + shifts - for each head (probably only one)
                 return (_turingMachineProps.M + 2 + shifts) * _turingMachineProps.Heads;
             }
         }

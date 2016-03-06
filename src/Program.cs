@@ -18,12 +18,13 @@ namespace ENTM
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(Program));
 
-        const string LOG4NET_CONFIG = "log4net.properties";
-        const string CONFIG_PATH = "Config/";
+        public const string ROOT_PATH = "ENTM/";
+        private const string CONFIG_PATH = ROOT_PATH + "Config/";
+        private const string LOG4NET_CONFIG = "log4net.properties";
 
         private static Stopwatch _stopwatch;
 
-        private static string _currentDir = CONFIG_PATH;
+        private static string _currentDir;
         private static Stack<string> _dirStack = new Stack<string>();
 
         private static bool _terminated = false;
@@ -45,9 +46,14 @@ namespace ENTM
 
             Console.WriteLine("Select config");
 
-            Console.WriteLine($"A: All (this folder): Execute all experiments serially");
+            Console.WriteLine($"A: Execute all experiments in the current directory serially");
 
-            Browse();
+            _currentDir = CONFIG_PATH;
+            _dirStack.Push(ROOT_PATH);
+
+            string[] configs = Browse();
+
+            LoadExperiments(configs);
 
             InitializeExperiment(_configs[0]);
             
@@ -64,7 +70,7 @@ namespace ENTM
             ProcessInput();
         }
 
-        private static void Browse()
+        private static string[] Browse()
         {
             Console.WriteLine($"\nCurrent directory: {_currentDir}");
 
@@ -95,16 +101,14 @@ namespace ENTM
 
                 if (key.Key == ConsoleKey.A)
                 {
-                    LoadExperiments(xmls.ToArray());
-                    break;
+                    return xmls.ToArray();
                 }
 
                 int selection = (int) char.GetNumericValue(key.KeyChar);
                 if (selection == 0)
                 {
                     _currentDir = _dirStack.Pop();
-                    Browse();
-                    break;
+                    return Browse();
                 }
 
                 if (selection > 0)
@@ -113,15 +117,13 @@ namespace ENTM
                     {
                         _dirStack.Push(_currentDir);
                         _currentDir = folders[selection - 1];
-                        Browse();
-                        break;
+                        return Browse();
                     }
 
                     if (selection <= folders.Length + xmls.Length)
                     {
                         selection -= folders.Length;
-                        LoadExperiments(new[] { xmls[selection - 1] });
-                        break;
+                        return new[] {xmls[selection - 1]};
                     }
                 } 
 
@@ -208,6 +210,15 @@ namespace ENTM
             }
         }
 
+        private static void LoadGenomeFromXml()
+        {
+            _currentDir = ROOT_PATH;
+            _dirStack.Clear();
+
+            string[] champions = Browse();
+            _experiment.TestSavedChampion(champions[0]);
+        }
+
         private static void ProcessInput()
         {
             do
@@ -239,7 +250,7 @@ namespace ENTM
                         break;
 
                     case ConsoleKey.S:
-                        _experiment.TestSavedChampion();
+                        LoadGenomeFromXml();
                         break;
 
                     case ConsoleKey.A:

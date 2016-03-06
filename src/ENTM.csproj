@@ -132,7 +132,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>XCOPY "$(SolutionDir)Config" "$(TargetDir)\Config\" /S /Y
+    <PostBuildEvent>XCOPY "$(SolutionDir)Config" "$(TargetDir)\ENTM\Config\" /S /Y
 COPY "$(SolutionDir)log4net.properties" "$(TargetDir)\" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
