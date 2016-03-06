@@ -129,10 +129,13 @@
     <Content Include="Config\SeasonTask\seasontask4.config.xml" />
     <Content Include="Config\SeasonTask\seasontask2.config.xml" />
     <Content Include="Config\SeasonTask\seasontask1.config.xml" />
+    <Content Include="Genomes\anji2sharpneat.py" />
+    <Content Include="Genomes\chromosome11943.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>XCOPY "$(SolutionDir)Config" "$(TargetDir)\ENTM\Config\" /S /Y
+XCOPY "$(SolutionDir)Genomes" "$(TargetDir)\ENTM\Genomes\" /S /Y
 COPY "$(SolutionDir)log4net.properties" "$(TargetDir)\" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

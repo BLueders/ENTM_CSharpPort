@@ -1,0 +1,78 @@
+from lxml import etree
+import xml.sax
+import sys
+
+class GenomeHandler(xml.sax.ContentHandler):
+
+	# Call when an element starts
+	def startElement(self, tag, attributes):
+		if tag == "neuron":
+			neurons.append(Neuron(attributes["id"], attributes["type"], attributes["activation"]))
+		elif tag == "connection":
+			connections.append(Connection(attributes["id"], attributes["src-id"], attributes["dest-id"], attributes["weight"]))
+
+class Neuron(object):
+	id = 0
+	ntype = ""
+	act = ""
+
+	def __init__(self, id, ntype, act):
+		self.id = int(id) + 1
+		self.ntype = ntype
+		self.act = act
+
+	def to_xml(self):
+		return etree.Element("Node", type=self.ntype, id=str(self.id))
+
+class Connection(object):
+	id = 0
+	src = 0
+	dest = 0
+	weight = ""
+
+	def __init__(self, id, src, dest, weight):
+		self.id = int(id) + 1
+		self.src = int(src) + 1
+		self.dest = int(dest) + 1
+		self.weight = weight
+
+	def to_xml(self):
+		return etree.Element("Con", id=str(self.id), src=str(self.src), tgt=str(self.dest), wght=self.weight)
+
+neurons = []
+connections = []
+
+Handler = GenomeHandler()
+
+parser = xml.sax.make_parser()
+parser.setContentHandler( Handler )
+
+parser.parse("chromosome11943.xml")
+
+bias = neurons.pop()
+bias.id = 0
+bias.ntype = "bias"
+neurons.insert(0, bias)
+
+root = etree.Element("Network")
+
+xmlNodes = etree.Element("Nodes")
+
+for n in neurons:
+	xmlNode = n.to_xml()
+	xmlNodes.append(xmlNode)
+
+root.append(xmlNodes)
+
+xmlConns = etree.Element("Connections")
+
+for c in connections:
+	xmlCon = c.to_xml()
+	xmlConns.append(xmlCon)
+
+root.append(xmlConns)
+
+file = open("fromanji.xml", "w+")
+
+et = etree.ElementTree(root)
+et.write(file, pretty_print=True)
