@@ -234,6 +234,8 @@ namespace ENTM.Experiments
         {
             _timer.Stop();
 
+            _lastLog = 0;
+
             if (ExperimentCompleted)
             {
                 if (_abort)

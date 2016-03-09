@@ -114,10 +114,14 @@ namespace ENTM.TuringMachine
             double[] jumps = new double[_heads];
             double[][] shifts = new double[_heads][];
 
-             // Save write position for recording
             int[] writePositions = null;
+            double[][] written = null;
 
-            if (RecordTimeSteps) writePositions = new int[_heads];
+            if (RecordTimeSteps)
+            {
+                writePositions = new int[_heads];
+                written = new double[_heads][];
+            }
             
             int p = 0;
 
@@ -148,7 +152,14 @@ namespace ENTM.TuringMachine
                 // 1: Write!
                 Write(i, writeKeys[i], interps[i]);
 
-                if (RecordTimeSteps) writePositions[i] = _headPositions[i];
+                if (RecordTimeSteps)
+                {
+                    // Save write position for recording
+                    writePositions[i] = _headPositions[i];
+
+                    //Save tape data at write location before head is moved
+                    written[i] = GetRead(i);
+                }
 
             }
 
@@ -185,7 +196,7 @@ namespace ENTM.TuringMachine
 
                     int correctedReadPosition = readPosition - _zeroPosition;
 
-                    _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], headResult,
+                    _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], headResult, written[i],
                         writePositions[i], readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
                 }
             }
@@ -413,7 +424,7 @@ namespace ENTM.TuringMachine
 
         public TuringMachineTimeStep InitialTimeStep
         {
-            get { return _prevTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], 0, 0, 0, 0, 0, 1); }
+            get { return _prevTimeStep = new TuringMachineTimeStep(new double[_m], 0, 0, new double[_shiftLength], new double[_m], new double[_m], 0, 0, 0, 0, 0, 1); }
         }
 
         public TuringMachineTimeStep PreviousTimeStep => _prevTimeStep;

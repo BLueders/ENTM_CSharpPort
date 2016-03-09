@@ -155,12 +155,19 @@ namespace ENTM.Experiments.CopyTask
             {
                 bool hasOnes = false;
                 Sequence[i] = new double[_vectorSize];
-                for (int j = 0; j < Sequence[i].Length; j++)
+
+                // Make sure we don't have any all-zero vectors, as the algorithm has trouble handling these
+                do
                 {
-                    double value = SealedRandom.Next(0, 2);
-                    if (value == 1) hasOnes = true;
-                    Sequence[i][j] = value;
-                }
+                    for (int j = 0; j < Sequence[i].Length; j++)
+                    {
+                        double value = SealedRandom.Next(0, 2);
+                        if (value == 1) hasOnes = true;
+
+                        Sequence[i][j] = value;
+                    }
+                } while (_vectorSize > 1 && !hasOnes);
+
             }
         }
 
