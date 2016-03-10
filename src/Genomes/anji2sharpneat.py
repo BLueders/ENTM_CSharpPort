@@ -50,8 +50,8 @@ parser.setContentHandler( Handler )
 parser.parse("chromosome11943.xml")
 
 bias = None
-for n in neurons
-	if n.id == "out" :
+for n in neurons :
+	if n.ntype == "out" :
 		break
 	bias = n 
 
@@ -61,7 +61,7 @@ bias.id = 0
 bias.ntype = "bias"
 neurons.insert(0, bias)
 
-for c in collections
+for c in connections :
 	if c.src == biasId :
 		c.src = 0
 	if c.dest == biasId :
