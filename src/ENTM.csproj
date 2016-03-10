@@ -53,6 +53,7 @@
     <Compile Include="BaseEvaluator.cs" />
     <Compile Include="Experiments\ITuringExperiment.cs" />
     <Compile Include="Experiments\SeasonTask\TwoStepSeasonTaskEnviroment.cs" />
+    <Compile Include="Experiments\SeasonTask\OneStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\ThreeStepSeasonTaskEnviroment.cs" />
     <Compile Include="NoveltySearch\NoveltySearchListEvaluator.cs" />
     <Compile Include="BaseEnvironment.cs" />
@@ -125,6 +126,7 @@
     <Content Include="Config\CopyTask\copytask2.config.xml" />
     <Content Include="Config\CopyTask\copytask1.config.xml" />
     <Content Include="Config\seasontask.config.xml" />
+    <Content Include="Config\SeasonTask\QuickTest2Food.xml" />
     <Content Include="Config\SeasonTask\seasontask3.config.xml" />
     <Content Include="Config\SeasonTask\seasontask4.config.xml" />
     <Content Include="Config\SeasonTask\seasontask2.config.xml" />

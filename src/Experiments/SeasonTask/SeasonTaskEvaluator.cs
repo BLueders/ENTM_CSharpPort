@@ -21,13 +21,23 @@ namespace ENTM.Experiments.SeasonTask
 
         protected override SeasonTaskEnvironment NewEnvironment()
         {
-            return new TwoStepSeasonTaskEnviroment(_seasonTaskProps);
+            return new OneStepSeasonTaskEnviroment(_seasonTaskProps);
         }
 
         public override void Initialize(XmlElement xmlConfig)
         {
             base.Initialize(xmlConfig);
             _seasonTaskProps = new SeasonTaskProperties(xmlConfig.SelectSingleNode("SeasonTaskParams") as XmlElement);
+        }
+
+        protected override void SetupTest()
+        {
+            Environment.RandomSeed = System.Environment.TickCount;
+        }
+
+        protected override void TearDownTest()
+        {
+            Environment.RandomSeed = _seasonTaskProps.RandomSeed;
         }
 
         public override int MaxScore => 1;
