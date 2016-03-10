@@ -15,12 +15,13 @@ namespace ENTM.NoveltySearch
     /// </summary>
     /// <typeparam name="TGenome"></typeparam>
     /// <typeparam name="TPhenome"></typeparam>
-    class NoveltySearchListEvaluator<TGenome, TPhenome> : IGenomeListEvaluator<TGenome>
+    public class NoveltySearchListEvaluator<TGenome, TPhenome> : IGenomeListEvaluator<TGenome>
         where TGenome : class, IGenome<TGenome> 
         where TPhenome : class
     {
         readonly IGenomeDecoder<TGenome, TPhenome> _genomeDecoder;
         readonly IPhenomeEvaluator<TPhenome> _phenomeEvaluator;
+        readonly INoveltyScorer<TGenome> _noveltyScorer; 
         readonly ParallelOptions _parallelOptions;
         readonly EvaluationMethod _evalMethod;
 
@@ -43,11 +44,13 @@ namespace ENTM.NoveltySearch
         /// </summary>
         public NoveltySearchListEvaluator(IGenomeDecoder<TGenome, TPhenome> genomeDecoder,
                                            IPhenomeEvaluator<TPhenome> phenomeEvaluator,
+                                           INoveltyScorer<TGenome> noveltyScorer,
                                            bool enableMultiThreading,
                                            ParallelOptions options)
         {
             _genomeDecoder = genomeDecoder;
             _phenomeEvaluator = phenomeEvaluator;
+            _noveltyScorer = noveltyScorer;
             _parallelOptions = options;
 
             // Determine the appropriate evaluation method.
@@ -89,7 +92,7 @@ namespace ENTM.NoveltySearch
 
             if (NoveltySearchEnabled)
             {
-                CalculateNoveltyScores(fitness);
+                _noveltyScorer.Score(fitness);
             }
             else
             {
@@ -118,44 +121,6 @@ namespace ENTM.NoveltySearch
             return _phenomeEvaluator.Evaluate(phenome);
         }
 
-        private void CalculateNoveltyScores(IDictionary<TGenome, FitnessInfo> fitness)
-        {
-            // Compute averages
-            double[] totals = null;
-            foreach (TGenome genome in fitness.Keys)
-            {
-                FitnessInfo scores = fitness[genome];
-                if (totals == null) totals = new double[scores._auxFitnessArr.Length];
-
-                for (int i = 0; i < totals.Length; i++)
-                {
-                    totals[i] += scores._auxFitnessArr[i]._value;
-                }
-            }
-
-            double[] avgs = new double[totals.Length];
-            for (int j = 0; j < totals.Length; j++)
-            {
-                avgs[j] = totals[j] / fitness.Count;
-            }
-
-            Debug.DLog("Averages: " + Utilities.ToString(avgs));
-
-            // Calculate distance from average
-            foreach (TGenome genome in fitness.Keys)
-            {
-                FitnessInfo scores = fitness[genome];
-
-                double result = 0f;
-                for (int i = 0; i < avgs.Length; i++)
-                {
-                    result += Math.Abs(avgs[i] - scores._auxFitnessArr[i]._value);
-                }
-
-                //genome.EvaluationInfo.SetFitness(result);
-                genome.EvaluationInfo.SetFitness(scores._fitness);
-            }
-        }
 
         private void ApplyEnvironmentScoresOnly(IDictionary<TGenome, FitnessInfo> fitness)
         {

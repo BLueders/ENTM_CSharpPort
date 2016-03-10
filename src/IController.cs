@@ -1,4 +1,5 @@
-﻿using SharpNeat.Phenomes;
+﻿using System.Collections.Generic;
+using SharpNeat.Phenomes;
 
 namespace ENTM
 {
@@ -20,6 +21,16 @@ namespace ENTM
         /// <param name="enviromentInput"></param>
         /// <returns></returns>
         double[] ActivateNeuralNetwork(double[] environmentOutput);
+
+        /// <summary>
+        /// Whether or not the controller should enable novelty search scoring
+        /// </summary>
+        bool ScoreNovelty { get; set; }
+
+        /// <summary>
+        /// Length of the novelty vector
+        /// </summary>
+        int NoveltyVectorLength { get; set; }
 
         /// <summary>
         /// Return the novelty score vector for a given evaluation

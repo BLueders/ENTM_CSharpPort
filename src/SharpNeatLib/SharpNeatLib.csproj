@@ -220,6 +220,7 @@
     <Compile Include="SpeciationStrategies\KMeansClusteringStrategy.cs" />
     <Compile Include="SpeciationStrategies\RandomClusteringStrategy.cs" />
     <Compile Include="SpeciationStrategies\SpeciationUtils.cs" />
+    <Compile Include="Utility\LimitedQueue.cs" />
     <Compile Include="Utility\XmlIoUtils.cs" />
     <Compile Include="SharpNeatException.cs" />
     <Compile Include="Utility\Point2DDouble.cs" />

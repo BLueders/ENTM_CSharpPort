@@ -14,6 +14,12 @@ namespace ENTM.TuringMachine
 
         public ITuringMachine TuringMachine { get; }
 
+        public bool ScoreNovelty { get; set; }
+
+        public int NoveltyVectorLength { get; set; }
+
+        public double[] NoveltyVector => TuringMachine.NoveltyVector;
+
         public TuringController(TuringMachineProperties props)
         {
             TuringMachine = new MinimalTuringMachine(props);
@@ -32,7 +38,7 @@ namespace ENTM.TuringMachine
 
             // Activate the neural network
             Phenome.ResetState();
-            Phenome.InputSignalArray.CopyFrom(nnInput, 0, nnInput.Length);
+            Phenome.InputSignalArray.CopyFrom(nnInput, 0);
             Phenome.Activate();
 
             double[] nnOutput = new double[Phenome.OutputSignalArray.Length];
@@ -55,15 +61,15 @@ namespace ENTM.TuringMachine
 
         public void Reset()
         {
+            TuringMachine.ScoreNovelty = ScoreNovelty;
+            TuringMachine.NoveltyVectorLength = NoveltyVectorLength;
             TuringMachine.Reset();
-            _turingMachineOutput = ProcessTuringMachineOutput(TuringMachine.GetDefaultRead()); 
+            _turingMachineOutput = ProcessTuringMachineOutput(TuringMachine.DefaultRead); 
         }
 
         private double[] ProcessTuringMachineOutput(double[][] output)
         {
             return Utilities.Flatten(output);
         }
-
-        public double[] NoveltyVector => TuringMachine.NoveltyVector;
     }
 }

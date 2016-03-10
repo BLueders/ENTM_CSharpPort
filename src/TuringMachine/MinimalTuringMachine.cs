@@ -43,9 +43,34 @@ namespace ENTM.TuringMachine
         // Number of combined read/write heads
         private readonly int _heads;
 
+        private int _currentTimeStep;
+
         private double[][] _initialRead;
 
+        private bool _increasedSizeDown;
+
+        private int _zeroPosition;
+
+        public bool ScoreNovelty { get; set; }
+
+        public int NoveltyVectorLength { get; set; }
+
         private double[] _noveltyVector;
+
+        public double[] NoveltyVector => _noveltyVector;
+
+        public int ReadHeadCount => 1;
+
+        public int WriteHeadCount => 1;
+
+        // WriteKey, Interpolation, ToContentJump, Shift
+        public int InputCount => _heads * (_m + 2 + GetShiftInputs());
+
+        public int OutputCount => _m * _heads;
+
+        public double[][] TapeValues => Utilities.DeepCopy(_tape.ToArray());
+
+        public double[][] DefaultRead => _initialRead;
 
         // Number of times each location was accessed during livetime of the tm
         // private List<int> _writeActivities = new List<int>();
@@ -75,16 +100,26 @@ namespace ENTM.TuringMachine
         {
             Debug.DLogHeader("TURING MACHINE RESET", true);
 
+            _currentTimeStep = 0;
+
             _tape.Clear();
             _tape.Add(new double[_m]);
             _headPositions = new int[_heads];
-            _noveltyVector = new double[0];
+
+            if (ScoreNovelty)
+            {
+                _noveltyVector = new double[NoveltyVectorLength];
+                _noveltyVector[0] = 0;
+            }
 
             // clear debug log lists
             //_readActivities.Clear();
             //_readActivities.Add(0);
             //_writeActivities.Clear();
             //_writeActivities.Add(0);
+
+            _zeroPosition = 0;
+            _increasedSizeDown = false;
 
             Debug.DLog(PrintState(), true);
         }
@@ -105,6 +140,9 @@ namespace ENTM.TuringMachine
             Debug.DLogHeader("MINIMAL TURING MACHINE START", true);
             Debug.DLog($"From NN: {Utilities.ToString(fromNN, "f4")}", true);
 
+            // Current timestep will start on 1, since the inital read does not run this method
+            _currentTimeStep++;
+
             if (!_enabled) return _initialRead;
 
             double[][] result = new double[_heads][];
@@ -117,10 +155,14 @@ namespace ENTM.TuringMachine
             int[] writePositions = null;
             double[][] written = null;
 
-            if (RecordTimeSteps)
+            if (RecordTimeSteps || ScoreNovelty)
             {
                 writePositions = new int[_heads];
-                written = new double[_heads][];
+
+                if (RecordTimeSteps)
+                {
+                    written = new double[_heads][];
+                }
             }
             
             int p = 0;
@@ -152,13 +194,16 @@ namespace ENTM.TuringMachine
                 // 1: Write!
                 Write(i, writeKeys[i], interps[i]);
 
-                if (RecordTimeSteps)
+                if (RecordTimeSteps || ScoreNovelty)
                 {
                     // Save write position for recording
                     writePositions[i] = _headPositions[i];
 
-                    //Save tape data at write location before head is moved
-                    written[i] = GetRead(i);
+                    if (RecordTimeSteps)
+                    {
+                        //Save tape data at write location before head is moved
+                        written[i] = GetRead(i);
+                    }
                 }
 
             }
@@ -183,21 +228,43 @@ namespace ENTM.TuringMachine
                 double[] headResult = GetRead(i); // Show me what you've got! \cite{rickEtAl2014}
                 result[i] = headResult;
 
-                if (RecordTimeSteps)
+                if (RecordTimeSteps || ScoreNovelty)
                 {
-                    int readPosition = _headPositions[i];
+                    // Calculate corrected write position first, since the write happened before a possible downward memory increase
                     int correctedWritePosition = writePositions[i] - _zeroPosition;
 
+                    // The memory has increased in size downward (-1), shifting all memory positions +1
                     if (_increasedSizeDown)
                     {
                         writePositions[i]++;
                         _zeroPosition++;
                     }
 
-                    int correctedReadPosition = readPosition - _zeroPosition;
+                    if (ScoreNovelty)
+                    {
+                        // Save the write position as a behavioural trait
+                        _noveltyVector[_currentTimeStep] = correctedWritePosition;
 
-                    _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], headResult, written[i],
-                        writePositions[i], readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
+                        // Check for non-empty reads
+                        for (int j = 0; j < headResult.Length; j++)
+                        {
+                            if (headResult[j] != 0)
+                            {
+                                // Store the non-empty read count in position 0 of the novelty vector
+                                _noveltyVector[0] += 1;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (RecordTimeSteps)
+                    {
+                        int readPosition = _headPositions[i];
+                        int correctedReadPosition = readPosition - _zeroPosition;
+
+                        _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], headResult, written[i],
+                       writePositions[i], readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
+                    }
                 }
             }
 
@@ -208,24 +275,8 @@ namespace ENTM.TuringMachine
             return result;
         }
 
-        public double[][] GetDefaultRead()
-        {
-            //Debug.Log(PrintState(), true);
-            return _initialRead;
-        }
 
-        public double[] NoveltyVector { get; }
 
-        public int ReadHeadCount => 1;
-
-        public int WriteHeadCount => 1;
-
-        // WriteKey, Interpolation, ToContentJump, Shift
-        public int InputCount => _heads * (_m + 2 + GetShiftInputs());
-
-        public int OutputCount => _m * _heads;
-
-        public double[][] TapeValues => Utilities.DeepCopy(_tape.ToArray());
 
         // PRIVATE HELPER METHODS
 
@@ -417,8 +468,6 @@ namespace ENTM.TuringMachine
         #region Replayable
 
         private TuringMachineTimeStep _prevTimeStep;
-        private bool _increasedSizeDown = false;
-        private int _zeroPosition = 0;
 
         public bool RecordTimeSteps { get; set; } = false;
 

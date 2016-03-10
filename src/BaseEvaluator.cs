@@ -16,9 +16,19 @@ namespace ENTM
         protected bool _stopConditionSatisfied = false;
         public bool StopConditionSatisfied => _stopConditionSatisfied;
 
+        public bool NoveltySearchEnabled { get; set; }
+
         public Recorder Recorder;
 
         public abstract void Initialize(XmlElement properties);
+
+        /// <summary>
+        /// Override this if we need to do something at the beginning of a new evaluation
+        /// </summary>
+        protected virtual void OnEvaluationStart()
+        {
+            
+        }
 
         /// <summary>
         /// If we need to do some initialization, like change the parameters before testing a phenome, we can override this and do it here
@@ -43,6 +53,8 @@ namespace ENTM
         public abstract int EnvironmentOutputCount { get; }
         public abstract int ControllerInputCount { get; }
         public abstract int ControllerOutputCount { get; }
+
+        public abstract int NoveltyVectorLength { get; }
 
         public abstract FitnessInfo Evaluate(TController controller, int iterations, bool record);
 
@@ -100,8 +112,14 @@ namespace ENTM
 
         public FitnessInfo Evaluate(IBlackBox phenome)
         {
+
             // Register the phenome
             Controller.Phenome = phenome;
+
+            Controller.ScoreNovelty = NoveltySearchEnabled;
+            Controller.NoveltyVectorLength = NoveltyVectorLength;
+
+            OnEvaluationStart();
 
             // Evaluate the controller / phenome
             FitnessInfo score = Evaluate(Controller, Iterations, false);
@@ -131,6 +149,9 @@ namespace ENTM
             SetupTest();
 
             Controller.Phenome = phenome;
+
+            Controller.ScoreNovelty = NoveltySearchEnabled;
+            Controller.NoveltyVectorLength = NoveltyVectorLength;
 
             FitnessInfo score = Evaluate(Controller, 1, true);
 
