@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Config>
+  
+  <!-- The name of the experiment -->
+  <Name>CopyTask</Name>
+  
+  <!-- The fully qualified name of the experiment class -->
+  <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
+
+  <!-- Experiment description -->
+  <Description>
+    Copy task experiment with turing controller.
+    The controller must record a bit-vector sequence to memory, and read it back.
+  </Description>
+  
+  <!-- How many experiments will be performed (serially) -->
+  <ExperimentCount>1</ExperimentCount>
+
+  <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
+  <MaxGenerations>5000</MaxGenerations>
+
+  <!-- NEAT -->
+  <PopulationSize>300</PopulationSize>
+
+  <!-- The network activation scheme to use -->
+  <Activation>
+    
+    <!-- "Acyclic", "CyclicFixedIters" or "CyclicRelax"
+         Acyclic:           Does not support recurrent connections. Network is fully activated each activation.
+         CyclicFixedIters:  Each iteration will iterate signals one step from input -> output.
+         CyclicRelax:       Activate the network until all node output has remained unchanged between iterations within the threshold, 
+                            or until the maximum iteration count is reached. -->
+    <Scheme>Acyclic</Scheme>
+
+    <!-- CyclicFixedIters only -->
+    <Iters>3</Iters>
+    
+    <!-- CyclicRelax only -->
+    <Threshold>0.1</Threshold>
+    
+    <!-- CyclicRelax only -->
+    <MaxIters>5</MaxIters>
+  
+  </Activation>
+  
+  <!-- "Absolute" or "Relative"
+       Absolute: Defines an absolute ceiling on complexity.
+       Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
+  <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
+  <ComplexityThreshold>150</ComplexityThreshold>
+  
+  <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
+  <MultiThreading>false</MultiThreading>
+  
+  <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
+  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
+
+  <!-- Evolution Algorithm Parameters -->
+  <EAParams>
+    <!-- Number of species in the population. Default: 10 -->
+    <SpecieCount>10</SpecieCount>
+
+    <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
+    <ElitismProportion>0.2</ElitismProportion>
+
+    <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
+         Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
+    <SelectionProportion>0.2</SelectionProportion>
+
+    <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
+    <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
+
+    <!-- The proportion of offspring to be produced from sexual reproduction. Default: 0.5 -->
+    <OffspringSexualProportion>0.5</OffspringSexualProportion>
+
+    <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
+    <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
+
+    <!-- The history buffer length used for calculating the best fitness moving average. Default: 100 -->
+    <BestFitnessMovingAverageHistoryLength>100</BestFitnessMovingAverageHistoryLength>
+
+    <!-- The history buffer length used for calculating the mean specie champ fitness. Default: 100 -->
+    <MeanSpecieChampFitnessMovingAverageHistoryLength>100</MeanSpecieChampFitnessMovingAverageHistoryLength>
+
+    <!-- The history buffer length used for calculating the mean genome complexity moving. Default: 100 -->
+    <ComplexityMovingAverageHistoryLength>100</ComplexityMovingAverageHistoryLength>
+  </EAParams>
+
+  <!-- Genome Parameters -->
+  <GenomeParams>
+    <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
+         The weight range is strictly enforced - e.g. when creating new connections and mutating existing ones. Default: 5.0 -->
+    <ConnectionWeightRange>10.0</ConnectionWeightRange>
+
+    <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
+         This is a proportion of the total number of possible interconnections. Default: 0.05 -->
+    <InitialInterconnectionsProportion>1.0</InitialInterconnectionsProportion>
+
+    <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
+         Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
+    <DisjointExcessGenesRecombinedProbability>1.0</DisjointExcessGenesRecombinedProbability>
+
+    <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
+    <ConnectionWeightMutationProbability>0.6</ConnectionWeightMutationProbability>
+
+    <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
+    <AddNodeMutationProbability>0.005</AddNodeMutationProbability>
+
+    <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
+    <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
+
+    <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
+    <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
+
+    <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
+    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
+  </GenomeParams>
+
+  <!-- Turing Machine Parameters-->
+  <TuringMachineParams>
+    
+    <!-- If set to false, the Turing machine will always return a 0 vector -->
+    <Enabled>true</Enabled>
+    
+    <!-- Maximum memory size (-1 for unlimited) -->
+    <N>-1</N>
+
+    <!-- Write vector size -->
+    <M>5</M>
+    
+    <!-- Number of shift inputs -->
+    <ShiftLength>3</ShiftLength>
+    
+    <!-- Shift mode: "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
+    <ShiftMode>Multiple</ShiftMode>
+
+    <!-- Number of Read/Write heads-->
+    <Heads>1</Heads>
+  </TuringMachineParams>
+
+  <!-- Copy Task Parameters -->
+  <CopyTaskParams>
+    
+    <!-- Evaluation iterations -->
+    <Iterations>50</Iterations>
+
+    <!-- The seed used for random environment generations -->
+    <RandomSeed>0</RandomSeed>
+
+    <!-- The size of the bit vectors to be copied. -->
+    <VectorSize>2</VectorSize>
+
+    <!-- Maximum length of the sequence of bit vectors. 
+         If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
+         If LengthRule is Fixed, sequence will always be MaxLength. -->
+    <MaxLength>10</MaxLength>
+
+    <!-- "Random" or "Fixed" sequence lengths -->
+    <LengthRule>Random</LengthRule>
+
+    <!-- What fitness function to evalutate with.
+        StrictCloseToTarget
+        PartialScore
+        Emilarity
+        ClosestBinary
+        CompleteBinary
+    -->
+    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
+    
+  </CopyTaskParams>
+
+</Config>
+
+<!--
+#classic is worth trying out
+topology.mutation.classic=true
+add.connection.mutation.rate=0.05
+remove.connection.mutation.rate=0.02
+remove.connection.max.weight=5
+remove.connection.strategy = skewed
+add.neuron.mutation.rate=0.005
+prune.mutation.rate=1.00
+weight.mutation.rate=0.6
+weight.mutation.std.dev=1.5
+weight.max=10.0
+weight.min=-10.0
+survival.rate=0.2
+selector.elitism=true
+selector.roulette=false
+selector.elitism.min.specie.size=2
+
+############
+# speciation
+############
+chrom.compat.excess.coeff=1.0
+chrom.compat.disjoint.coeff=1.0
+chrom.compat.common.coeff=0.4
+speciation.threshold=0.35
+
+  
+##################
+# fitness function
+#
+# stimulus.size = domain + tm.m * tm.heads.read = tm.m + 2 + tm.m * tm.heads.read
+# response.size = domain + (tm.heads.read * (3 + tm.m + tm.shift.length)) 
+#                        + (tm.heads.write + (3 + 3 * tm.m + tm.shift.length))
+##################
+#
+#stimulus.size=7 	CALCULATED AUTOMATICALLY
+#response.size=26 	CALCULATED AUTOMATICALLY
+fitness_function.class=dk.itu.ejuuragr.fitness.FitnessEvaluator
+fitness.function.adjust.for.network.size.factor=0.0
+#targets.range=0.2
+fitness.threshold=0.95
+fitness.target=0.999
+
+####################
+# sigmoid activation
+####################
+initial.topology.activation = sigmoid
+
+##############
+# network arch
+##############
+# Options = linear, sigmoid, evsail-sigmoid, tanh, tanh-cubic, step, signed, clamped-linear, signed-clamped-linear
+initial.topology.activation.input = linear
+initial.topology.activation.output = sigmoid
+initial.topology.fully.connected = true
+initial.topology.num.hidden.neurons = 0
+
+recurrent=disallowed
+recurrent.cycles=1
+ann.type=anji
+
+#############
+# persistence
+#############
+persistence.class=com.anji.persistence.FilePersistence
+persistence.base.dir=./db
+persist.all=false
+persist.champions=true
+persist.last=true
+id.file=./db/id.xml
+neat.id.file=./db/neatid.xml
+presentation.dir=./nevt
+
+#########
+# logging
+#########
+log4j.rootLogger=INFO, A1
+log4j.appender.A1=org.apache.log4j.ConsoleAppender
+#log4j.appender.A1=org.apache.log4j.FileAppender
+#log4j.appender.A1=org.apache.log4j.RollingFileAppender
+#log4j.appender.A1.File=./db/log.txt
+#log4j.appender.A1.MaxFileSize=10MB
+#log4j.appender.A1.MaxBackupIndex=20
+log4j.appender.A1.layout=org.apache.log4j.PatternLayout
+#log4j.appender.A1.layout.ConversionPattern=%-4r %-5p  %m - [%t] %c %x%n
+log4j.appender.A1.layout.ConversionPattern=%-5p %m%x%n
+-->
+
+

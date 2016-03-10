@@ -119,6 +119,9 @@
     <Content Include="Config\copytask.config.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Config\CopyTask\quicktest_singlethread_size2.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\CopyTask\copytask6.config.xml" />
     <Content Include="Config\CopyTask\copytask5.config.xml" />
     <Content Include="Config\CopyTask\copytask4.config.xml" />
