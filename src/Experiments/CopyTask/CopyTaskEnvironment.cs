@@ -51,9 +51,9 @@ namespace ENTM.Experiments.CopyTask
         public override bool IsTerminated => _step >= TotalTimeSteps;
 
         /// <summary>
-        /// Read + Write + start and delimiter
+        /// Read + Write + start and delimiter + 1 idle step for content jumping after the delimiter
         /// </summary>
-        public override int TotalTimeSteps => 2 * Sequence.Length + 2;
+        public override int TotalTimeSteps => 2 * Sequence.Length + 2 + 1;
 
         public sealed override int RandomSeed { get; set; }
 
@@ -116,12 +116,14 @@ namespace ENTM.Experiments.CopyTask
             double[] result = GetObservation(_step);
 
             double thisScore = 0;
-            // Compare and score (if reading)
-            if (_step >= Sequence.Length + 2)
-            {
-                // The controllers "action" is the reading after 2 + |seq| steps
 
-                int index = _step - Sequence.Length - 2; // actual sequence index to compare to
+            // Compare and score (if reading)
+            if (_step >= Sequence.Length + 2 + 1)
+            {
+                // The controllers "action" is the reading after |seq| + 2 + 1 steps.
+                // The +2 are the start and delimiter bits, and the +1 is the idle step after the delimiter, to allow for content jumping
+
+                int index = _step - Sequence.Length - 2 - 1; // actual sequence index to compare to
                 double[] correct = Sequence[index];
                 double[] received = action;
                 thisScore = Evaluate(correct, received);
@@ -195,10 +197,15 @@ namespace ENTM.Experiments.CopyTask
                 // DELIMITER bit
                 observation[1] = 1;
             }
+            else if (step == Sequence.Length + 2)
+            {
+                // Idle step to allow for content jump
+                Debug.DLog($"{"Type:",-16} IDLE", true);
+            }
             else
             {
-                Debug.DLog($"{"Type:",-16} READ", true);
                 // When we are reading we just send zeros
+                Debug.DLog($"{"Type:",-16} READ", true);
             }
 
             Debug.DLog($"{"Observation:",-16} {Utilities.ToString(observation, "f0")}", true);

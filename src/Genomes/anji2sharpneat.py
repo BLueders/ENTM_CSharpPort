@@ -2,6 +2,7 @@ from lxml import etree
 import xml.sax
 import sys
 
+# XML SAX parser
 class GenomeHandler(xml.sax.ContentHandler):
 
 	# Call when an element starts

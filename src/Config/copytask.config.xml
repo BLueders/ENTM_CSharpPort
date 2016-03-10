@@ -22,6 +22,60 @@
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
 
+
+  <!-- Turing Machine Parameters-->
+  <TuringMachineParams>
+
+    <!-- If set to false, the Turing machine will always return a 0 vector -->
+    <Enabled>true</Enabled>
+
+    <!-- Maximum memory size (-1 for unlimited) -->
+    <N>-1</N>
+
+    <!-- Write vector size -->
+    <M>4</M>
+
+    <!-- Number of shift inputs -->
+    <ShiftLength>3</ShiftLength>
+
+    <!-- Shift mode: "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
+    <ShiftMode>Multiple</ShiftMode>
+
+    <!-- Number of Read/Write heads-->
+    <Heads>1</Heads>
+  </TuringMachineParams>
+
+  <!-- Copy Task Parameters -->
+  <CopyTaskParams>
+
+    <!-- Evaluation iterations -->
+    <Iterations>50</Iterations>
+
+    <!-- The seed used for random environment generations -->
+    <RandomSeed>0</RandomSeed>
+
+    <!-- The size of the bit vectors to be copied. -->
+    <VectorSize>1</VectorSize>
+
+    <!-- Maximum length of the sequence of bit vectors. 
+         If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
+         If LengthRule is Fixed, sequence will always be MaxLength. -->
+    <MaxLength>10</MaxLength>
+
+    <!-- "Random" or "Fixed" sequence lengths -->
+    <LengthRule>Random</LengthRule>
+
+    <!-- What fitness function to evalutate with.
+        StrictCloseToTarget
+        PartialScore
+        Emilarity
+        ClosestBinary
+        CompleteBinary
+    -->
+    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
+
+  </CopyTaskParams>
+
   <!-- The network activation scheme to use -->
   <Activation>
     
@@ -129,59 +183,6 @@
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
     <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
   </GenomeParams>
-
-  <!-- Turing Machine Parameters-->
-  <TuringMachineParams>
-    
-    <!-- If set to false, the Turing machine will always return a 0 vector -->
-    <Enabled>true</Enabled>
-    
-    <!-- Maximum memory size (-1 for unlimited) -->
-    <N>-1</N>
-
-    <!-- Write vector size -->
-    <M>5</M>
-    
-    <!-- Number of shift inputs -->
-    <ShiftLength>3</ShiftLength>
-    
-    <!-- Shift mode: "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
-    <ShiftMode>Multiple</ShiftMode>
-
-    <!-- Number of Read/Write heads-->
-    <Heads>1</Heads>
-  </TuringMachineParams>
-
-  <!-- Copy Task Parameters -->
-  <CopyTaskParams>
-    
-    <!-- Evaluation iterations -->
-    <Iterations>50</Iterations>
-
-    <!-- The seed used for random environment generations -->
-    <RandomSeed>0</RandomSeed>
-
-    <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>2</VectorSize>
-
-    <!-- Maximum length of the sequence of bit vectors. 
-         If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
-         If LengthRule is Fixed, sequence will always be MaxLength. -->
-    <MaxLength>10</MaxLength>
-
-    <!-- "Random" or "Fixed" sequence lengths -->
-    <LengthRule>Random</LengthRule>
-
-    <!-- What fitness function to evalutate with.
-        StrictCloseToTarget
-        PartialScore
-        Emilarity
-        ClosestBinary
-        CompleteBinary
-    -->
-    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
-    
-  </CopyTaskParams>
 
 </Config>
 

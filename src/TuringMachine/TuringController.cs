@@ -64,6 +64,7 @@ namespace ENTM.TuringMachine
             TuringMachine.ScoreNovelty = ScoreNovelty;
             TuringMachine.NoveltyVectorLength = NoveltyVectorLength;
             TuringMachine.Reset();
+
             _turingMachineOutput = ProcessTuringMachineOutput(TuringMachine.DefaultRead); 
         }
 
