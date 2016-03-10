@@ -237,8 +237,8 @@ namespace ENTM
 
                     case ConsoleKey.D:
 #if DEBUG
-                        Debug.On = !Debug.On;
-                        if (Debug.On) Console.WriteLine("Debug on.");
+                        ENTM.Utility.Debug.On = !ENTM.Utility.Debug.On;
+                        if (ENTM.Utility.Debug.On) Console.WriteLine("Debug on.");
                         else Console.WriteLine("Debug off. Press D to turn Debug back on");
 #else
                         Console.WriteLine("Debug not available");

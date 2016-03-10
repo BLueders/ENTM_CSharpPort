@@ -11,7 +11,7 @@ namespace ENTM.Experiments.SeasonTask
 {
     class TwoStepSeasonTaskEnviroment : SeasonTaskEnvironment
     {
-       
+
         public TwoStepSeasonTaskEnviroment(SeasonTaskProperties props) : base(props)
         {
 
@@ -25,32 +25,31 @@ namespace ENTM.Experiments.SeasonTask
             Debug.DLog($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
             Debug.DLog($"{"Step:",-16} {_step}", true);
             double thisScore = 0;
-            double[] observation = new double[0];
+            double[] observation = new double[OutputCount];
             int task = _step % 2; // 0 = reward / food step, 1 = eat step
             switch (task)
             {
                 case 0:
                     Debug.DLog("Task: Reward / Food Step", true);
                     double eatVal = action[0];
-                    thisScore = Evaluate(eatVal, (_step / 2) - 1);
+                    thisScore = Evaluate(eatVal, (_step - 2) / 2); // we compare against the previos food, therefor - 2
                     observation = GetOutput(_step, thisScore);
-                    if (!IsFirstDayOfSeasonInFirstYear((_step/2) - 1))
+
+                    if (IsFirstDayOfSeasonInFirstYear((_step - 2) / 2)) // no scoring here
                     {
-                        _score += thisScore;
+                        thisScore = 0;
                     }
-                    else
-                    {
-                        _score = _score;
-                    }
+                    _score += thisScore;
+
                     Debug.DLog($"{"Eating:",-16} {eatVal}" +
-                                $"\n{"Last Was Poisonous:",-16} {Sequence[_step - 1].IsPoisonous}" +
+                                $"\n{"Last Was Poisonous:",-16} {Sequence[(_step - 2) / 2].IsPoisonous}" +
                                 $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
-                                $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - 1}" +
+                                $"\n{"Total Score:",-16} {_score.ToString("F4")} / {(_step / 2)}" +
                                 $"\n{"Max Score:",-16} {Sequence.Length.ToString("F4")}", true);
                     break;
                 case 1:
                     Debug.DLog("Task: Eat Step", true);
-                    observation = GetOutput(_step, -1);
+                    // send only 0s
                     break;
                 default:
                     break;
@@ -76,7 +75,7 @@ namespace ENTM.Experiments.SeasonTask
                 case 0:
                     if (step != Sequence.Length * 2) // the last step is scoring only
                     {
-                        Food currentFood = Sequence[step/2];
+                        Food currentFood = Sequence[step / 2];
                         observation[currentFood.Type] = 1; // return the current food
                     }
                     if (step != 0) // first step has food only

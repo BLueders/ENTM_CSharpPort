@@ -25,14 +25,8 @@ namespace ENTM.TuringMachine
 
         public double[] ActivateNeuralNetwork(double[] environmentOutput)
         {
-            if (Phenome == null)
-                throw new ArgumentNullException("BlackBox was null! Remember to set the BlackBox object before activating");
-
             // NN Input is the output from the environment, and the output from the turing machine in the previous activation
             double[] nnInput = Utilities.JoinArrays(environmentOutput, _turingMachineOutput);
-
-            // Cap values at 1
-            Utilities.ClampArray01(nnInput); // FIXME: This might be a symptom in the GTM.
 
             Debug.DLog($"Neural Network Input:  {Utilities.ToString(nnInput, "f4")}", true);
 
