@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Xml;
 using ENTM.Replay;
 using SharpNeat.Core;
@@ -34,7 +35,7 @@ namespace ENTM.TuringMachine
                         shifts = 1;
                         break;
                 }
-
+                
                 // Write key size (M) + 2 (write interp and content jump) + shifts - for each head (probably only one)
                 return (_turingMachineProps.M + 2 + shifts) * _turingMachineProps.Heads;
             }
@@ -50,12 +51,16 @@ namespace ENTM.TuringMachine
             Utility.Debug.DLogHeader("STARTING EVAULATION", true);
 
             Environment.ResetAll();
+            Environment.Controller = controller;
 
             double totalScore = 0;
 
-            Environment.Controller = controller;
+            double[][] noveltyVectors = null;
 
-            AuxFitnessInfo[] noveltyScore = new AuxFitnessInfo[10];
+            if (NoveltySearchEnabled)
+            {
+                noveltyVectors = new double[iterations][];
+            }
 
             // Iteration loop
             for (int i = 0; i < iterations; i++)
@@ -95,11 +100,39 @@ namespace ENTM.TuringMachine
 
                 totalScore += Environment.NormalizedScore;
 
+                if (NoveltySearchEnabled)
+                {
+                    noveltyVectors[i] = Controller.NoveltyVector;   
+                }
+
                 Utility.Debug.DLog($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }
 
             // Calculate the total normalized score (0-1)
             double environmentScore = Math.Max(0d, totalScore / iterations);
+
+            AuxFitnessInfo[] noveltyScore = null;
+
+            if (NoveltySearchEnabled)
+            {
+                // Calculate average novelty vector
+                double[] totals = new double[NoveltyVectorLength];
+
+                for (int i = 0; i < noveltyVectors.Length; i++)
+                {
+                    for (int j = 0; j < NoveltyVectorLength; j++)
+                    {
+                        totals[j] += noveltyVectors[i][j];
+                    }
+                }
+
+                noveltyScore = new AuxFitnessInfo[NoveltyVectorLength];
+
+                for (int i = 0; i < NoveltyVectorLength; i++)
+                {
+                    noveltyScore[i] = new AuxFitnessInfo(null, totals[i] / (double) iterations);
+                }
+            }
 
             return new FitnessInfo(environmentScore, noveltyScore);
         }

@@ -67,21 +67,23 @@ namespace ENTM.Experiments
         private const int LOG_INTERVAL = 100;
         private uint _lastLog;
 
-        NeatEvolutionAlgorithmParameters _eaParams;
-        NeatGenomeParameters _neatGenomeParams;
+        private NeatEvolutionAlgorithmParameters _eaParams;
+        private NeatGenomeParameters _neatGenomeParams;
+        private NoveltySearchParameters _noveltySearchParams;
+
         private NeatEvolutionAlgorithm<NeatGenome> _ea;
-
-
-        string _name;
-        int _populationSize, _maxGenerations;
-        NetworkActivationScheme _activationScheme;
-        string _complexityRegulationStr;
-        int? _complexityThreshold;
-        string _description;
-        ParallelOptions _parallelOptions;
-        bool _multiThreading;
-
         protected TEvaluator _evaluator;
+        protected NoveltySearchListEvaluator<NeatGenome, IBlackBox> _innerEvaluator;
+
+        private string _name;
+        private int _populationSize, _maxGenerations;
+        private NetworkActivationScheme _activationScheme;
+        private string _complexityRegulationStr;
+        private int? _complexityThreshold;
+        private string _description;
+        private ParallelOptions _parallelOptions;
+        private bool _multiThreading;
+
 
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string RecordingFile => $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number)}";
@@ -100,8 +102,14 @@ namespace ENTM.Experiments
 
         public TimeSpan TimeSpent => _timer?.Elapsed ?? TimeSpan.Zero;
 
-        public int InputCount => EnvironmentOutputCount + ControllerOutputCount + 1;
+        public int InputCount => EnvironmentOutputCount + ControllerOutputCount;
         public int OutputCount => EnvironmentInputCount + ControllerInputCount;
+
+        public void SetNoveltySearchEnabled(bool enabled)
+        {
+            _innerEvaluator.NoveltySearchEnabled = enabled;
+            _evaluator.NoveltySearchEnabled = enabled;
+        }
 
         #region Abstract properties that subclasses must implement
         public abstract int EnvironmentInputCount { get; }
@@ -441,6 +449,10 @@ namespace ENTM.Experiments
             _neatGenomeParams.NodeAuxStateMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "NodeAuxStateMutationProbability");
             _neatGenomeParams.DeleteConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DeleteConnectionMutationProbability");
 
+
+            XmlElement xmlNoveltySearchParams = xmlConfig.SelectSingleNode("NoveltySearch") as XmlElement;
+            _noveltySearchParams = NoveltySearchParameters.ReadXmlProperties(xmlNoveltySearchParams);
+
             // Create IBlackBox evaluator.
             _evaluator = new TEvaluator();
             _evaluator.Initialize(xmlConfig);
@@ -531,13 +543,16 @@ namespace ENTM.Experiments
             // Create genome decoder.
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = CreateGenomeDecoder();
 
+            INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
             
-            IGenomeListEvaluator<NeatGenome> innerEvaluator = new NoveltySearchListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, _multiThreading, _parallelOptions);
+            _innerEvaluator = new NoveltySearchListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, noveltyScorer, _multiThreading, _parallelOptions);
+
+            SetNoveltySearchEnabled(_noveltySearchParams.Enabled);
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
             // that were in the population in previous generations (elite genomes). This is determiend by examining each genome's evaluation info object.
             IGenomeListEvaluator<NeatGenome> selectiveEvaluator = new SelectiveGenomeListEvaluator<NeatGenome>(
-                                                                                    innerEvaluator,
+                                                                                    _innerEvaluator,
                                                                                     SelectiveGenomeListEvaluator<NeatGenome>.CreatePredicate_OnceOnly());
             // Initialize the evolution algorithm.
             ea.Initialize(selectiveEvaluator, genomeFactory, genomeList);

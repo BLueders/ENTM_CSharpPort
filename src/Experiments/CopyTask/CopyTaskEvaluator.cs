@@ -25,6 +25,12 @@ namespace ENTM.Experiments.CopyTask
             return new CopyTaskEnvironment(_copyTaskProps);
         }
 
+        protected override void OnEvaluationStart()
+        {
+            // We need a fixed sequence length for novelty search
+            Environment.LengthRule = NoveltySearchEnabled ? LengthRule.Fixed : _copyTaskProps.LengthRule;
+        }
+
         protected override void SetupTest()
         {
             Environment.LengthRule = LengthRule.Fixed;
@@ -46,5 +52,7 @@ namespace ENTM.Experiments.CopyTask
         public override int EnvironmentOutputCount => _copyTaskProps.VectorSize + 2;
 
         public override int Iterations => _copyTaskProps.Iterations;
+
+        public override int NoveltyVectorLength => _copyTaskProps.MaxSequenceLength * 2 + 2;
     }
 }

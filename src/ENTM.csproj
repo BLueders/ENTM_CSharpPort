@@ -54,6 +54,7 @@
     <Compile Include="Experiments\ITuringExperiment.cs" />
     <Compile Include="Experiments\SeasonTask\TwoStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\ThreeStepSeasonTaskEnviroment.cs" />
+    <Compile Include="NoveltySearch\INoveltyScorer.cs" />
     <Compile Include="NoveltySearch\NoveltySearchListEvaluator.cs" />
     <Compile Include="BaseEnvironment.cs" />
     <Compile Include="Experiments\SeasonTask\Container.cs" />
@@ -61,6 +62,8 @@
     <Compile Include="Experiments\SeasonTask\SeasonTaskEvaluator.cs" />
     <Compile Include="Experiments\SeasonTask\SeasonTaskExperiment.cs" />
     <Compile Include="Experiments\SeasonTask\SeasonTaskProperties.cs" />
+    <Compile Include="NoveltySearch\NoveltySearchParameters.cs" />
+    <Compile Include="NoveltySearch\TuringNoveltyScorer.cs" />
     <Compile Include="Replay\EnvironmentTimeStep.cs" />
     <Compile Include="Replay\IReplayable.cs" />
     <Compile Include="Replay\Recorder.cs" />
