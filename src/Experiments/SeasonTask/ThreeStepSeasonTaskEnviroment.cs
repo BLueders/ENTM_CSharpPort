@@ -30,15 +30,15 @@ namespace ENTM.Experiments.SeasonTask
             switch (task)
             {
                 case 0:
-                    Debug.DLog("Task: Food Step", true);
+                    Debug.DLog($"Task: Food Step {(_step / 3) - 1}", true);
                     observation = GetOutput(_step, -1);
                     break;
                 case 1:
-                    Debug.DLog("Task: Eat Step", true);
+                    Debug.DLog($"Task: Eat Step", true);
                     observation = GetOutput(_step, -1);
                     break;
                 case 2:
-                    Debug.DLog("Task: Reward Step", true);
+                    Debug.DLog($"Task: Reward Step", true);
                     double eatVal = action[0];
                     thisScore = Evaluate(eatVal, (_step / 3) - 1);
                     observation = GetOutput(_step, thisScore);
@@ -47,9 +47,9 @@ namespace ENTM.Experiments.SeasonTask
                         _score += thisScore;
                     }
                     Debug.DLog($"{"Eating:",-16} {eatVal}" +
-                                $"\n{"Poisonous:",-16} {Sequence[_step - 1].IsPoisonous}" +
+                                $"\n{"Poisonous:",-16} {Sequence[(_step / 3) - 1].IsPoisonous}" +
                                 $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
-                                $"\n{"Total Score:",-16} {_score.ToString("F4")} / {_step - 1}" +
+                                $"\n{"Total Score:",-16} {_score.ToString("F4")} / {(_step / 3) - 1}" +
                                 $"\n{"Max Score:",-16} {Sequence.Length.ToString("F4")}", true);
                     break;
                 default:
