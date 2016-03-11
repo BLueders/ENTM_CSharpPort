@@ -14,10 +14,10 @@
   </Description>
   
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>1</ExperimentCount>
+  <ExperimentCount>20</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>5000</MaxGenerations>
+  <MaxGenerations>2500</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -33,7 +33,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>4</M>
+    <M>5</M>
 
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -55,7 +55,7 @@
     <RandomSeed>0</RandomSeed>
 
     <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>1</VectorSize>
+    <VectorSize>2</VectorSize>
 
     <!-- Maximum length of the sequence of bit vectors. 
          If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
@@ -115,7 +115,7 @@
        Absolute: Defines an absolute ceiling on complexity.
        Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
-  <ComplexityThreshold>150</ComplexityThreshold>
+  <ComplexityThreshold>80</ComplexityThreshold>
   
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -162,14 +162,14 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>1.0</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>0.2</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
     <DisjointExcessGenesRecombinedProbability>1.0</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.6</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
     <AddNodeMutationProbability>0.005</AddNodeMutationProbability>
@@ -181,7 +181,7 @@
     <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.05</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

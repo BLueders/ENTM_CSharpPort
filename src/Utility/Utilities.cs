@@ -171,9 +171,14 @@ namespace ENTM.Utility
             return newArray;
         }
 
-        public static string TimeSpanToString(TimeSpan time)
+        public static string TimeToString(TimeSpan time)
         {
             return string.Format($"{time.Hours:D2}h:{time.Minutes:D2}m:{time.Seconds:D2}s:{time.Milliseconds:D3}ms");
+        }
+
+        public static string TimeToString(long time)
+        {
+            return TimeToString(new TimeSpan(0, 0, 0, 0, (int) time));
         }
     }
 }

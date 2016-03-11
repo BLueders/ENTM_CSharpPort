@@ -77,9 +77,9 @@ namespace ENTM.Replay
                     }
                     else if (y < startIndex[3])
                     {
-                        if (x > _recordedTimeSteps.Count / 2)
+                        if (x > _recordedTimeSteps.Count / 2 + 1)
                         {
-                            TimeStep input = _recordedTimeSteps[x - (_recordedTimeSteps.Count/2)];
+                            TimeStep input = _recordedTimeSteps[x - (_recordedTimeSteps.Count / 2 + 1)];
                             double v = Math.Abs(input.EnvironmentTimeStep.Output[i + 2] - t.EnvironmentTimeStep.Input[i]);
                             pixel = ColorUtils.BlackAndWhite(v);
                         }
