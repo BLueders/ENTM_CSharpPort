@@ -85,7 +85,7 @@ for c in connections:
 
 root.append(xmlConns)
 
-file = open("fromanji.xml", "w+")
+file = open("fromanji2.xml", "w+")
 
 et = etree.ElementTree(root)
 et.write(file, pretty_print=True)
