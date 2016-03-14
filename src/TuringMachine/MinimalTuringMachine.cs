@@ -362,6 +362,9 @@ namespace ENTM.TuringMachine
                         similarity = curSim;
                         best = i;
                     }
+
+                    // Perfect similarity, we don't need to check the rest
+                    if (similarity == 1.0) break;
                 }
 
                 Debug.DLog($"Content Jump Head {head} from {_headPositions[head]} to {best}", true);

@@ -17,7 +17,7 @@
   <ExperimentCount>20</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>2500</MaxGenerations>
+  <MaxGenerations>3000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -33,7 +33,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>5</M>
+    <M>2</M>
 
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -115,7 +115,7 @@
        Absolute: Defines an absolute ceiling on complexity.
        Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
-  <ComplexityThreshold>80</ComplexityThreshold>
+  <ComplexityThreshold>15</ComplexityThreshold>
   
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -166,13 +166,13 @@
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>1.0</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>0.3</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
     <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
-    <AddNodeMutationProbability>0.005</AddNodeMutationProbability>
+    <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
     <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
@@ -181,7 +181,7 @@
     <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.05</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.12</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

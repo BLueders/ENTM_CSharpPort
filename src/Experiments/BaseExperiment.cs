@@ -65,10 +65,6 @@ namespace ENTM.Experiments
         const string CHAMPION_FILE = "champion{0:D4}.xml";
         const string RECORDING_FILE = "recording{0:D4}.png";
 
-        private const int LOG_INTERVAL = 100;
-        private uint _lastLog;
-        private long _lastLogTime;
-
         private NeatEvolutionAlgorithmParameters _eaParams;
         private NeatGenomeParameters _neatGenomeParams;
         private NoveltySearchParameters _noveltySearchParams;
@@ -86,6 +82,11 @@ namespace ENTM.Experiments
         private ParallelOptions _parallelOptions;
         private bool _multiThreading;
 
+        private const int LOG_INTERVAL = 100;
+        private uint _lastLog;
+        private long _lastLogTime;
+        private double _currentMaxFitness = -1;
+        private uint _lastMaxFitnessImprovementGen;
 
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string RecordingFile => $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number)}";
@@ -205,6 +206,12 @@ namespace ENTM.Experiments
  
         private void EAUpdateEvent(object sender, EventArgs e)
         {
+            if (_ea.Statistics._maxFitness > _currentMaxFitness)
+            {
+                _currentMaxFitness = _ea.Statistics._maxFitness;
+                _lastMaxFitnessImprovementGen = _ea.CurrentGeneration;
+            }
+
             if (_lastLog == 0 || _ea.CurrentGeneration - _lastLog >= LOG_INTERVAL)
             {
                 uint gensSinceLastLog = _ea.CurrentGeneration - _lastLog;
@@ -218,15 +225,15 @@ namespace ENTM.Experiments
                 long timeRemainingEst = gensRemaining * timePerGen;
 
                 _lastLogTime = _timer.ElapsedMilliseconds;
-
                 _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, "+
                   $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
                   $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
-                  $"Complexity - Max: {_ea.Statistics._maxComplexity:F4} Mean: {_ea.Statistics._meanComplexity:F4}, " +
-                  $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}"
+                  $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
+                  $"Champ: {_ea.CurrentChampGenome.Complexity} Strategy: {_ea.ComplexityRegulationMode}, " +
+                  $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
+                  $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
                   );
             }
-
 
             // Save the best genome to file
             XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);
