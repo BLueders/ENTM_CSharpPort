@@ -182,7 +182,7 @@ namespace ENTM
 
         private static void ExperimentCompleteEvent(object sender, EventArgs e)
         {
-            logger.Info($"Time spent: {Utilities.TimeSpanToString(_experiment.TimeSpent)}");
+            logger.Info($"Time spent: {Utilities.TimeToString(_experiment.TimeSpent)}");
 
             _experiment.TestCurrentChampion();
 
@@ -198,7 +198,7 @@ namespace ENTM
                 else
                 {
                     _terminated = true;
-                    logger.Info($"All experiments completed. Total time spent: {Utilities.TimeSpanToString(_stopwatch.Elapsed)}");
+                    logger.Info($"All experiments completed. Total time spent: {Utilities.TimeToString(_stopwatch.Elapsed)}");
                     Console.WriteLine("\nPress any key to exit...");
                 }
             }

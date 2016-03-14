@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
+using ENTM.Utility;
 using log4net;
 using SharpNeat.Core;
 using SharpNeat.Decoders;
@@ -66,6 +67,7 @@ namespace ENTM.Experiments
 
         private const int LOG_INTERVAL = 100;
         private uint _lastLog;
+        private long _lastLogTime;
 
         private NeatEvolutionAlgorithmParameters _eaParams;
         private NeatGenomeParameters _neatGenomeParams;
@@ -208,8 +210,20 @@ namespace ENTM.Experiments
         {
             if (_lastLog == 0 || _ea.CurrentGeneration - _lastLog >= LOG_INTERVAL)
             {
+                uint gensSinceLastLog = _ea.CurrentGeneration - _lastLog;
+                if (gensSinceLastLog < 1) gensSinceLastLog = 1;
+
                 _lastLog = _ea.CurrentGeneration;
-                _logger.Info($"Generation: {_ea.CurrentGeneration}, " +
+
+                long spent = _timer.ElapsedMilliseconds - _lastLogTime;
+                long timePerGen = spent / gensSinceLastLog;
+                long gensRemaining = _maxGenerations - _ea.CurrentGeneration;
+                long timeRemainingEst = gensRemaining * timePerGen;
+
+                _lastLogTime = _timer.ElapsedMilliseconds;
+
+                _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, "+
+                  $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
                   $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
                   $"Complexity - Max: {_ea.Statistics._maxComplexity:F4} Mean: {_ea.Statistics._meanComplexity:F4}, " +
                   $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}"
@@ -230,14 +244,6 @@ namespace ENTM.Experiments
             {
                 ExperimentCompleted = true;
                 _ea.RequestPause();
-            }
-        }
-
-        private void CreateExperimentDirectoryIfNecessary()
-        {
-            if (!Directory.Exists(CurrentDirectory))
-            {
-                Directory.CreateDirectory(CurrentDirectory);
             }
         }
 
@@ -362,7 +368,14 @@ namespace ENTM.Experiments
                     _logger.Info("ExperimentStartedEvent listener threw exception: " + ex.Message);
                 }
             }
+        }
 
+        private void CreateExperimentDirectoryIfNecessary()
+        {
+            if (!Directory.Exists(CurrentDirectory))
+            {
+                Directory.CreateDirectory(CurrentDirectory);
+            }
         }
 
         #region INeatExperiment Members
