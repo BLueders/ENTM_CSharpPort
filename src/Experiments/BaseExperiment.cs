@@ -181,10 +181,13 @@ namespace ENTM.Experiments
 
         private FitnessInfo TestPhenome(IBlackBox phenome)
         {
-            if (_ea != null) _ea.RequestPause();
-            else CreateEA();
+            if (_ea != null)
+            {
+                _ea.RequestPause();
+            }
 
-            Debug.On = true;
+
+                Debug.On = true;
             _logger.Info("Testing phenome...");
 
             FitnessInfo result = _evaluator.TestPhenome(phenome);
@@ -305,7 +308,6 @@ namespace ENTM.Experiments
             if (_ea == null)
             {
                 CreateEA();
-                _ea.StartContinue();
 
             }
             else

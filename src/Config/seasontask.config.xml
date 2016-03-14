@@ -38,6 +38,21 @@
     <MaxIters>5</MaxIters>
   
   </Activation>
+
+  <!-- Novelty Search Parameters -->
+  <NoveltySearch>
+
+    <!-- If false, only environmental objective fitness will be used -->
+    <Enabled>false</Enabled>
+
+    <!-- The minimum novelty score an individual must achieve to be entered into the archive-->
+    <PMin>90</PMin>
+
+    <!-- The maximum size of the behaviour archive. -1 for unlimited -->
+    <ArchiveLimit>300</ArchiveLimit>
+
+  </NoveltySearch>
+
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   <ComplexityThreshold>150</ComplexityThreshold>
   <MultiThreading>true</MultiThreading>
@@ -137,6 +152,8 @@
     <Days>5</Days>
     <FoodTypes>2</FoodTypes>
     <PoisonFoods>1</PoisonFoods>
+
+    <StepsPerFood>One</StepsPerFood>
 
     }
   </SeasonTaskParams>

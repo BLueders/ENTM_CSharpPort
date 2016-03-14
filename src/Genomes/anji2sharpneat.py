@@ -50,10 +50,23 @@ parser.setContentHandler( Handler )
 
 parser.parse("chromosome11943.xml")
 
-bias = neurons.pop()
+bias = None
+for n in neurons :
+	if n.ntype == "out" :
+		break
+	bias = n 
+
+neurons.remove(bias)
+biasId = bias.id
 bias.id = 0
 bias.ntype = "bias"
 neurons.insert(0, bias)
+
+for c in connections :
+	if c.src == biasId :
+		c.src = 0
+	if c.dest == biasId :
+		c.dest = 0
 
 root = etree.Element("Network")
 
@@ -73,7 +86,7 @@ for c in connections:
 
 root.append(xmlConns)
 
-file = open("fromanji.xml", "w+")
+file = open("fromanji2.xml", "w+")
 
 et = etree.ElementTree(root)
 et.write(file, pretty_print=True)

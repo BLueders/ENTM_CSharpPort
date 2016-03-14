@@ -2,30 +2,34 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask</Name>
+  <Name>CopyTask</Name>
   
   <!-- The fully qualified name of the experiment class -->
-  <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
-  
+  <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
+
   <!-- Experiment description -->
   <Description>
-    Season task experiment with turing controller. 
-    In multible seasons the controller must learn wich foods are edible and which are poisonous for each. 
-    Then recall the information when it encounters that season again to decide wich to eat.
+    Copy task experiment with turing controller.
+    The controller must record a bit-vector sequence to memory, and read it back.
   </Description>
-
+  
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>10</ExperimentCount>
+  <ExperimentCount>1</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
   <MaxGenerations>5000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
+
+  <!-- The network activation scheme to use -->
   <Activation>
+    
     <!-- "Acyclic", "CyclicFixedIters" or "CyclicRelax"
-         Acyclic networks do not support recurrent connections
-    -->
+         Acyclic:           Does not support recurrent connections. Network is fully activated each activation.
+         CyclicFixedIters:  Each iteration will iterate signals one step from input -> output.
+         CyclicRelax:       Activate the network until all node output has remained unchanged between iterations within the threshold, 
+                            or until the maximum iteration count is reached. -->
     <Scheme>Acyclic</Scheme>
 
     <!-- CyclicFixedIters only -->
@@ -38,24 +42,18 @@
     <MaxIters>5</MaxIters>
   
   </Activation>
-
-  <!-- Novelty Search Parameters -->
-  <NoveltySearch>
-
-    <!-- If false, only environmental objective fitness will be used -->
-    <Enabled>false</Enabled>
-
-    <!-- The minimum novelty score an individual must achieve to be entered into the archive-->
-    <PMin>90</PMin>
-
-    <!-- The maximum size of the behaviour archive. -1 for unlimited -->
-    <ArchiveLimit>300</ArchiveLimit>
-
-  </NoveltySearch>
-
+  
+  <!-- "Absolute" or "Relative"
+       Absolute: Defines an absolute ceiling on complexity.
+       Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
   <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   <ComplexityThreshold>150</ComplexityThreshold>
-  <MultiThreading>true</MultiThreading>
+  
+  <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
+  <MultiThreading>false</MultiThreading>
+  
+  <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
+  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
 
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
@@ -100,10 +98,10 @@
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>0.5</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>1.0</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.6</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
     <AddNodeMutationProbability>0.005</AddNodeMutationProbability>
@@ -120,12 +118,15 @@
 
   <!-- Turing Machine Parameters-->
   <TuringMachineParams>
+    
+    <!-- If set to false, the Turing machine will always return a 0 vector -->
     <Enabled>true</Enabled>
+    
     <!-- Maximum memory size (-1 for unlimited) -->
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>8</M>
+    <M>5</M>
     
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -137,8 +138,8 @@
     <Heads>1</Heads>
   </TuringMachineParams>
 
-  <!-- Season Task Parameters -->
-  <SeasonTaskParams>
+  <!-- Copy Task Parameters -->
+  <CopyTaskParams>
     
     <!-- Evaluation iterations -->
     <Iterations>50</Iterations>
@@ -146,15 +147,41 @@
     <!-- The seed used for random environment generations -->
     <RandomSeed>0</RandomSeed>
 
-    <FitnessFactor>1</FitnessFactor>
-    <Years>3</Years>
-    <Seasons>2</Seasons>
-    <Days>5</Days>
-    <FoodTypes>4</FoodTypes>
-    <PoisonFoods>2</PoisonFoods>
-    <StepsPerFood>One</StepsPerFood>
-    }
-  </SeasonTaskParams>
+    <!-- The size of the bit vectors to be copied. -->
+    <VectorSize>2</VectorSize>
+
+    <!-- Maximum length of the sequence of bit vectors. 
+         If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
+         If LengthRule is Fixed, sequence will always be MaxLength. -->
+    <MaxLength>10</MaxLength>
+
+    <!-- "Random" or "Fixed" sequence lengths -->
+    <LengthRule>Random</LengthRule>
+
+    <!-- What fitness function to evalutate with.
+        StrictCloseToTarget
+        PartialScore
+        Emilarity
+        ClosestBinary
+        CompleteBinary
+    -->
+    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
+    
+  </CopyTaskParams>
+
+  <!-- Novelty Search Parameters -->
+  <NoveltySearch>
+
+    <!-- If false, only environmental objective fitness will be used -->
+    <Enabled>false</Enabled>
+
+    <!-- The minimum novelty score an individual must achieve to be entered into the archive-->
+    <PMin>90</PMin>
+
+    <!-- The maximum size of the behaviour archive. -1 for unlimited -->
+    <ArchiveLimit>300</ArchiveLimit>
+
+  </NoveltySearch>
 
 </Config>
 

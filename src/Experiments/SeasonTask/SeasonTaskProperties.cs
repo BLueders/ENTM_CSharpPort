@@ -10,6 +10,11 @@ namespace ENTM.Experiments.SeasonTask
 {
     class SeasonTaskProperties
     {
+        public enum FoodSteps
+        {
+            One, Two, Three
+        }
+
         private XmlElement xmlConfig;
         private const int DEFAULT_ITERATIONS = 10;
         private const double DEFAULT_FITNESS_FACTOR = 1;
@@ -25,6 +30,7 @@ namespace ENTM.Experiments.SeasonTask
             Days = XmlUtils.TryGetValueAsInt(xmlConfig, "Days") ?? 0;
             FoodTypes = XmlUtils.TryGetValueAsInt(xmlConfig, "FoodTypes") ?? 0;
             PoisonFoods = XmlUtils.TryGetValueAsInt(xmlConfig, "PoisonFoods") ?? 0;
+            StepsPerFood = (FoodSteps)Enum.Parse(typeof(FoodSteps), XmlUtils.GetValueAsString(xmlConfig, "StepsPerFood"));
         }
 
         public int Iterations { get; set; }
@@ -36,5 +42,6 @@ namespace ENTM.Experiments.SeasonTask
         public int Days { get; set; }
         public int FoodTypes { get; set; }
         public int PoisonFoods { get; set; }
+        public FoodSteps StepsPerFood { get; set; }
     }
 }
