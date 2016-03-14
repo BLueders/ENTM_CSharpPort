@@ -187,7 +187,7 @@ namespace ENTM.Experiments
             }
 
 
-                Debug.On = true;
+            Debug.On = true;
             _logger.Info("Testing phenome...");
 
             FitnessInfo result = _evaluator.TestPhenome(phenome);
@@ -308,7 +308,7 @@ namespace ENTM.Experiments
             if (_ea == null)
             {
                 CreateEA();
-
+                _ea.StartContinue();
             }
             else
             {
