@@ -12,10 +12,12 @@ namespace ENTM.Experiments
 
         TimeSpan TimeSpent { get; }
 
+        bool NoveltySearchEnabled { get; set; }
+
         void Initialize(string name, XmlElement xmlConfig, string identifier, int subIdentifier, int number);
 
         void StartStopEA();
-
+    
         FitnessInfo TestCurrentChampion();
 
         FitnessInfo TestSavedChampion(string xmlChampion);

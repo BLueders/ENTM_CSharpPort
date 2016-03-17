@@ -71,7 +71,7 @@ namespace ENTM.Experiments
 
         private NeatEvolutionAlgorithm<NeatGenome> _ea;
         protected TEvaluator _evaluator;
-        protected NoveltySearchListEvaluator<NeatGenome, IBlackBox> _innerEvaluator;
+        protected NoveltySearchListEvaluator<NeatGenome, IBlackBox> _listEvaluator;
 
         private string _name;
         private int _populationSize, _maxGenerations;
@@ -82,11 +82,12 @@ namespace ENTM.Experiments
         private ParallelOptions _parallelOptions;
         private bool _multiThreading;
 
-        private const int LOG_INTERVAL = 100;
+        private const int LOG_INTERVAL = 50;
         private uint _lastLog;
         private long _lastLogTime;
         private double _currentMaxFitness = -1;
         private uint _lastMaxFitnessImprovementGen;
+        private uint _noveltySearchActivatedGen;
 
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string RecordingFile => $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number)}";
@@ -108,10 +109,32 @@ namespace ENTM.Experiments
         public int InputCount => EnvironmentOutputCount + ControllerOutputCount;
         public int OutputCount => EnvironmentInputCount + ControllerInputCount;
 
-        public void SetNoveltySearchEnabled(bool enabled)
+        private bool _noveltySearchEnabled;
+        public bool NoveltySearchEnabled
         {
-            _innerEvaluator.NoveltySearchEnabled = enabled;
-            _evaluator.NoveltySearchEnabled = enabled;
+            get { return _noveltySearchEnabled; }
+            set
+            {
+                _noveltySearchEnabled = value;
+                _listEvaluator.NoveltySearchEnabled = _noveltySearchEnabled;
+                _evaluator.NoveltySearchEnabled = _noveltySearchEnabled;
+
+                _currentMaxFitness = 0;
+
+                if (_noveltySearchEnabled)
+                {
+                    if (_ea != null)
+                    {
+                        _noveltySearchActivatedGen = _ea.CurrentGeneration;
+                    }
+                    else
+                    {
+                        _noveltySearchActivatedGen = 0;
+                    }
+                }
+
+                _logger.Info($"Novelty search {(_noveltySearchEnabled ? "enabled" : "disabled")}");
+            }
         }
 
         #region Abstract properties that subclasses must implement
@@ -238,13 +261,24 @@ namespace ENTM.Experiments
                   );
             }
 
-            // Save the best genome to file
-            XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);
+            if (_noveltySearchParams.Enabled)
+            {
+                if (NoveltySearchEnabled)
+                {
+                    if (_ea.CurrentGeneration - _noveltySearchActivatedGen > 100)
+                    {
+                        NoveltySearchEnabled = false;
+                    }
+                }
+                else
+                {
+                    if (_ea.CurrentGeneration - _lastMaxFitnessImprovementGen > 1000)
+                    {
+                        NoveltySearchEnabled = true;
+                    }
+                }
+            }
 
-            CreateExperimentDirectoryIfNecessary();
-
-            string file = string.Format(ChampionFile);
-            doc.Save(file);
 
             // Check if the experiment has been aborted, the maximum generations count have been reached, or if the maximum fitness has been reached
             if (_abort || (_maxGenerations > 0 && _ea.CurrentGeneration >= _maxGenerations) || _evaluator.StopConditionSatisfied)
@@ -252,6 +286,14 @@ namespace ENTM.Experiments
                 ExperimentCompleted = true;
                 _ea.RequestPause();
             }
+
+            // Save the best genome to file
+            XmlDocument doc = NeatGenomeXmlIO.Save(_ea.CurrentChampGenome, false);
+
+            CreateExperimentDirectoryIfNecessary();
+
+            string file = string.Format(ChampionFile);
+            doc.Save(file);
         }
 
         private void EAPauseEvent(object sender, EventArgs e)
@@ -314,12 +356,12 @@ namespace ENTM.Experiments
             {
                 switch (_ea.RunState)
                 {
-                    case SharpNeat.Core.RunState.NotReady:
+                    case RunState.NotReady:
                         _logger.Info("EA not ready!");
                         break;
 
-                    case SharpNeat.Core.RunState.Ready:
-                    case SharpNeat.Core.RunState.Paused:
+                    case RunState.Ready:
+                    case RunState.Paused:
                         _logger.Info("Starting EA...");
                         _timer.Start();
 
@@ -338,12 +380,12 @@ namespace ENTM.Experiments
                         _ea.StartContinue();
                         break;
 
-                    case SharpNeat.Core.RunState.Running:
+                    case RunState.Running:
                         _logger.Info("Pausing EA...");
                         _ea.RequestPause();
                         break;
 
-                    case SharpNeat.Core.RunState.Terminated:
+                    case RunState.Terminated:
                         _logger.Info("EA was terminated");
                         break;
                 }
@@ -567,17 +609,12 @@ namespace ENTM.Experiments
 
             INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
             
-            _innerEvaluator = new NoveltySearchListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, noveltyScorer, _multiThreading, _parallelOptions);
+            _listEvaluator = new NoveltySearchListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, noveltyScorer, _multiThreading, _parallelOptions);
 
-            SetNoveltySearchEnabled(_noveltySearchParams.Enabled);
+            NoveltySearchEnabled = _noveltySearchParams.Enabled;
 
-            // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
-            // that were in the population in previous generations (elite genomes). This is determiend by examining each genome's evaluation info object.
-            IGenomeListEvaluator<NeatGenome> selectiveEvaluator = new SelectiveGenomeListEvaluator<NeatGenome>(
-                                                                                    _innerEvaluator,
-                                                                                    SelectiveGenomeListEvaluator<NeatGenome>.CreatePredicate_OnceOnly());
             // Initialize the evolution algorithm.
-            ea.Initialize(selectiveEvaluator, genomeFactory, genomeList);
+            ea.Initialize(_listEvaluator, genomeFactory, genomeList);
 
             // Finished. Return the evolution algorithm
             return ea;

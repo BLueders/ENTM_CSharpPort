@@ -22,7 +22,7 @@ namespace ENTM
         private const string CONFIG_PATH = ROOT_PATH + "Config/";
         private const string LOG4NET_CONFIG = "log4net.properties";
 
-        private static Stopwatch _stopwatch;
+        private static Stopwatch _stopwatch = new Stopwatch();
 
         private static string _currentDir;
         private static Stack<string> _dirStack = new Stack<string>();
@@ -33,17 +33,52 @@ namespace ENTM
         private static ITuringExperiment _experiment;
         private static readonly string _identifier = DateTime.Now.ToString("MMddyyyy-HHmmss");
 
-        private static int _currentConfig = 0;
-        private static int _currentExperiment = 1;
+        private static int _currentConfig = -1;
+        private static int _currentExperiment = 0;
         private static int _experiementCount;
 
         public static readonly int MainThreadId = Thread.CurrentThread.ManagedThreadId;
-
 
         static void Main(string[] args)
         {
             XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
 
+            if (args.Length > 0)
+            {
+               ParseArgs(args);
+            }
+            else
+            {
+                Console.WriteLine("No args found, prompting...");
+                Prompt();
+
+            }
+        }
+
+        private static void ParseArgs(string[] args)
+        {
+            string[] configs = new string[args.Length];
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                string config = args[i];
+                if (!config.EndsWith(".config.xml"))
+                {
+                    config = config.EndsWith(".config") ? $"{config}.xml" : $"{config}.config.xml";
+                } 
+                configs[i] = $"ENTM/Config/{config}";
+            }
+
+            LoadExperiments(configs);
+            NextExperiment();
+
+            PrintOptions();
+
+            ProcessInput();
+        }
+
+        private static void Prompt()
+        {
             Console.WriteLine("Select config");
 
             Console.WriteLine($"A: Execute all experiments in the current directory serially");
@@ -55,19 +90,25 @@ namespace ENTM
 
             LoadExperiments(configs);
 
+            _currentExperiment = 1;
             InitializeExperiment(_configs[0]);
-            
 
-            Console.WriteLine($"\nControls:" +
-                $"\n-{"Space:", -10} Start/Pause Evolutionary Algorithm" +
-                $"\n-{"D:", -10} Toggle Debug (only available for debug builds)" +
-                $"\n-{"C:", -10} Test current champion" +
-                $"\n-{"S:", -10} Test saved champion (from xml)" +
-                $"\n-{"A:", -10} Abort current experiment and continue with the next, if any" +
-                $"\n-{"Esc:", -10} Exit");
+            PrintOptions();
 
-            // Start listening for input
+            // Start listening for input from console
             ProcessInput();
+        }
+
+        private static void PrintOptions()
+        {
+            Console.WriteLine($"\nControls:" +
+              $"\n-{"Space:",-10} Start/Pause Evolutionary Algorithm" +
+              $"\n-{"D:",-10} Toggle Debug (only available for debug builds)" +
+              $"\n-{"N:",-10} Toggle Novelty Search" +
+              $"\n-{"C:",-10} Test current champion" +
+              $"\n-{"S:",-10} Test saved champion (from xml)" +
+              $"\n-{"A:",-10} Abort current experiment and continue with the next, if any" +
+              $"\n-{"Esc:",-10} Exit");
         }
 
         private static string[] Browse()
@@ -139,14 +180,28 @@ namespace ENTM
             {
                 // Load config XML.
                 XmlDocument xml = new XmlDocument();
-                xml.Load(configPaths[i]);
 
-                _configs[i] = xml.DocumentElement;
+                try
+                {
+                    xml.Load(configPaths[i]);
+                    _configs[i] = xml.DocumentElement;
+
+                }
+                catch (FileNotFoundException)
+                {
+                    Console.WriteLine($"File not found: {configPaths[i]}");
+                }
             }
         }
 
-        private static void InitializeExperiment(XmlElement config)
+        private static bool InitializeExperiment(XmlElement config)
         {
+            if (config == null)
+            {
+                Console.WriteLine("Config was null, aborting...");
+                return false;
+            }
+
             Assembly assembly = Assembly.GetExecutingAssembly();
 
             _experimentType = assembly.GetType(XmlUtils.GetValueAsString(config, "ExperimentClass"), false, false);
@@ -154,13 +209,19 @@ namespace ENTM
 
             _experiment = (ITuringExperiment) Activator.CreateInstance(_experimentType);
 
+            string name = XmlUtils.GetValueAsString(config, "Name");
+
+            Console.WriteLine($"Initializing experiment: {name}...");
+
             // Register event listeners
             _experiment.ExperimentStartedEvent += ExperimentStartedEvent;
             _experiment.ExperimentPausedEvent += ExperimentPausedEvent;
             _experiment.ExperimentResumedEvent += ExperimentResumedEvent;
             _experiment.ExperimentCompleteEvent += ExperimentCompleteEvent;
 
-            _experiment.Initialize(XmlUtils.GetValueAsString(config, "Name"), config, _identifier, _currentConfig, _currentExperiment);
+            _experiment.Initialize(name, config, _identifier, _currentConfig, _currentExperiment);
+
+            return true;
         }
 
         private static void ExperimentStartedEvent(object sender, EventArgs e)
@@ -186,27 +247,42 @@ namespace ENTM
 
             _experiment.TestCurrentChampion();
 
+            NextExperiment();
+        }
+
+        private static void NextExperiment() {
             _currentExperiment++;
 
             if (_currentExperiment > _experiementCount)
             {
-                _currentConfig++;
-                if (_currentConfig < _configs.Length)
-                {
-                    _currentExperiment = 1;
-                }
-                else
-                {
-                    _terminated = true;
-                    logger.Info($"All experiments completed. Total time spent: {Utilities.TimeToString(_stopwatch.Elapsed)}");
-                    Console.WriteLine("\nPress any key to exit...");
-                }
+                NextConfig();
             }
 
             if (!_terminated)
             {
-                InitializeExperiment(_configs[_currentConfig]);
-                _experiment.StartStopEA();
+                if (InitializeExperiment(_configs[_currentConfig]))
+                {
+                    _experiment.StartStopEA();
+                }
+                else
+                {
+                    NextConfig();
+                }
+            }
+        }
+
+        private static void NextConfig()
+        {
+            _currentConfig++;
+            if (_currentConfig < _configs.Length)
+            {
+                _currentExperiment = 1;
+            }
+            else
+            {
+                _terminated = true;
+                logger.Info($"All experiments completed. Total time spent: {Utilities.TimeToString(_stopwatch.Elapsed)}");
+                Console.WriteLine("\nPress any key to exit...");
             }
         }
 
@@ -217,6 +293,12 @@ namespace ENTM
 
             string[] champions = Browse();
             _experiment.TestSavedChampion(champions[0]);
+        }
+
+        private static void StartStop()
+        {
+            _stopwatch.Start();
+            _experiment.StartStopEA();
         }
 
         private static void ProcessInput()
@@ -230,9 +312,7 @@ namespace ENTM
                 switch (key)
                 {
                     case ConsoleKey.Spacebar:
-                        if (_stopwatch == null) _stopwatch = new Stopwatch();
-                        _stopwatch.Start();
-                        _experiment.StartStopEA();
+                        StartStop();
                         break;
 
                     case ConsoleKey.D:
@@ -255,6 +335,10 @@ namespace ENTM
 
                     case ConsoleKey.A:
                         _experiment.AbortCurrentExperiment();
+                        break;
+
+                    case ConsoleKey.N:
+                        _experiment.NoveltySearchEnabled = !_experiment.NoveltySearchEnabled;
                         break;
 
                     case ConsoleKey.Escape:

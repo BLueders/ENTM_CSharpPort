@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing.Text;
 using System.Threading.Tasks;
 using ENTM.Utility;
 using SharpNeat.Core;
@@ -27,10 +28,24 @@ namespace ENTM.NoveltySearch
 
         delegate IDictionary<TGenome, FitnessInfo> EvaluationMethod(IList<TGenome> genomeList);
 
+        private bool _noveltySearchEnabled;
+        private bool _reevaluateOnce;
+
         /// <summary>
         /// Determines if the population is scored by novelty search or regular environmental fitness.
         /// </summary>
-        public bool NoveltySearchEnabled { get; set; }
+        public bool NoveltySearchEnabled
+        {
+            get { return _noveltySearchEnabled; }
+
+            set
+            {
+                _noveltySearchEnabled = value;
+
+                // When we switch between evaluation modes we must always reevaluate the population
+                _reevaluateOnce = true;
+            }
+        }
 
         /// <summary>
         /// The fraction of the final score that will be from novelty score.
@@ -88,15 +103,57 @@ namespace ENTM.NoveltySearch
         /// </summary>
         public void Evaluate(IList<TGenome> genomeList)
         {
-            IDictionary<TGenome, FitnessInfo> fitness = _evalMethod(genomeList);
+            IList<TGenome> filteredList;
+
+            // If we are using novelty search we must reevaluate all genomes, because a given score can change in between 
+            // generations for the same behaviours
+            if (NoveltySearchEnabled || _reevaluateOnce)
+            {
+                _reevaluateOnce = false;
+                filteredList = genomeList;
+            }
+            else
+            {
+                filteredList = new List<TGenome>(genomeList.Count);
+                foreach (TGenome genome in genomeList)
+                {
+                    // Only evalutate new genomes
+                    if (!genome.EvaluationInfo.IsEvaluated)
+                    {   // Add the genome to the temp list for evaluation later.
+                        filteredList.Add(genome);
+                    }
+                    else
+                    {   // Register that the genome skipped an evaluation.
+                        genome.EvaluationInfo.EvaluationPassCount++;
+                    }
+                }
+            }
+          
+            // We save the fitness info in a dictionary, since we can't apply the scores directly, because the entire generation
+            // must be evaluated to calculate novelty score
+            IDictionary<TGenome, FitnessInfo> fitness = _evalMethod(filteredList);
 
             if (NoveltySearchEnabled)
             {
+                // Apply the novelty score
                 _noveltyScorer.Score(fitness);
             }
             else
             {
+                // Ignore novelty score, apply environmental objective fitness
                 ApplyEnvironmentScoresOnly(fitness);
+            }
+        }
+
+        /// <summary>
+        /// Apply the environment objective scores to the genomes, ignoring novelty search.
+        /// </summary>
+        /// <param name="fitness"></param>
+        private void ApplyEnvironmentScoresOnly(IDictionary<TGenome, FitnessInfo> fitness)
+        {
+            foreach (TGenome genome in fitness.Keys)
+            {
+                genome.EvaluationInfo.SetFitness(fitness[genome]._fitness);
             }
         }
 
@@ -119,15 +176,6 @@ namespace ENTM.NoveltySearch
             }
 
             return _phenomeEvaluator.Evaluate(phenome);
-        }
-
-
-        private void ApplyEnvironmentScoresOnly(IDictionary<TGenome, FitnessInfo> fitness)
-        {
-            foreach (TGenome genome in fitness.Keys)
-            {
-                genome.EvaluationInfo.SetFitness(fitness[genome]._fitness);
-            }
         }
 
         /// <summary>

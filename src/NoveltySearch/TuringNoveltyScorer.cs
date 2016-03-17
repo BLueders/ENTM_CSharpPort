@@ -28,47 +28,21 @@ namespace ENTM.NoveltySearch
             List<FitnessInfo> combinedBehaviours = new List<FitnessInfo>(behaviours.Values);
             combinedBehaviours.AddRange(_archive.ToList());
 
-            // Compute averages
-            // 
-            double[] totals = new double[combinedBehaviours[0]._auxFitnessArr.Length - 1];
+            Knn knn = new Knn(5);
 
-            for (int i = 0; i < combinedBehaviours.Count; i++)
-            {
-                FitnessInfo behaviour = combinedBehaviours[i];
-                for (int j = 1; j < totals.Length; j++)
-                {
-                    totals[j-1] += behaviour._auxFitnessArr[j]._value;
-                }
-            }
+            knn.Initialize(combinedBehaviours);
 
-            double[] avgs = new double[totals.Length];
-            for (int j = 0; j < totals.Length; j++)
-            {
-                avgs[j] = totals[j] / combinedBehaviours.Count;
-            }
-
-            Debug.DLog("Averages: " + Utilities.ToString(avgs));
-
-            // Calculate distance from average
             foreach (TGenome genome in behaviours.Keys)
             {
                 FitnessInfo behaviour = behaviours[genome];
+                double score = knn.AverageDistToKnn(behaviour);
+                
+                genome.EvaluationInfo.SetFitness(score);
 
-                double result = 0f;
-                for (int i = 0; i < avgs.Length; i++)
-                {
-                    result += Math.Abs(avgs[i] - behaviour._auxFitnessArr[i]._value);
-                }
-
-                result /= behaviour._auxFitnessArr.Length;
-                result *= behaviour._auxFitnessArr[0]._value;
-
-                if (result >= _params.PMin)
+                if (score > _params.PMin)
                 {
                     _archive.Enqueue(behaviour);
                 }
-
-                genome.EvaluationInfo.SetFitness(result);
             }
         }
     }
