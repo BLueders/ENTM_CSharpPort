@@ -38,7 +38,9 @@ namespace ENTM.NoveltySearch
                     double total = 0;
                     for (int k = 1; k < vectorLength; k++)
                     {
-                        total += Math.Abs(neighbour1._auxFitnessArr[k]._value - neighbour2._auxFitnessArr[k]._value);
+                        double d = neighbour1._auxFitnessArr[k]._value - neighbour2._auxFitnessArr[k]._value;
+                        total += d * d;
+                        //total += Math.Abs(neighbour1._auxFitnessArr[k]._value - neighbour2._auxFitnessArr[k]._value);
                     }
 
                     neighbourhood1[j - 1] = total;

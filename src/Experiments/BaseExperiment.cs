@@ -60,7 +60,7 @@ namespace ENTM.Experiments
         where TEvaluator : BaseEvaluator<TEnviroment, TController>, new()
         where TController : IController
     {
-        private static readonly ILog _logger = LogManager.GetLogger(typeof(ITuringExperiment));
+        private static readonly ILog _logger = LogManager.GetLogger("Experiment");
 
         const string CHAMPION_FILE = "champion{0:D4}.xml";
         const string RECORDING_FILE = "recording{0:D4}.png";
@@ -82,7 +82,7 @@ namespace ENTM.Experiments
         private ParallelOptions _parallelOptions;
         private bool _multiThreading;
 
-        private const int LOG_INTERVAL = 50;
+        private const int LOG_INTERVAL = 1;
         private uint _lastLog;
         private long _lastLogTime;
         private double _currentMaxFitness = -1;
@@ -261,9 +261,10 @@ namespace ENTM.Experiments
                   );
             }
 
+            // Novelty search 
             if (_noveltySearchParams.Enabled)
             {
-                if (NoveltySearchEnabled)
+                /*if (NoveltySearchEnabled)
                 {
                     if (_ea.CurrentGeneration - _noveltySearchActivatedGen > 100)
                     {
@@ -276,7 +277,7 @@ namespace ENTM.Experiments
                     {
                         NoveltySearchEnabled = true;
                     }
-                }
+                }*/
             }
 
 
@@ -515,7 +516,15 @@ namespace ENTM.Experiments
 
 
             XmlElement xmlNoveltySearchParams = xmlConfig.SelectSingleNode("NoveltySearch") as XmlElement;
-            _noveltySearchParams = NoveltySearchParameters.ReadXmlProperties(xmlNoveltySearchParams);
+
+            if (xmlNoveltySearchParams != null)
+            {
+                _noveltySearchParams = NoveltySearchParameters.ReadXmlProperties(xmlNoveltySearchParams);
+            }
+            else
+            {
+                _logger.Info("Novelty search parameters not found");
+            }
 
             // Create IBlackBox evaluator.
             _evaluator = new TEvaluator();
