@@ -32,8 +32,6 @@ namespace ENTM.Experiments
         event EventHandler ExperimentResumedEvent;
         event EventHandler ExperimentCompleteEvent;
 
-        string PrintConfigs();
-
         #region From INeatExperiment.cs
 
         /* ***************************************************************************
