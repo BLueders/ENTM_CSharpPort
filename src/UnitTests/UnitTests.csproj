@@ -69,10 +69,6 @@
       <Project>{951d6bcb-3991-419d-a40c-b64ec35c9451}</Project>
       <Name>ENTM</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SharpNeatDomains\SharpNeatDomains.csproj">
-      <Project>{73ab8c8c-6315-4dc7-a3de-3c747f86ac78}</Project>
-      <Name>SharpNeatDomains</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SharpNeatLib\SharpNeatLib.csproj">
       <Project>{abc5c77a-deba-420c-926c-bd3e6f37ae15}</Project>
       <Name>SharpNeatLib</Name>

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ENTM.Experiments;
 using ENTM.Utility;
+using log4net;
 using SharpNeat.Core;
 using SharpNeat.Utility;
 using Utilities = ENTM.Utility.Utilities;
@@ -12,63 +14,80 @@ namespace ENTM.NoveltySearch
 {
     class TuringNoveltyScorer<TGenome> : INoveltyScorer<TGenome> where TGenome : IGenome<TGenome>
     {
+        private static readonly ILog _logger = LogManager.GetLogger("Novelty Search");
+
         private readonly LimitedQueue<FitnessInfo> _archive;
 
         private readonly NoveltySearchParameters _params;
+
+        private double _pMin;
+        private int _generationsSinceArchiveAddition = -1;
+
+        private int _generation;
 
         public TuringNoveltyScorer(NoveltySearchParameters parameters)
         {
             _params = parameters;
             _archive = new LimitedQueue<FitnessInfo>(_params.ArchiveLimit);
+
+            _pMin = _params.PMin;
+            _generation = -1;
         }
 
         public void Score(IDictionary<TGenome, FitnessInfo> behaviours)
         {
+            _generation++;
 
             List<FitnessInfo> combinedBehaviours = new List<FitnessInfo>(behaviours.Values);
             combinedBehaviours.AddRange(_archive.ToList());
 
-            // Compute averages
-            // 
-            double[] totals = new double[combinedBehaviours[0]._auxFitnessArr.Length - 1];
+            Knn knn = new Knn(5);
 
-            for (int i = 0; i < combinedBehaviours.Count; i++)
-            {
-                FitnessInfo behaviour = combinedBehaviours[i];
-                for (int j = 1; j < totals.Length; j++)
-                {
-                    totals[j-1] += behaviour._auxFitnessArr[j]._value;
-                }
-            }
+            knn.Initialize(combinedBehaviours);
 
-            double[] avgs = new double[totals.Length];
-            for (int j = 0; j < totals.Length; j++)
-            {
-                avgs[j] = totals[j] / combinedBehaviours.Count;
-            }
+            int added = 0;
 
-            Debug.DLog("Averages: " + Utilities.ToString(avgs));
-
-            // Calculate distance from average
             foreach (TGenome genome in behaviours.Keys)
             {
                 FitnessInfo behaviour = behaviours[genome];
+                double score = knn.AverageDistToKnn(behaviour);
+                
+                genome.EvaluationInfo.SetFitness(score);
 
-                double result = 0f;
-                for (int i = 0; i < avgs.Length; i++)
-                {
-                    result += Math.Abs(avgs[i] - behaviour._auxFitnessArr[i]._value);
-                }
-
-                result /= behaviour._auxFitnessArr.Length;
-                result *= behaviour._auxFitnessArr[0]._value;
-
-                if (result >= _params.PMin)
+                if (score > _pMin)
                 {
                     _archive.Enqueue(behaviour);
+                    added++;
                 }
+            }
 
-                genome.EvaluationInfo.SetFitness(result);
+            if (added > 0)
+            {
+                _generationsSinceArchiveAddition = 0;
+                
+                // If more than the specified amount of behaviours are added to the archive, adjust PMin up
+                if (added > _params.AdditionsPMinAdjustUp)
+                {
+                    _pMin *= _params.PMinAdjustUp;
+                    _logger.Info($"PMin adjusted up to {_pMin}");
+                }
+            }
+            else
+            {
+                _generationsSinceArchiveAddition++;
+
+                // If more than the specified amount of generations has passed without archive additions, adjust PMin down
+                if (_generationsSinceArchiveAddition > _params.GenerationsPMinAdjustDown)
+                {
+                    _pMin *= _params.PMinAdjustDown;
+
+                    _logger.Info($"PMin adjusted down to {_pMin}");
+                }
+            }
+
+            if (_generation % 10 == 0)
+            {
+                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin}");
             }
         }
     }

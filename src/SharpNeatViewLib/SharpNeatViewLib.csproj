@@ -47,9 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GraphControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="GraphControl.cs" />
     <Compile Include="GraphFactories\NetworkGraphFactory.cs" />
     <Compile Include="Graph\CppnGraphPainter.cs" />
     <Compile Include="Graph\DepthLayoutManager.cs" />
@@ -61,9 +59,7 @@
     <Compile Include="Graph\IOGraphPainter.cs" />
     <Compile Include="Graph\IOGraphViewportPainter.cs" />
     <Compile Include="IViewportPainter.cs" />
-    <Compile Include="Viewport.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="Viewport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

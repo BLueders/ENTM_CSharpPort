@@ -13,7 +13,10 @@ namespace ENTM.NoveltySearch
         public bool Enabled;
         public double PMin;
         public int ArchiveLimit;
-
+        public double PMinAdjustUp;
+        public double PMinAdjustDown;
+        public int AdditionsPMinAdjustUp;
+        public int GenerationsPMinAdjustDown;
 
         public static NoveltySearchParameters ReadXmlProperties(XmlElement xmlConfig)
         {
@@ -22,6 +25,11 @@ namespace ENTM.NoveltySearch
             props.Enabled = XmlUtils.GetValueAsBool(xmlConfig, "Enabled");
             props.PMin = XmlUtils.GetValueAsDouble(xmlConfig, "PMin");
             props.ArchiveLimit = XmlUtils.GetValueAsInt(xmlConfig, "ArchiveLimit");
+            props.PMinAdjustUp = XmlUtils.GetValueAsDouble(xmlConfig, "PMinAdjustUp");
+            props.PMinAdjustDown = XmlUtils.GetValueAsDouble(xmlConfig, "PMinAdjustDown");
+            props.AdditionsPMinAdjustUp = XmlUtils.GetValueAsInt(xmlConfig, "AdditionsPMinAdjustUp");
+            props.GenerationsPMinAdjustDown = XmlUtils.GetValueAsInt(xmlConfig, "GenerationsPMinAdjustDown");
+
 
             return props;
         }

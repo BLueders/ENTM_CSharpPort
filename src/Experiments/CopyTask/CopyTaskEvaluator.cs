@@ -53,6 +53,6 @@ namespace ENTM.Experiments.CopyTask
 
         public override int Iterations => _copyTaskProps.Iterations;
 
-        public override int NoveltyVectorLength => _copyTaskProps.MaxSequenceLength * 2 + 2;
+        public override int NoveltyVectorLength => _copyTaskProps.MaxSequenceLength * 2 + 3;
     }
 }
