@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SharpNeat.Domains</RootNamespace>
     <AssemblyName>SharpNeatDomains</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
@@ -44,8 +44,8 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Redzen, Version=1.0.4.0, Culture=neutral, PublicKeyToken=182843a4be0a74f7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Redzen.1.0.4.0\lib\net452\Redzen.dll</HintPath>
+    <Reference Include="Redzen, Version=1.0.5.0, Culture=neutral, PublicKeyToken=182843a4be0a74f7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Redzen.1.0.5.0\lib\net40\Redzen.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -167,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="DoublePoleBalancing\Antiwiggle_Explanation_Email.txt" />
+    <Content Include="License-LGPL.txt" />
     <Content Include="LICENSE.txt" />
     <Content Include="SharpNeatDomains.experiments.xml">
       <SubType>Designer</SubType>
@@ -174,9 +175,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

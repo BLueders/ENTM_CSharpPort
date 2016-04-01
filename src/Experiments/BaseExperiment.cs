@@ -82,7 +82,7 @@ namespace ENTM.Experiments
         private ParallelOptions _parallelOptions;
         private bool _multiThreading;
 
-        private const int LOG_INTERVAL = 100;
+        private const int LOG_INTERVAL = 1;
         private uint _lastLog;
         private long _lastLogTime;
         private double _currentMaxFitness = -1;
