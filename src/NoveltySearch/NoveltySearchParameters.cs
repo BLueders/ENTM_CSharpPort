@@ -17,6 +17,8 @@ namespace ENTM.NoveltySearch
         public double PMinAdjustDown;
         public int AdditionsPMinAdjustUp;
         public int GenerationsPMinAdjustDown;
+        public int K;
+        public int ReportInterval;
 
         public static NoveltySearchParameters ReadXmlProperties(XmlElement xmlConfig)
         {
@@ -29,7 +31,8 @@ namespace ENTM.NoveltySearch
             props.PMinAdjustDown = XmlUtils.GetValueAsDouble(xmlConfig, "PMinAdjustDown");
             props.AdditionsPMinAdjustUp = XmlUtils.GetValueAsInt(xmlConfig, "AdditionsPMinAdjustUp");
             props.GenerationsPMinAdjustDown = XmlUtils.GetValueAsInt(xmlConfig, "GenerationsPMinAdjustDown");
-
+            props.K = XmlUtils.GetValueAsInt(xmlConfig, "K");
+            props.ReportInterval = XmlUtils.GetValueAsInt(xmlConfig, "ReportInterval");
 
             return props;
         }

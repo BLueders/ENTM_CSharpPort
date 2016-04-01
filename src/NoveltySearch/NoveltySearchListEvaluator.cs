@@ -106,7 +106,7 @@ namespace ENTM.NoveltySearch
             IList<TGenome> filteredList;
 
             // If we are using novelty search we must reevaluate all genomes, because a given score can change in between 
-            // generations for the same behaviours
+            // generations for the same behaviour
             if (NoveltySearchEnabled || _reevaluateOnce)
             {
                 _reevaluateOnce = false;
