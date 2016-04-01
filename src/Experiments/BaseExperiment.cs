@@ -137,6 +137,11 @@ namespace ENTM.Experiments
             }
         }
 
+        public string PrintConfigs()
+        {
+
+        }
+
         #region Abstract properties that subclasses must implement
         public abstract int EnvironmentInputCount { get; }
         public abstract int EnvironmentOutputCount { get; }

@@ -42,6 +42,7 @@ namespace ENTM
 
         static void Main(string[] args)
         {
+
             XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
 
             if (args.Length > 0)
@@ -69,6 +70,8 @@ namespace ENTM
                 } 
                 configs[i] = $"ENTM/Config/{config}";
             }
+
+            _currentConfig = -1;
 
             LoadExperiments(configs);
             NextExperiment();
@@ -220,7 +223,7 @@ namespace ENTM
 
         private static void ExperimentStartedEvent(object sender, EventArgs e)
         {
-            logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}");
+            logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}/{_experiementCount}");
         }
 
         private static void ExperimentPausedEvent(object sender, EventArgs e)
