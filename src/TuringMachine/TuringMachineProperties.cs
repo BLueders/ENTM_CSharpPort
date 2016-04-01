@@ -6,23 +6,27 @@ namespace ENTM.TuringMachine
 {
     public class TuringMachineProperties
     {
-
+        public bool Enabled;
         public int M;
         public int N;
+        public int Heads;
         public int ShiftLength;
         public ShiftMode ShiftMode;
-        public bool Enabled;
-        public int Heads;
+        public WriteMode WriteMode;
 
         public TuringMachineProperties(XmlElement xmlConfig)
         {
+            Enabled = XmlUtils.TryGetValueAsBool(xmlConfig, "Enabled") ?? true;
             M = XmlUtils.GetValueAsInt(xmlConfig, "M");
             N = XmlUtils.TryGetValueAsInt(xmlConfig, "N") ?? -1;
+            Heads = XmlUtils.TryGetValueAsInt(xmlConfig, "Heads") ?? 1;
             ShiftLength = XmlUtils.GetValueAsInt(xmlConfig, "ShiftLength");
+
             string shiftModeStr = XmlUtils.TryGetValueAsString(xmlConfig, "ShiftMode");
             ShiftMode = shiftModeStr == null ? ShiftMode.Multiple : (ShiftMode) Enum.Parse(typeof(ShiftMode), shiftModeStr);
-            Enabled = XmlUtils.TryGetValueAsBool(xmlConfig, "Enabled") ?? true;
-            Heads = XmlUtils.TryGetValueAsInt(xmlConfig, "Heads") ?? 1;
+
+            string writeModeStr = XmlUtils.TryGetValueAsString(xmlConfig, "WriteMode");
+            WriteMode = writeModeStr == null ? WriteMode.Interpolate : (WriteMode) Enum.Parse(typeof(WriteMode), writeModeStr);
         }
 
         public TuringMachineProperties(int m, int n, int shiftLength, ShiftMode shiftMode, bool enabled, int heads)
@@ -44,5 +48,11 @@ namespace ENTM.TuringMachine
     {
         Multiple,
         Single
+    }
+
+    public enum WriteMode
+    {
+        Interpolate,
+        Absolute
     }
 }

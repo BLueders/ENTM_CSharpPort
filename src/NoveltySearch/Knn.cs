@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,19 +12,27 @@ namespace ENTM.NoveltySearch
     {
         public int K { get; }
 
+        private Stopwatch _timer;
+
+        public long TimeSpent => _timer.ElapsedMilliseconds;
+
         public Knn(int k)
         {
             K = k;
+            _timer = new Stopwatch();
         }
 
         private Dictionary<FitnessInfo, double[]> neighbourhoods;
 
-        public void Initialize(List<FitnessInfo> behaviours)
+        public void Initialize(List<FitnessInfo> behaviourList)
         {
-            neighbourhoods = new Dictionary<FitnessInfo, double[]>();
+            _timer.Start();
+            FitnessInfo[] behaviours = behaviourList.ToArray();
 
-            int count = behaviours.Count;
+
+            int count = behaviours.Length;
             int vectorLength = behaviours[0]._auxFitnessArr.Length;
+            neighbourhoods = new Dictionary<FitnessInfo, double[]>(count);
 
             for (int i = 0; i < count; i++)
             {
@@ -35,6 +44,7 @@ namespace ENTM.NoveltySearch
                     FitnessInfo neighbour2 = behaviours[j];
                     double[] neighbourhood2 = GetNeighbourhood(neighbour2, count);
 
+                    // Euclidian distance squared
                     double total = 0;
                     for (int k = 1; k < vectorLength; k++)
                     {
@@ -49,6 +59,8 @@ namespace ENTM.NoveltySearch
 
                 Array.Sort(neighbourhood1);
             }
+
+            _timer.Stop();
         }
 
         public double AverageDistToKnn(FitnessInfo behaviour)

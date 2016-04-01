@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,7 +24,9 @@ namespace ENTM.NoveltySearch
         private double _pMin;
         private int _generationsSinceArchiveAddition = -1;
 
+        private readonly int _reportInterval;
         private int _generation;
+        private long _knnTotalTimeSpent;
 
         public TuringNoveltyScorer(NoveltySearchParameters parameters)
         {
@@ -31,19 +34,31 @@ namespace ENTM.NoveltySearch
             _archive = new LimitedQueue<FitnessInfo>(_params.ArchiveLimit);
 
             _pMin = _params.PMin;
-            _generation = -1;
+            _generation = 0;
+            _reportInterval = _params.ReportInterval;
+            _knnTotalTimeSpent = 0;
         }
 
         public void Score(IDictionary<TGenome, FitnessInfo> behaviours)
         {
-            _generation++;
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
 
+            _generation++;
             List<FitnessInfo> combinedBehaviours = new List<FitnessInfo>(behaviours.Values);
             combinedBehaviours.AddRange(_archive.ToList());
 
-            Knn knn = new Knn(5);
+            Console.WriteLine($"Preliminary: {timer.ElapsedMilliseconds} ms");
+            timer.Restart();
+
+            Knn knn = new Knn(_params.K);
 
             knn.Initialize(combinedBehaviours);
+
+            Console.WriteLine($"KNN: {timer.ElapsedMilliseconds} ms");
+            timer.Restart();
+
+            _knnTotalTimeSpent += knn.TimeSpent;
 
             int added = 0;
 
@@ -60,6 +75,9 @@ namespace ENTM.NoveltySearch
                     added++;
                 }
             }
+
+            Console.WriteLine($"Scoring: {timer.ElapsedMilliseconds} ms");
+            timer.Restart();
 
             if (added > 0)
             {
@@ -85,10 +103,14 @@ namespace ENTM.NoveltySearch
                 }
             }
 
-            if (_generation % 10 == 0)
+            if (_generation % _reportInterval == 0)
             {
-                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin}");
+                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin}, Avg knn time spent: {_knnTotalTimeSpent / _reportInterval} ms");
+                _knnTotalTimeSpent = 0;
             }
+
+            Console.WriteLine($"Remaining: {timer.ElapsedMilliseconds} ms");
+            timer.Stop();
         }
     }
 }

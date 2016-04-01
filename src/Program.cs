@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Xml;
 using ENTM.Utility;
 using log4net.Config;
@@ -33,7 +34,7 @@ namespace ENTM
         private static ITuringExperiment _experiment;
         private static readonly string _identifier = DateTime.Now.ToString("MMddyyyy-HHmmss");
 
-        private static int _currentConfig = -1;
+        private static int _currentConfig = 0;
         private static int _currentExperiment = 0;
         private static int _experiementCount;
 
@@ -101,14 +102,7 @@ namespace ENTM
 
         private static void PrintOptions()
         {
-            Console.WriteLine($"\nControls:" +
-              $"\n-{"Space:",-10} Start/Pause Evolutionary Algorithm" +
-              $"\n-{"D:",-10} Toggle Debug (only available for debug builds)" +
-              $"\n-{"N:",-10} Toggle Novelty Search" +
-              $"\n-{"C:",-10} Test current champion" +
-              $"\n-{"S:",-10} Test saved champion (from xml)" +
-              $"\n-{"A:",-10} Abort current experiment and continue with the next, if any" +
-              $"\n-{"Esc:",-10} Exit");
+            Console.WriteLine(InputOption.PrintAll());
         }
 
         private static string[] Browse()
@@ -273,9 +267,9 @@ namespace ENTM
 
         private static void NextConfig()
         {
-            _currentConfig++;
             if (_currentConfig < _configs.Length)
             {
+                _currentConfig++;
                 _currentExperiment = 1;
             }
             else
@@ -301,51 +295,100 @@ namespace ENTM
             _experiment.StartStopEA();
         }
 
+        private static void ToggleDebug()
+        {
+#if DEBUG
+            ENTM.Utility.Debug.On = !ENTM.Utility.Debug.On;
+            if (ENTM.Utility.Debug.On) Console.WriteLine("Debug on.");
+            else Console.WriteLine("Debug off. Press D to turn Debug back on");
+#else
+            Console.WriteLine("Debug not available");
+#endif
+        }
+
+        private static void ToggleNoveltySearch()
+        {
+            _experiment.NoveltySearchEnabled = !_experiment.NoveltySearchEnabled;
+        }
+
+        private static void TestCurrentChampion()
+        {
+            _experiment.TestCurrentChampion();
+        }
+
+        private static void AbortCurrentExperiment()
+        {
+            _experiment.AbortCurrentExperiment();
+        }
+
         private static void ProcessInput()
         {
             do
             {
                 ConsoleKey key = Console.ReadKey(true).Key;
 
-                if (_terminated) break;
+                if (_terminated || key == ConsoleKey.Escape) break;
 
-                switch (key)
+                if (!InputOption.Execute(key))
                 {
-                    case ConsoleKey.Spacebar:
-                        StartStop();
-                        break;
-
-                    case ConsoleKey.D:
-#if DEBUG
-                        ENTM.Utility.Debug.On = !ENTM.Utility.Debug.On;
-                        if (ENTM.Utility.Debug.On) Console.WriteLine("Debug on.");
-                        else Console.WriteLine("Debug off. Press D to turn Debug back on");
-#else
-                        Console.WriteLine("Debug not available");
-#endif
-                        break;
-
-                    case ConsoleKey.C:
-                        _experiment.TestCurrentChampion();
-                        break;
-
-                    case ConsoleKey.S:
-                        LoadGenomeFromXml();
-                        break;
-
-                    case ConsoleKey.A:
-                        _experiment.AbortCurrentExperiment();
-                        break;
-
-                    case ConsoleKey.N:
-                        _experiment.NoveltySearchEnabled = !_experiment.NoveltySearchEnabled;
-                        break;
-
-                    case ConsoleKey.Escape:
-                        return;
+                    Console.WriteLine("Unrecognized command. Yikes.");
                 }
 
             } while (true);
+        }
+
+        private delegate void InputOptionDelegate();
+
+        protected class InputOption
+        {
+            private static readonly Dictionary<ConsoleKey, InputOption> Options;
+
+            static InputOption()
+            {
+                Options = new Dictionary<ConsoleKey, InputOption>();
+
+                new InputOption(ConsoleKey.Spacebar, "Start/Pause Evolutionary Algorithm", StartStop);
+                new InputOption(ConsoleKey.D, "Toggle Debug (only available for debug builds)", ToggleDebug);
+                new InputOption(ConsoleKey.N, "Toggle Novelty Search", ToggleNoveltySearch);
+                new InputOption(ConsoleKey.C, "Test current champion", TestCurrentChampion);
+                new InputOption(ConsoleKey.S, "Test saved champion (from xml)", LoadGenomeFromXml);
+                new InputOption(ConsoleKey.A, "Abort current experiment and continue with the next, if any", AbortCurrentExperiment);
+            }
+
+            protected internal static string PrintAll()
+            {
+                StringBuilder builder = new StringBuilder("\nControls");
+                foreach (InputOption opt in Options.Values)
+                {
+                    builder.Append("\n").Append(opt.Readable());
+                }
+                return builder.Append("\n").ToString();
+            }
+
+            protected internal static bool Execute(ConsoleKey key)
+            {
+                if (!Options.ContainsKey(key)) return false;
+                Options[key].InputDelegate();
+                return true;
+            }
+
+            private InputOption(ConsoleKey key, string description, InputOptionDelegate inputDelegate)
+            {
+                Key = key;
+                Description = description;
+                InputDelegate = inputDelegate;
+
+                Options.Add(Key, this);
+            }
+
+            private readonly ConsoleKey Key;
+            private readonly string Description;
+            private readonly InputOptionDelegate InputDelegate;
+
+            private string Readable()
+            {
+                return $"-{$"{Key}:",-10} {Description}";
+            }
         }
     }
 }

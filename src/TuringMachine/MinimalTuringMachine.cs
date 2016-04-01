@@ -37,6 +37,9 @@ namespace ENTM.TuringMachine
         // Single or multiple shifts
         private readonly ShiftMode _shiftMode;
 
+        // Interpolate or absolute write mode
+        private readonly WriteMode _writeMode;
+
         // If false, the turing machine always returns initial read
         private readonly bool _enabled;
 
@@ -78,12 +81,13 @@ namespace ENTM.TuringMachine
 
         public MinimalTuringMachine(TuringMachineProperties props)
         {
+            _enabled = props.Enabled;
             _m = props.M;
             _n = props.N;
+            _heads = props.Heads;
             _shiftLength = props.ShiftLength;
             _shiftMode = props.ShiftMode;
-            _enabled = props.Enabled;
-            _heads = props.Heads;
+            _writeMode = props.WriteMode;
 
             _tape = new List<double[]>();
 
@@ -93,7 +97,6 @@ namespace ENTM.TuringMachine
             {
                 _initialRead[i] = GetRead(i);
             }
-            
         }
 
         public void Reset()
@@ -327,7 +330,18 @@ namespace ENTM.TuringMachine
 
         private void Write(int head, double[] content, double interp)
         {
-            _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
+            switch (_writeMode)
+            {
+                case WriteMode.Interpolate:
+                    _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
+                    break;
+
+                case WriteMode.Absolute:
+                    // Absolute mode will overwrite completely
+                    if (interp >= .5f) _tape[_headPositions[head]] = content;
+                    break;
+
+            }
 
             //Log write activities
             //_writeActivities[_headPositions[head]]++;
@@ -345,7 +359,7 @@ namespace ENTM.TuringMachine
 
         private void PerformContentJump(int head, double contentJump, double[] key)
         {
-            if (contentJump >= 0.5)
+            if (contentJump >= .5f)
             {
                 // JUMPING POINTER TO BEST MATCH
                 int best = 0;
