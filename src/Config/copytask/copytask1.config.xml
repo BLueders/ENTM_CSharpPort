@@ -14,13 +14,13 @@
   </Description>
   
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>2</ExperimentCount>
+  <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>10</MaxGenerations>
+  <MaxGenerations>5000</MaxGenerations>
 
   <!-- NEAT -->
-  <PopulationSize>300</PopulationSize>
+  <PopulationSize>200</PopulationSize>
 
 
   <!-- Turing Machine Parameters-->
@@ -48,12 +48,12 @@
         Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
         Absolute: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
     -->
-    <WriteMode>Interpolate</WriteMode>
+    <WriteMode>Absolute</WriteMode>
 
   </TuringMachineParams>
 
   <!-- Copy Task Parameters -->
-  <CopyTaskParams>  
+  <CopyTaskParams>
 
     <!-- Evaluation iterations -->
     <Iterations>50</Iterations>
@@ -190,7 +190,7 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>0.6</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>0.25</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
