@@ -190,7 +190,7 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>0.5</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>1</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
