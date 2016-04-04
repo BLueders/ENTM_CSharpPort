@@ -72,6 +72,7 @@
     <Compile Include="TuringMachine\TuringEvaluator.cs" />
     <Compile Include="TuringMachine\TuringMachineProperties.cs" />
     <Compile Include="Utility\ColorUtils.cs" />
+    <Compile Include="Utility\ConfigPrinter.cs" />
     <Compile Include="Utility\Debug.cs" />
     <Compile Include="Experiments\CopyTask\CopyTaskEnvironment.cs" />
     <Compile Include="Experiments\CopyTask\CopyTaskEvaluator.cs" />

@@ -224,6 +224,7 @@ namespace ENTM
         private static void ExperimentStartedEvent(object sender, EventArgs e)
         {
             logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}/{_experiementCount}");
+            logger.Info(ConfigPrinter.Print(_configs[_currentConfig]));
         }
 
         private static void ExperimentPausedEvent(object sender, EventArgs e)
