@@ -48,12 +48,12 @@
         Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
         Absolute: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
     -->
-    <WriteMode>Absolute</WriteMode>
+    <WriteMode>Interpolate</WriteMode>
 
   </TuringMachineParams>
 
   <!-- Copy Task Parameters -->
-  <CopyTaskParams>
+  <CopyTaskParams>  
 
     <!-- Evaluation iterations -->
     <Iterations>50</Iterations>

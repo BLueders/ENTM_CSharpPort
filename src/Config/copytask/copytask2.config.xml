@@ -17,7 +17,7 @@
   <ExperimentCount>2</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>20</MaxGenerations>
+  <MaxGenerations>10</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -35,18 +35,25 @@
     <!-- Write vector size -->
     <M>5</M>
 
+    <!-- Number of Read/Write heads-->
+    <Heads>1</Heads>
+    
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
 
-    <!-- Shift mode: "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
+    <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
     <ShiftMode>Multiple</ShiftMode>
 
-    <!-- Number of Read/Write heads-->
-    <Heads>1</Heads>
+    <!-- "Interpolate" or "Absolute". 
+        Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
+        Absolute: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
+    -->
+    <WriteMode>Interpolate</WriteMode>
+
   </TuringMachineParams>
 
   <!-- Copy Task Parameters -->
-  <CopyTaskParams>
+  <CopyTaskParams>  
 
     <!-- Evaluation iterations -->
     <Iterations>50</Iterations>
@@ -109,6 +116,24 @@
 
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
     <ArchiveLimit>300</ArchiveLimit>
+
+    <!-- PMin up adjustment factor-->
+    <PMinAdjustUp>1.05</PMinAdjustUp>
+
+    <!-- PMin down adjustment factor -->
+    <PMinAdjustDown>0.95</PMinAdjustDown>
+
+    <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
+    <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
+    
+    <!-- How many generations without archihve additions before PMin is adjusted down -->
+    <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
+
+    <!-- K nearest neighbors -->
+    <K>10</K>
+
+    <!-- How often the novelty scorer should report to the log (generations) -->
+    <ReportInterval>10</ReportInterval>
     
   </NoveltySearch>
   
