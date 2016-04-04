@@ -1,5 +1,5 @@
 #!/bin/bash
-for f in SlurmQueueScripts/*
+for f in slurmscript_*
 do
   echo "Processing $f file..."
   # queue job described in file f

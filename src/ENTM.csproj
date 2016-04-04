@@ -100,8 +100,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="AbacusSlurmScripts\execute_slurm_scripts.sh" />
     <None Include="log4net.properties" />
     <None Include="packages.config" />
+    <None Include="AbacusSlurmScripts\slurmtask_copytask0.sh" />
+    <None Include="AbacusSlurmScripts\slurmtask_copytask1.sh" />
+    <None Include="AbacusSlurmScripts\slurmtask_copytask2.sh" />
+    <None Include="AbacusSlurmScripts\slurmtask_copytask3.sh" />
+    <None Include="AbacusSlurmScripts\slurmtask_copytask4.sh" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -144,7 +150,9 @@
   <PropertyGroup>
     <PostBuildEvent>XCOPY "$(SolutionDir)Config" "$(TargetDir)\ENTM\Config\" /S /Y
 XCOPY "$(SolutionDir)Genomes" "$(TargetDir)\ENTM\Genomes\" /S /Y
-COPY "$(SolutionDir)log4net.properties" "$(TargetDir)\" /Y</PostBuildEvent>
+XCOPY "$(SolutionDir)AbacusSlurmScripts" "$(TargetDir)" /S /Y
+COPY "$(SolutionDir)log4net.properties" "$(TargetDir)\" /Y
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
