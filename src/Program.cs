@@ -17,7 +17,7 @@ namespace ENTM
 {
     class Program
     {
-        private static readonly ILog logger = LogManager.GetLogger(typeof(Program));
+        private static readonly ILog _logger = LogManager.GetLogger(typeof(Program));
 
         public const string ROOT_PATH = "ENTM/";
         private const string CONFIG_PATH = ROOT_PATH + "Config/";
@@ -34,30 +34,37 @@ namespace ENTM
         private static ITuringExperiment _experiment;
         private static readonly string _identifier = DateTime.Now.ToString("MMddyyyy-HHmmss");
 
-        private static int _currentConfig = 0;
-        private static int _currentExperiment = 0;
+        private static int _currentConfig = -1;
+        private static int _currentExperiment;
         private static int _experiementCount;
 
         public static readonly int MainThreadId = Thread.CurrentThread.ManagedThreadId;
 
         static void Main(string[] args)
         {
-
-            XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
+            string[] configs;
 
             if (args.Length > 0)
             {
-               ParseArgs(args);
+               configs = ParseArgs(args);
             }
             else
             {
                 Console.WriteLine("No args found, prompting...");
-                Prompt();
-
+                configs = Prompt();
             }
+
+            LoadExperiments(configs);
+
+            PrintOptions();
+
+            NextExperiment();
+
+            // Start listening for input from console
+            ProcessInput();
         }
 
-        private static void ParseArgs(string[] args)
+        private static string[] ParseArgs(string[] args)
         {
             string[] configs = new string[args.Length];
 
@@ -71,17 +78,10 @@ namespace ENTM
                 configs[i] = $"ENTM/Config/{config}";
             }
 
-            _currentConfig = -1;
-
-            LoadExperiments(configs);
-            NextExperiment();
-
-            PrintOptions();
-
-            ProcessInput();
+            return configs;
         }
 
-        private static void Prompt()
+        private static string[] Prompt()
         {
             Console.WriteLine("Select config");
 
@@ -92,15 +92,7 @@ namespace ENTM
 
             string[] configs = Browse();
 
-            LoadExperiments(configs);
-
-            _currentExperiment = 1;
-            InitializeExperiment(_configs[0]);
-
-            PrintOptions();
-
-            // Start listening for input from console
-            ProcessInput();
+            return configs;
         }
 
         private static void PrintOptions()
@@ -208,7 +200,13 @@ namespace ENTM
 
             string name = XmlUtils.GetValueAsString(config, "Name");
 
-            Console.WriteLine($"Initializing experiment: {name}...");
+            // Initialize logging
+            GlobalContext.Properties["name"] = name;
+            GlobalContext.Properties["id"] = _identifier;
+            GlobalContext.Properties["count"] = _currentConfig;
+            XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
+
+            _logger.Info($"Initializing experiment: {name}...");
 
             // Register event listeners
             _experiment.ExperimentStartedEvent += ExperimentStartedEvent;
@@ -223,25 +221,25 @@ namespace ENTM
 
         private static void ExperimentStartedEvent(object sender, EventArgs e)
         {
-            logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}/{_experiementCount}");
-            logger.Info(ConfigPrinter.Print(_configs[_currentConfig]));
+            _logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}/{_experiementCount}");
+            ConfigPrinter.Print(_configs[_currentConfig]);
         }
 
         private static void ExperimentPausedEvent(object sender, EventArgs e)
         {
-            logger.Info($"Paused experiment {_experiment.Name} {_currentExperiment}");
+            _logger.Info($"Paused experiment {_experiment.Name} {_currentExperiment}");
             _stopwatch.Stop();
         }
 
         private static void ExperimentResumedEvent(object sender, EventArgs e)
         {
-            logger.Info($"Resumed experiment {_experiment.Name} {_currentExperiment}");
+            _logger.Info($"Resumed experiment {_experiment.Name} {_currentExperiment}");
             _stopwatch.Start();
         }
 
         private static void ExperimentCompleteEvent(object sender, EventArgs e)
         {
-            logger.Info($"Time spent: {Utilities.TimeToString(_experiment.TimeSpent)}");
+            _logger.Info($"Time spent: {Utilities.TimeToString(_experiment.TimeSpent)}");
 
             _experiment.TestCurrentChampion();
 
@@ -249,11 +247,14 @@ namespace ENTM
         }
 
         private static void NextExperiment() {
-            _currentExperiment++;
 
-            if (_currentExperiment > _experiementCount)
+            if (_currentConfig < 0 || _currentExperiment >= _experiementCount)
             {
                 NextConfig();
+            }
+            else
+            {
+                _currentExperiment++;
             }
 
             if (!_terminated)
@@ -279,7 +280,7 @@ namespace ENTM
             else
             {
                 _terminated = true;
-                logger.Info($"All experiments completed. Total time spent: {Utilities.TimeToString(_stopwatch.Elapsed)}");
+                _logger.Info($"All experiments completed. Total time spent: {Utilities.TimeToString(_stopwatch.Elapsed)}");
                 Console.WriteLine("\nPress any key to exit...");
             }
         }

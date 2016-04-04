@@ -1,22 +1,29 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using System.Xml;
+using log4net;
 
 namespace ENTM.Utility
 {
     public abstract class ConfigPrinter
     {
-        public static string Print(XmlElement config)
-        {
-            StringBuilder builder = new StringBuilder();
-            PrintNodeRecursive(config, builder);
+        private static readonly ILog _logger = LogManager.GetLogger("Config");
 
-            return builder.Append("\n").ToString();
+        public static void Print(XmlElement config)
+        {
+            List<string> lines = new List<string>();
+            PrintNodeRecursive(config, lines);
+
+            foreach (string line in lines)
+            {
+                _logger.Info(line);
+            }
         }
 
-        private static void PrintNodeRecursive(XmlElement node, StringBuilder builder)
+        private static void PrintNodeRecursive(XmlElement node, List<string> lines)
         {
-            if (node.ChildNodes.Count > 1) builder.Append("\n"); // Nested
-            builder.Append($"\n{node.Name}: ");
+            if (node.ChildNodes.Count > 1) lines.Add(""); // Nested
+            lines.Add(node.Name);
 
             foreach (XmlNode child in node.ChildNodes)
             {
@@ -24,11 +31,11 @@ namespace ENTM.Utility
 
                 if (child.HasChildNodes) // Text counts as child
                 {
-                    PrintNodeRecursive(child as XmlElement, builder);
+                    PrintNodeRecursive(child as XmlElement, lines);
                 }
                 else if (child is XmlText)
                 {
-                    builder.Append($"{child.InnerText}");
+                    lines[lines.Count - 1] =  $"{lines[lines.Count - 1]} : {child.InnerText}";
                 }
             }
         }
