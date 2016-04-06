@@ -2,7 +2,7 @@
 #
 #SBATCH --account itureal_gpu     # account
 #SBATCH --nodes 1                 # number of nodes
-#SBATCH --time 10:00:00            # max time (HH:MM:SS)
+#SBATCH --time 2:00:00            # max time (HH:MM:SS)
 
 echo executing: `basename "$0"`
 echo Running on "$(hostname)"
