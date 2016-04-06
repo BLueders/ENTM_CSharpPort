@@ -18,7 +18,7 @@
   <ExperimentCount>2</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>5000</MaxGenerations>
+  <MaxGenerations>2500</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -28,6 +28,9 @@
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
+  
+    <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
+  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
   
   <!-- Turing Machine Parameters-->
   <TuringMachineParams>
@@ -59,13 +62,14 @@
     <RandomSeed>0</RandomSeed>
 
     <FitnessFactor>1</FitnessFactor>
-    <Years>3</Years>
-    <Seasons>2</Seasons>
-    <Days>5</Days>
+    <Years>1</Years>
+    <Seasons>1</Seasons>
+    <Days>20</Days>
     <FoodTypes>2</FoodTypes>
     <PoisonFoods>1</PoisonFoods>
-
-    <StepsPerFood>One</StepsPerFood>
+    <PoisonousTypeChanges>1</PoisonousTypeChanges>
+    <IgnoreFirstDayOfSeasonInFirstYear>false</IgnoreFirstDayOfSeasonInFirstYear>
+    <StepsPerFood>Three</StepsPerFood>
 
   </SeasonTaskParams>
 

@@ -71,14 +71,15 @@ namespace ENTM.Experiments.SeasonTask
         {
             double[] observation = new double[OutputCount];
             int task = step % 3; // 0 = food step, 1 = eat step, 2 = reward step
+
+            Food currentFood = Sequence[step / 3];
+            observation[currentFood.Type] = 1; // return the current food
             switch (task)
             {
                 case 0:
-                    Food currentFood = Sequence[step / 3];
-                    observation[currentFood.Type] = 1; // return the current food
                     break;
                 case 1:
-                    return observation;
+                    break;
                 case 2:
                     if (evaluation == 0)
                         observation[observation.Length - 1] = 1;
