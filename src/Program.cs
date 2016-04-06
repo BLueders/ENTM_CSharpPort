@@ -334,10 +334,7 @@ namespace ENTM
 
                 if (_terminated || key == ConsoleKey.Escape) break;
 
-                if (!InputOption.Execute(key))
-                {
-                    Console.WriteLine("Unrecognized command. Yikes.");
-                }
+                InputOption.Execute(key);
 
             } while (true);
         }
