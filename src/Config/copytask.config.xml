@@ -22,6 +22,8 @@
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
 
+  <!-- The generation interval between writing the status to the log -->
+  <LogInterval>50</LogInterval>
 
   <!-- Turing Machine Parameters-->
   <TuringMachineParams>

@@ -128,10 +128,7 @@
     <Content Include="Config\copytask.config.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Config\CopyTask\copytask2.config.xml">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Config\CopyTask\copytask1.config.xml">
+    <Content Include="Config\CopyTask\copytask.config-test.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Config\seasontask.config.xml" />

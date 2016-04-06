@@ -81,8 +81,8 @@ namespace ENTM.Experiments
         private string _description;
         private ParallelOptions _parallelOptions;
         private bool _multiThreading;
+        private int _logInterval;
 
-        private const int LOG_INTERVAL = 1;
         private uint _lastLog;
         private long _lastLogTime;
         private double _currentMaxFitness = -1;
@@ -238,7 +238,7 @@ namespace ENTM.Experiments
                 _lastMaxFitnessImprovementGen = _ea.CurrentGeneration;
             }
 
-            if (_lastLog == 0 || _ea.CurrentGeneration - _lastLog >= LOG_INTERVAL)
+            if (_lastLog == 0 || _ea.CurrentGeneration - _lastLog >= _logInterval)
             {
                 uint gensSinceLastLog = _ea.CurrentGeneration - _lastLog;
                 if (gensSinceLastLog < 1) gensSinceLastLog = 1;
@@ -484,6 +484,7 @@ namespace ENTM.Experiments
             _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description");
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
             _multiThreading = XmlUtils.TryGetValueAsBool(xmlConfig, "MultiThreading") ?? true;
+            _logInterval = XmlUtils.TryGetValueAsInt(xmlConfig, "LogInterval") ?? 10;
 
             // Evolutionary algorithm parameters
             XmlElement xmlEAParams = xmlConfig.SelectSingleNode("EAParams") as XmlElement;
