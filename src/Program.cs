@@ -32,7 +32,7 @@ namespace ENTM
         private static Type _experimentType;
         private static  XmlElement[] _configs;
         private static ITuringExperiment _experiment;
-        private static readonly string _identifier = DateTime.Now.ToString("MMddyyyy-HHmmss");
+        private static readonly string _identifier = String.Format($"{DateTime.Now.ToString("MMddyyyy-HHmmss")}_{Guid.NewGuid().ToString().Substring(0, 8)}");
 
         private static int _currentConfig = -1;
         private static int _currentExperiment;
