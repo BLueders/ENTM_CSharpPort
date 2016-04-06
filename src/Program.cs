@@ -222,7 +222,6 @@ namespace ENTM
         private static void ExperimentStartedEvent(object sender, EventArgs e)
         {
             _logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}/{_experiementCount}");
-            ConfigPrinter.Print(_configs[_currentConfig]);
         }
 
         private static void ExperimentPausedEvent(object sender, EventArgs e)
@@ -259,8 +258,10 @@ namespace ENTM
 
             if (!_terminated)
             {
+
                 if (InitializeExperiment(_configs[_currentConfig]))
                 {
+                    ConfigPrinter.Print(_configs[_currentConfig]);
                     _experiment.StartStopEA();
                 }
                 else

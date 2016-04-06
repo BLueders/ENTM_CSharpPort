@@ -99,6 +99,10 @@
     <!-- How often the novelty scorer should report to the log (generations) -->
     <ReportInterval>10</ReportInterval>
 
+    <!-- How many redundant iterations an individual can have before it does not meet minimum criteria. 
+      0-1 relative to total timesteps during lifetime. -->
+    <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
+    
   </NoveltySearch>
   
   

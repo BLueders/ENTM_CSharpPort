@@ -19,6 +19,7 @@ namespace ENTM.NoveltySearch
         public int GenerationsPMinAdjustDown;
         public int K;
         public int ReportInterval;
+        public double MinimumCriteriaReadWriteLowerThreshold;
 
         public static NoveltySearchParameters ReadXmlProperties(XmlElement xmlConfig)
         {
@@ -33,6 +34,7 @@ namespace ENTM.NoveltySearch
             props.GenerationsPMinAdjustDown = XmlUtils.GetValueAsInt(xmlConfig, "GenerationsPMinAdjustDown");
             props.K = XmlUtils.GetValueAsInt(xmlConfig, "K");
             props.ReportInterval = XmlUtils.GetValueAsInt(xmlConfig, "ReportInterval");
+            props.MinimumCriteriaReadWriteLowerThreshold = XmlUtils.GetValueAsDouble(xmlConfig, "MinimumCriteriaReadWriteLowerThreshold");
 
             return props;
         }

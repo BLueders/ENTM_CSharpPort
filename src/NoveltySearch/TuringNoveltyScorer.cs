@@ -27,6 +27,7 @@ namespace ENTM.NoveltySearch
         private readonly int _reportInterval;
         private int _generation;
         private long _knnTotalTimeSpent;
+        private int _belowMinimumCriteria;
 
         public TuringNoveltyScorer(NoveltySearchParameters parameters)
         {
@@ -41,22 +42,13 @@ namespace ENTM.NoveltySearch
 
         public void Score(IDictionary<TGenome, FitnessInfo> behaviours)
         {
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-
             _generation++;
             List<FitnessInfo> combinedBehaviours = new List<FitnessInfo>(behaviours.Values);
             combinedBehaviours.AddRange(_archive.ToList());
 
-            Console.WriteLine($"Preliminary: {timer.ElapsedMilliseconds} ms");
-            timer.Restart();
-
             Knn knn = new Knn(_params.K);
 
             knn.Initialize(combinedBehaviours);
-
-            Console.WriteLine($"KNN: {timer.ElapsedMilliseconds} ms");
-            timer.Restart();
 
             _knnTotalTimeSpent += knn.TimeSpent;
 
@@ -65,8 +57,23 @@ namespace ENTM.NoveltySearch
             foreach (TGenome genome in behaviours.Keys)
             {
                 FitnessInfo behaviour = behaviours[genome];
-                double score = knn.AverageDistToKnn(behaviour);
-                
+
+                double score;
+
+                double redundantTimeSteps = behaviour._auxFitnessArr[0]._value;
+
+                // Check if behaviour meets minimum criteria
+                if (redundantTimeSteps / (behaviour._auxFitnessArr.Length - 1) >= _params.MinimumCriteriaReadWriteLowerThreshold)
+                {
+                    score = knn.AverageDistToKnn(behaviour);
+                }
+                else
+                {
+                    // Minimum criteria is not met.
+                    score = 0d;
+                    _belowMinimumCriteria++;
+                }
+
                 genome.EvaluationInfo.SetFitness(score);
 
                 if (score > _pMin)
@@ -76,9 +83,6 @@ namespace ENTM.NoveltySearch
                 }
             }
 
-            Console.WriteLine($"Scoring: {timer.ElapsedMilliseconds} ms");
-            timer.Restart();
-
             if (added > 0)
             {
                 _generationsSinceArchiveAddition = 0;
@@ -87,7 +91,7 @@ namespace ENTM.NoveltySearch
                 if (added > _params.AdditionsPMinAdjustUp)
                 {
                     _pMin *= _params.PMinAdjustUp;
-                    _logger.Info($"PMin adjusted up to {_pMin}");
+                    _logger.Info($"PMin adjusted up to {_pMin.ToString("0.00")}");
                 }
             }
             else
@@ -99,18 +103,16 @@ namespace ENTM.NoveltySearch
                 {
                     _pMin *= _params.PMinAdjustDown;
 
-                    _logger.Info($"PMin adjusted down to {_pMin}");
+                    _logger.Info($"PMin adjusted down to {_pMin.ToString("0.00")}");
                 }
             }
 
             if (_generation % _reportInterval == 0)
             {
-                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin}, Avg knn time spent: {_knnTotalTimeSpent / _reportInterval} ms");
+                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin.ToString("0.00")}. Avg knn time spent/gen: {_knnTotalTimeSpent / _reportInterval} ms." + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria / (float) _reportInterval}");
                 _knnTotalTimeSpent = 0;
+                _belowMinimumCriteria = 0;
             }
-
-            Console.WriteLine($"Remaining: {timer.ElapsedMilliseconds} ms");
-            timer.Stop();
         }
     }
 }

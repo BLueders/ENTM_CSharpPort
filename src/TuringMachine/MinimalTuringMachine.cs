@@ -53,6 +53,7 @@ namespace ENTM.TuringMachine
         private bool _increasedSizeDown;
 
         private int _zeroPosition;
+        private bool _didWrite, _didRead;
 
         public bool ScoreNovelty { get; set; }
 
@@ -156,8 +157,8 @@ namespace ENTM.TuringMachine
 
             int[] writePositions = null;
             double[][] written = null;
-            bool didWrite = false;
-            bool didRead = false;
+            _didWrite = false;
+            _didRead = false;
 
             // Attention! Novelty score does not currently support multiple read/write heads.
             // It will overwrite data for previous heads, if more than one.
@@ -247,15 +248,21 @@ namespace ENTM.TuringMachine
                         // Save the write position as a behavioural trait
                         _noveltyVector[_currentTimeStep] = correctedWritePosition;
 
-                        // Check for non-empty reads
+                        // Check for non-empty reads, to see if novelty search minimum criteria has been reached
                         for (int j = 0; j < result[i].Length; j++)
                         {
-                            if (result[i][j] != 0)
+                            if (result[i][j] > .1f)
                             {
-                                // Store the non-empty read count in position 0 of the novelty vector
-                                _noveltyVector[0] += 1;
+                                _didRead = true;
                                 break;
                             }
+                        }
+
+                        // If the turing machine neither wrote or read this iteration, we note it for the minimum criteria novelty search
+                        if (!_didWrite && !_didRead)
+                        {
+                            // Store number of redundant iterations in the novelty vector.
+                            _noveltyVector[0] += 1;
                         }
                     }
 
@@ -333,11 +340,21 @@ namespace ENTM.TuringMachine
             {
                 case WriteMode.Interpolate:
                     _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
+
+                    // We set a minimum threshold for write interpolation required to reach the novelty search minimum criteria
+                    if (interp > .3f)
+                    {
+                        _didWrite = true;
+                    }
                     break;
 
                 case WriteMode.Absolute:
                     // Absolute mode will overwrite completely
-                    if (interp >= .5f) _tape[_headPositions[head]] = content;
+                    if (interp >= .5f)
+                    {
+                        _tape[_headPositions[head]] = content;
+                        _didWrite = true;
+                    }
                     break;
 
             }
