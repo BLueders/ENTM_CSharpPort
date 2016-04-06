@@ -33,6 +33,12 @@ namespace ENTM.Experiments.SeasonTask
         // Current fitness score
         protected double _score;
 
+        // How often will the poisonous food type change during one sequence
+        protected int _poisonousTypeChanges;
+
+        // will not score the first day of each season in the first year
+        protected bool _ignoreFirstDayOfSeasonInFirstYear;
+
         public Food[] Sequence { get; protected set; }
 
         protected readonly double _fitnessFactor;
@@ -43,9 +49,10 @@ namespace ENTM.Experiments.SeasonTask
         public override double MaxScore => _fitnessFactor * _foodTypes * _days * _seasons * _years - (_fitnessFactor * _seasons * _foodTypes);
 
         // jk. do not score first day of each season of the first year. There we encounter each food the first time and cant know if its poisonous.
-        protected bool IsFirstDayOfSeasonInFirstYear(int step)
+        protected bool ScoreThisStep(int step)
         {
-            return step < _foodTypes*_days*_seasons && step%(_foodTypes*_days) < _foodTypes;
+            bool isFirstDay = step < _foodTypes * _days * _seasons && step % (_foodTypes * _days) < _foodTypes;
+            return !_ignoreFirstDayOfSeasonInFirstYear && !isFirstDay;
         }
 
         public override double NormalizedScore => CurrentScore / MaxScore;
@@ -71,6 +78,8 @@ namespace ENTM.Experiments.SeasonTask
             _foodTypes = props.FoodTypes;
             _fitnessFactor = props.FitnessFactor;
             _poisonFoods = props.PoisonFoods;
+            _ignoreFirstDayOfSeasonInFirstYear = props.IgnoreFirstDayOfSeasonInFirstYear;
+            _poisonousTypeChanges = props.PoisonousTypeChanges;
             RandomSeed = props.RandomSeed;
 
         }
@@ -92,7 +101,7 @@ namespace ENTM.Experiments.SeasonTask
             Debug.DLog($"{"Years:",-16} {_years}" +
             $"\n{"Seasons:",-16} {_seasons}" +
             $"\n{"Days:",-16} {_days}" +
-            $"\n{"Foods:",-16} {_foodTypes}, Poisonous: {Utilities.ToString(_poisonousFoodTypes)}" +
+            $"\n{"Foods:",-16} {_foodTypes}" +
             $"\n{"Max score:",-16} {MaxScore}", true);
 
             //Debug.Log($"Sequence:\n{Utilities.ToString(Sequence)}", true);
@@ -124,36 +133,30 @@ namespace ENTM.Experiments.SeasonTask
             }
             return 0;
         }
-       
+
         protected void CreateSequence()
         {
             // determine the poisonous food types of this iteration for each season
-            _poisonousFoodTypes = new List<int>();
-            for (int i = 0; i < _seasons; i++)
-            {
-                int[] allFoodTypes = new int[_foodTypes];
-                // fill array with all foodTypes
-                for (int j = 0; j < allFoodTypes.Length; j++)
-                {
-                    allFoodTypes[j] = j + i * _foodTypes;
-                }
-                // shuffle
-                allFoodTypes = allFoodTypes.OrderBy(x => SealedRandom.Next()).ToArray();
-                // use first half as random poisonous foods
-                for (int k = 0; k < _poisonFoods; k++)
-                {
-                    _poisonousFoodTypes.Add(allFoodTypes[k]);
-                }
-            }
+            _poisonousFoodTypes = GetPoisonousFoodTypes();
 
             // create the actual sequence
             Sequence = new Food[_years * _seasons * _days * _foodTypes];
+            // if we are going to change which foods are poisonous during sequence, this is where
+            LinkedList<int> poisonFoodShufflePositions = GetPoisonousFoodShufflePositions(Sequence.Length);
+
             for (int i = 0; i < _years; i++)
             {
                 for (int j = 0; j < _seasons; j++)
                 {
                     for (int k = 0; k < _days; k++)
                     {
+                        int currentDayIndex = i*_seasons*_days*_foodTypes + j*_days*_foodTypes + k*_foodTypes;
+                        // shuffle dem poisons
+                        if (poisonFoodShufflePositions.Count != 0 && currentDayIndex >= poisonFoodShufflePositions.First.Value)
+                        {
+                            _poisonousFoodTypes = GetPoisonousFoodTypes();
+                            poisonFoodShufflePositions.RemoveFirst();
+                        }
                         // create array of foods
                         Food[] foods = new Food[_foodTypes];
                         for (int l = 0; l < _foodTypes; l++)
@@ -168,11 +171,55 @@ namespace ENTM.Experiments.SeasonTask
                         // copy to sequence
                         for (int l = 0; l < _foodTypes; l++)
                         {
-                            Sequence[i * _seasons * _days * _foodTypes + j * _days * _foodTypes + k * _foodTypes + l] = foods[l];
+                            Sequence[currentDayIndex + l] = foods[l];
                         }
                     }
                 }
             }
+        }
+
+        private LinkedList<int> GetPoisonousFoodShufflePositions(int sequenceLength)
+        {
+            LinkedList<int> shufflePositions = new LinkedList<int>();
+            int[] allPositions = new int[sequenceLength];
+            // fill array with all foodTypes
+            for (int j = 0; j < allPositions.Length; j++)
+            {
+                allPositions[j] = j;
+            }
+            // shuffle
+            allPositions = allPositions.OrderBy(x => SealedRandom.Next()).ToArray();
+            // use first x as random positions to change 
+            for (int k = 0; k < _poisonousTypeChanges; k++)
+            {
+                shufflePositions.AddLast(allPositions[k]);
+            }
+            // sort ascending
+            shufflePositions = new LinkedList<int>(shufflePositions.OrderBy(x => x));
+            return shufflePositions;
+        }
+
+        private List<int> GetPoisonousFoodTypes()
+        {
+            List<int> pFoodTypes = new List<int>();
+            for (int i = 0; i < _seasons; i++)
+            {
+                int[] allFoodTypes = new int[_foodTypes];
+                // fill array with all foodTypes
+                for (int j = 0; j < allFoodTypes.Length; j++)
+                {
+                    allFoodTypes[j] = j + i * _foodTypes;
+                }
+                // shuffle
+                allFoodTypes = allFoodTypes.OrderBy(x => SealedRandom.Next()).ToArray();
+                // use first half as random poisonous foods
+                for (int k = 0; k < _poisonFoods; k++)
+                {
+                    pFoodTypes.Add(allFoodTypes[k]);
+                }
+            }
+
+            return pFoodTypes;
         }
 
         #region RecordTimesteps

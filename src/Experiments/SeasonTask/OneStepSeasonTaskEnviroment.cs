@@ -32,7 +32,7 @@ namespace ENTM.Experiments.SeasonTask
             thisScore = Evaluate(eatVal, _step - 1);
             observation = GetOutput(_step, thisScore);
 
-            if (IsFirstDayOfSeasonInFirstYear(_step)) // no scoring here
+            if (!ScoreThisStep(_step)) // no scoring here
             {
                 thisScore = 0;
             }
