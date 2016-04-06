@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing.Text;
 using System.Threading.Tasks;
 using ENTM.Utility;
+using log4net;
 using SharpNeat.Core;
 
 namespace ENTM.NoveltySearch
@@ -20,16 +21,19 @@ namespace ENTM.NoveltySearch
         where TGenome : class, IGenome<TGenome> 
         where TPhenome : class
     {
+        private static readonly ILog _logger = LogManager.GetLogger("List Evaluator");
+
         readonly IGenomeDecoder<TGenome, TPhenome> _genomeDecoder;
         readonly IPhenomeEvaluator<TPhenome> _phenomeEvaluator;
         readonly INoveltyScorer<TGenome> _noveltyScorer; 
         readonly ParallelOptions _parallelOptions;
         readonly EvaluationMethod _evalMethod;
-
+        
         delegate IDictionary<TGenome, FitnessInfo> EvaluationMethod(IList<TGenome> genomeList);
 
         private bool _noveltySearchEnabled;
         private bool _reevaluateOnce;
+        private int _generation;
 
         /// <summary>
         /// Determines if the population is scored by novelty search or regular environmental fitness.
@@ -67,6 +71,7 @@ namespace ENTM.NoveltySearch
             _phenomeEvaluator = phenomeEvaluator;
             _noveltyScorer = noveltyScorer;
             _parallelOptions = options;
+            _generation = 0;
 
             // Determine the appropriate evaluation method.
             if (enableMultiThreading)   _evalMethod = EvaluateParallel;
@@ -103,6 +108,7 @@ namespace ENTM.NoveltySearch
         /// </summary>
         public void Evaluate(IList<TGenome> genomeList)
         {
+            _generation++;
             IList<TGenome> filteredList;
 
             // If we are using novelty search we must reevaluate all genomes, because a given score can change in between 
@@ -143,6 +149,7 @@ namespace ENTM.NoveltySearch
                 // Ignore novelty score, apply environmental objective fitness
                 ApplyEnvironmentScoresOnly(fitness);
             }
+
         }
 
         /// <summary>
@@ -184,7 +191,13 @@ namespace ENTM.NoveltySearch
         /// <param name="genomeList"></param>
         private IDictionary<TGenome, FitnessInfo> EvaluateParallel(IList<TGenome> genomeList)
         {
-            ConcurrentDictionary<TGenome, FitnessInfo> fitness = new ConcurrentDictionary<TGenome, FitnessInfo>();
+            int concurrencyLevel = _parallelOptions.MaxDegreeOfParallelism == -1
+                ? Environment.ProcessorCount
+                : Math.Min(Environment.ProcessorCount, _parallelOptions.MaxDegreeOfParallelism);
+
+            if (_generation == 1 || _generation % 50 == 0) _logger.Info($"Running parallel, number of threads: {concurrencyLevel}");
+
+            ConcurrentDictionary<TGenome, FitnessInfo> fitness = new ConcurrentDictionary<TGenome, FitnessInfo>(concurrencyLevel, genomeList.Count);
             Parallel.ForEach(genomeList, _parallelOptions, genome =>
             {
                 FitnessInfo scores = EvaluateGenome(genome);
