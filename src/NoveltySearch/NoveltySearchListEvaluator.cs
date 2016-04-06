@@ -195,7 +195,7 @@ namespace ENTM.NoveltySearch
                 ? Environment.ProcessorCount
                 : Math.Min(Environment.ProcessorCount, _parallelOptions.MaxDegreeOfParallelism);
 
-            if (_generation == 1 || _generation % 50 == 0) _logger.Info($"Running parallel, number of threads: {concurrencyLevel}");
+            if (_generation == 1) _logger.Info($"Running parallel, number of threads: {concurrencyLevel}");
 
             ConcurrentDictionary<TGenome, FitnessInfo> fitness = new ConcurrentDictionary<TGenome, FitnessInfo>(concurrencyLevel, genomeList.Count);
             Parallel.ForEach(genomeList, _parallelOptions, genome =>
