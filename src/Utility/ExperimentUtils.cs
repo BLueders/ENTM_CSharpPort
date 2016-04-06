@@ -61,18 +61,30 @@ namespace SharpNeat.Domains
         /// <summary>
         /// Create a complexity regulation strategy based on the provided XML config values.
         /// </summary>
-        public static IComplexityRegulationStrategy CreateComplexityRegulationStrategy(string strategyTypeStr, int? threshold)
+        public static IComplexityRegulationStrategy CreateComplexityRegulationStrategy(XmlElement xmlConfig, string complexityElemName)
         {
+            // Get root activation element.
+            XmlNodeList nodeList = xmlConfig.GetElementsByTagName(complexityElemName, "");
+            if (nodeList.Count != 1)
+            {
+                throw new ArgumentException("Missing or invalid complexity XML config setting.");
+            }
+
+            XmlElement xmlComplexity = nodeList[0] as XmlElement;
+
+            string complexityRegulationStr = XmlUtils.TryGetValueAsString(xmlConfig, "ComplexityRegulationStrategy");
+            int? complexityThreshold = XmlUtils.TryGetValueAsInt(xmlConfig, "ComplexityThreshold");
+
             ComplexityCeilingType ceilingType;
-            if(!Enum.TryParse<ComplexityCeilingType>(strategyTypeStr, out ceilingType)) {
+            if(!Enum.TryParse<ComplexityCeilingType>(complexityRegulationStr, out ceilingType)) {
                 return new NullComplexityRegulationStrategy();
             }
 
-            if(null == threshold) {
+            if(null == complexityThreshold) {
                 throw new ArgumentNullException("threshold", string.Format("threshold must be provided for complexity regulation strategy type [{0}]", ceilingType));
             }
 
-            return new DefaultComplexityRegulationStrategy(ceilingType, threshold.Value);
+            return new DefaultComplexityRegulationStrategy(ceilingType, complexityThreshold.Value);
         }
 
         /// <summary>

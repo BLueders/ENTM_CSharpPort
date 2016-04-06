@@ -76,6 +76,7 @@ namespace ENTM.Experiments
         private string _name;
         private int _populationSize, _maxGenerations;
         private NetworkActivationScheme _activationScheme;
+        private IComplexityRegulationStrategy _complexityRegulationStrategy;
         private string _complexityRegulationStr;
         private int? _complexityThreshold;
         private string _description;
@@ -479,8 +480,7 @@ namespace ENTM.Experiments
             _populationSize = XmlUtils.GetValueAsInt(xmlConfig, "PopulationSize");
             _maxGenerations = XmlUtils.GetValueAsInt(xmlConfig, "MaxGenerations");
             _activationScheme = ExperimentUtils.CreateActivationScheme(xmlConfig, "Activation");
-            _complexityRegulationStr = XmlUtils.TryGetValueAsString(xmlConfig, "ComplexityRegulationStrategy");
-            _complexityThreshold = XmlUtils.TryGetValueAsInt(xmlConfig, "ComplexityThreshold");
+            _complexityRegulationStrategy = ExperimentUtils.CreateComplexityRegulationStrategy(xmlConfig, "ComplexityRegulation");
             _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description");
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
             _multiThreading = XmlUtils.TryGetValueAsBool(xmlConfig, "MultiThreading") ?? true;
@@ -608,11 +608,8 @@ namespace ENTM.Experiments
             IDistanceMetric distanceMetric = new ManhattanDistanceMetric(1.0, 0.0, 10.0);
             ISpeciationStrategy<NeatGenome> speciationStrategy = new ParallelKMeansClusteringStrategy<NeatGenome>(distanceMetric, _parallelOptions);
 
-            // Create complexity regulation strategy.
-            IComplexityRegulationStrategy complexityRegulationStrategy = ExperimentUtils.CreateComplexityRegulationStrategy(_complexityRegulationStr, _complexityThreshold);
-
             // Create the evolution algorithm.
-            NeatEvolutionAlgorithm<NeatGenome> ea = new NeatEvolutionAlgorithm<NeatGenome>(_eaParams, speciationStrategy, complexityRegulationStrategy);
+            NeatEvolutionAlgorithm<NeatGenome> ea = new NeatEvolutionAlgorithm<NeatGenome>(_eaParams, speciationStrategy, _complexityRegulationStrategy);
 
             // Create genome decoder.
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = CreateGenomeDecoder();

@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System;
+using System.Xml;
 using SharpNeat.Core;
 using SharpNeat.Phenomes;
 using System.Threading;
@@ -129,7 +130,7 @@ namespace ENTM
 
             _evaluationCount++;
 
-            if (score._fitness >= MaxScore)
+            if (score._fitness >= MaxScore - double.Epsilon)
             {
                 _stopConditionSatisfied = true;
             }

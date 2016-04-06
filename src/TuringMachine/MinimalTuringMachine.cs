@@ -128,7 +128,7 @@ namespace ENTM.TuringMachine
         }
 
         /// <summary>
-        /// Activate the Turing machine
+        /// Activate the Turing machine.
         /// Operation order:
         ///	1: Write
         /// 2: Content jump
@@ -137,7 +137,6 @@ namespace ENTM.TuringMachine
         /// </summary>
         /// <param name="fromNN">Turing machine input (NN output)</param>
         /// <returns>Turing machine output (NN input)</returns>
-
         public double[][] ProcessInput(double[] fromNN)
         {
             Debug.DLogHeader("MINIMAL TURING MACHINE START", true);
@@ -157,7 +156,11 @@ namespace ENTM.TuringMachine
 
             int[] writePositions = null;
             double[][] written = null;
+            bool didWrite = false;
+            bool didRead = false;
 
+            // Attention! Novelty score does not currently support multiple read/write heads.
+            // It will overwrite data for previous heads, if more than one.
             if (RecordTimeSteps || ScoreNovelty)
             {
                 writePositions = new int[_heads];
@@ -173,8 +176,6 @@ namespace ENTM.TuringMachine
             // First all writes
             for (int i = 0; i < _heads; i++)
             {
-
-                // Should be M + 2 + S elements
                 writeKeys[i] = Take(fromNN, p, _m);
                 p += _m;
 
@@ -208,7 +209,6 @@ namespace ENTM.TuringMachine
                         written[i] = GetRead(i);
                     }
                 }
-
             }
 
             for (int i = 0; i < _heads; i++)
@@ -228,8 +228,7 @@ namespace ENTM.TuringMachine
                 MoveHead(i, shifts[i]);
 
                 // 4: Read!
-                double[] headResult = GetRead(i); // Show me what you've got! \cite{rickEtAl2014}
-                result[i] = headResult;
+                result[i] = GetRead(i); // Show me what you've got! \cite{rickEtAl2014}
 
                 if (RecordTimeSteps || ScoreNovelty)
                 {
@@ -249,9 +248,9 @@ namespace ENTM.TuringMachine
                         _noveltyVector[_currentTimeStep] = correctedWritePosition;
 
                         // Check for non-empty reads
-                        for (int j = 0; j < headResult.Length; j++)
+                        for (int j = 0; j < result[i].Length; j++)
                         {
-                            if (headResult[j] != 0)
+                            if (result[i][j] != 0)
                             {
                                 // Store the non-empty read count in position 0 of the novelty vector
                                 _noveltyVector[0] += 1;
@@ -265,7 +264,7 @@ namespace ENTM.TuringMachine
                         int readPosition = _headPositions[i];
                         int correctedReadPosition = readPosition - _zeroPosition;
 
-                        _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], headResult, written[i],
+                        _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], result[i], written[i],
                        writePositions[i], readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
                     }
                 }
