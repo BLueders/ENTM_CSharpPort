@@ -25,6 +25,13 @@
   <!-- The generation interval between writing the status to the log -->
   <LogInterval>50</LogInterval>
 
+  <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
+  <MultiThreading>true</MultiThreading>
+
+  <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
+  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
+  
+  
   <!-- Turing Machine Parameters-->
   <TuringMachineParams>
 
@@ -54,6 +61,7 @@
 
   </TuringMachineParams>
 
+  
   <!-- Copy Task Parameters -->
   <CopyTaskParams>  
 
@@ -85,6 +93,40 @@
 
   </CopyTaskParams>
 
+
+  <!-- Novelty Search Parameters -->
+  <NoveltySearch>
+
+    <!-- If false, only environmental objective fitness will be used. -->
+    <Enabled>false</Enabled>
+
+    <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
+    <PMin>50</PMin>
+
+    <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
+    <ArchiveLimit>300</ArchiveLimit>
+
+    <!-- PMin up adjustment factor-->
+    <PMinAdjustUp>1.05</PMinAdjustUp>
+
+    <!-- PMin down adjustment factor -->
+    <PMinAdjustDown>0.95</PMinAdjustDown>
+
+    <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
+    <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
+
+    <!-- How many generations without archihve additions before PMin is adjusted down -->
+    <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
+
+    <!-- K nearest neighbors -->
+    <K>10</K>
+
+    <!-- How often the novelty scorer should report to the log (generations) -->
+    <ReportInterval>10</ReportInterval>
+
+  </NoveltySearch>
+
+  
   <!-- The network activation scheme to use -->
   <Activation>
     
@@ -107,51 +149,19 @@
   </Activation>
 
   
-  <!-- Novelty Search Parameters -->
-  <NoveltySearch>
-    
-    <!-- If false, only environmental objective fitness will be used. -->
-    <Enabled>false</Enabled>
-    
-    <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>50</PMin>
-
-    <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
-    <ArchiveLimit>300</ArchiveLimit>
-
-    <!-- PMin up adjustment factor-->
-    <PMinAdjustUp>1.05</PMinAdjustUp>
-
-    <!-- PMin down adjustment factor -->
-    <PMinAdjustDown>0.95</PMinAdjustDown>
-
-    <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
-    <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
-    
-    <!-- How many generations without archihve additions before PMin is adjusted down -->
-    <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
-
-    <!-- K nearest neighbors -->
-    <K>10</K>
-
-    <!-- How often the novelty scorer should report to the log (generations) -->
-    <ReportInterval>10</ReportInterval>
-    
-  </NoveltySearch>
-  
-  <!-- "Absolute" or "Relative"
+  <!-- Complexity Regulation Parameters -->
+  <ComplexityRegulation>
+    <!-- "Absolute" or "Relative"
        Absolute: Defines an absolute ceiling on complexity.
        Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
-  <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
-  <ComplexityThreshold>60</ComplexityThreshold>
+    <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   
-  <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
-  <MultiThreading>true</MultiThreading>
-  
-  <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
-  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
+    <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
+    <ComplexityThreshold>60</ComplexityThreshold>
 
-  
+  </ComplexityRegulation>
+
+
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
     <!-- Number of species in the population. Default: 10 -->
@@ -215,93 +225,3 @@
   </GenomeParams>
 
 </Config>
-
-<!--
-#classic is worth trying out
-topology.mutation.classic=true
-add.connection.mutation.rate=0.05
-remove.connection.mutation.rate=0.02
-remove.connection.max.weight=5
-remove.connection.strategy = skewed
-add.neuron.mutation.rate=0.005
-prune.mutation.rate=1.00
-weight.mutation.rate=0.6
-weight.mutation.std.dev=1.5
-weight.max=10.0
-weight.min=-10.0
-survival.rate=0.2
-selector.elitism=true
-selector.roulette=false
-selector.elitism.min.specie.size=2
-
-############
-# speciation
-############
-chrom.compat.excess.coeff=1.0
-chrom.compat.disjoint.coeff=1.0
-chrom.compat.common.coeff=0.4
-speciation.threshold=0.35
-
-  
-##################
-# fitness function
-#
-# stimulus.size = domain + tm.m * tm.heads.read = tm.m + 2 + tm.m * tm.heads.read
-# response.size = domain + (tm.heads.read * (3 + tm.m + tm.shift.length)) 
-#                        + (tm.heads.write + (3 + 3 * tm.m + tm.shift.length))
-##################
-#
-#stimulus.size=7 	CALCULATED AUTOMATICALLY
-#response.size=26 	CALCULATED AUTOMATICALLY
-fitness_function.class=dk.itu.ejuuragr.fitness.FitnessEvaluator
-fitness.function.adjust.for.network.size.factor=0.0
-#targets.range=0.2
-fitness.threshold=0.95
-fitness.target=0.999
-
-####################
-# sigmoid activation
-####################
-initial.topology.activation = sigmoid
-
-##############
-# network arch
-##############
-# Options = linear, sigmoid, evsail-sigmoid, tanh, tanh-cubic, step, signed, clamped-linear, signed-clamped-linear
-initial.topology.activation.input = linear
-initial.topology.activation.output = sigmoid
-initial.topology.fully.connected = true
-initial.topology.num.hidden.neurons = 0
-
-recurrent=disallowed
-recurrent.cycles=1
-ann.type=anji
-
-#############
-# persistence
-#############
-persistence.class=com.anji.persistence.FilePersistence
-persistence.base.dir=./db
-persist.all=false
-persist.champions=true
-persist.last=true
-id.file=./db/id.xml
-neat.id.file=./db/neatid.xml
-presentation.dir=./nevt
-
-#########
-# logging
-#########
-log4j.rootLogger=INFO, A1
-log4j.appender.A1=org.apache.log4j.ConsoleAppender
-#log4j.appender.A1=org.apache.log4j.FileAppender
-#log4j.appender.A1=org.apache.log4j.RollingFileAppender
-#log4j.appender.A1.File=./db/log.txt
-#log4j.appender.A1.MaxFileSize=10MB
-#log4j.appender.A1.MaxBackupIndex=20
-log4j.appender.A1.layout=org.apache.log4j.PatternLayout
-#log4j.appender.A1.layout.ConversionPattern=%-4r %-5p  %m - [%t] %c %x%n
-log4j.appender.A1.layout.ConversionPattern=%-5p %m%x%n
--->
-
-

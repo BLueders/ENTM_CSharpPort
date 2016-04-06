@@ -122,17 +122,13 @@
     <Content Include="Config\copytask.config.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Config\CopyTask\copytask.config-test.xml">
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="Config\seasontask.config.xml" />
-    <Content Include="Config\SeasonTask\QuickTest2Food.xml" />
-    <Content Include="Config\SeasonTask\seasontask3.config.xml" />
-    <Content Include="Config\SeasonTask\seasontask4.config.xml" />
-    <Content Include="Config\SeasonTask\seasontask2.config.xml" />
-    <Content Include="Config\SeasonTask\seasontask1.config.xml" />
     <Content Include="Genomes\anji2sharpneat.py" />
     <Content Include="Genomes\chromosome11943.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Config\CopyTask\" />
+    <Folder Include="Config\SeasonTask\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
