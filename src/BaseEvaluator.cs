@@ -130,7 +130,7 @@ namespace ENTM
 
             _evaluationCount++;
 
-            if (score._fitness >= MaxScore - double.Epsilon)
+            if (score._fitness >= MaxScore * .99f)
             {
                 _stopConditionSatisfied = true;
             }

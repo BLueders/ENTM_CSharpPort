@@ -34,6 +34,7 @@ namespace ENTM
         private static ITuringExperiment _experiment;
         private static readonly string _identifier = String.Format($"{DateTime.Now.ToString("MMddyyyy-HHmmss")}_{Guid.NewGuid().ToString().Substring(0, 8)}");
 
+        private static bool _inputEnabled;
         private static int _currentConfig = -1;
         private static int _currentExperiment;
         private static int _experiementCount;
@@ -44,24 +45,31 @@ namespace ENTM
         {
             string[] configs;
 
+
             if (args.Length > 0)
             {
-               configs = ParseArgs(args);
+                _inputEnabled = false;
+                configs = ParseArgs(args);
             }
             else
             {
+                _inputEnabled = true;
                 Console.WriteLine("No args found, prompting...");
                 configs = Prompt();
             }
 
             LoadExperiments(configs);
 
-            PrintOptions();
+            if (_inputEnabled) PrintOptions();
 
             NextExperiment();
 
             // Start listening for input from console
-            ProcessInput();
+            if (_inputEnabled) ProcessInput();
+            else
+            {
+                while (!_terminated);
+            }
         }
 
         private static string[] ParseArgs(string[] args)
@@ -123,7 +131,6 @@ namespace ENTM
             {
                 Console.WriteLine($"{select++}: {xmls[i].Replace(_currentDir, string.Empty)}");
             }
-
 
             do
             {
@@ -221,6 +228,7 @@ namespace ENTM
 
         private static void ExperimentStartedEvent(object sender, EventArgs e)
         {
+            _stopwatch.Start();
             _logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}/{_experiementCount}");
         }
 
@@ -273,7 +281,7 @@ namespace ENTM
 
         private static void NextConfig()
         {
-            if (_currentConfig < _configs.Length)
+            if (_currentConfig < _configs.Length - 1)
             {
                 _currentConfig++;
                 _currentExperiment = 1;
@@ -282,7 +290,7 @@ namespace ENTM
             {
                 _terminated = true;
                 _logger.Info($"All experiments completed. Total time spent: {Utilities.TimeToString(_stopwatch.Elapsed)}");
-                Console.WriteLine("\nPress any key to exit...");
+                if (_inputEnabled) Console.WriteLine("\nPress any key to exit...");
             }
         }
 
@@ -297,7 +305,6 @@ namespace ENTM
 
         private static void StartStop()
         {
-            _stopwatch.Start();
             _experiment.StartStopEA();
         }
 

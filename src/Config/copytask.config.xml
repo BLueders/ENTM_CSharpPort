@@ -14,10 +14,10 @@
   </Description>
   
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>20</ExperimentCount>
+  <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>5000</MaxGenerations>
+  <MaxGenerations>2000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -98,7 +98,7 @@
   <NoveltySearch>
 
     <!-- If false, only environmental objective fitness will be used. -->
-    <Enabled>true</Enabled>
+    <Enabled>false</Enabled>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
     <PMin>50</PMin>
