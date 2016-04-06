@@ -42,7 +42,7 @@ namespace ENTM.Experiments.SeasonTask
                     double eatVal = action[0];
                     thisScore = Evaluate(eatVal, (_step / 3) - 1);
                     observation = GetOutput(_step, thisScore);
-                    if (!IsFirstDayOfSeasonInFirstYear((_step / 3) - 1))
+                    if (ScoreThisStep((_step / 3) - 1))
                     {
                         _score += thisScore;
                     }

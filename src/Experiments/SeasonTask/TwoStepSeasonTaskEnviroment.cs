@@ -35,7 +35,7 @@ namespace ENTM.Experiments.SeasonTask
                     thisScore = Evaluate(eatVal, (_step - 2) / 2); // we compare against the previos food, therefor - 2
                     observation = GetOutput(_step, thisScore);
 
-                    if (IsFirstDayOfSeasonInFirstYear((_step - 2) / 2)) // no scoring here
+                    if (!ScoreThisStep((_step - 2) / 2)) // no scoring here
                     {
                         thisScore = 0;
                     }
