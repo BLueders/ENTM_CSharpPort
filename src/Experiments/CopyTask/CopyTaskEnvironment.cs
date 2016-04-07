@@ -48,12 +48,12 @@ namespace ENTM.Experiments.CopyTask
         /// <summary>
         /// Terminate when the write and read sequences are complete
         /// </summary>
-        public override bool IsTerminated => _step >= TotalTimeSteps;
+        public override bool IsTerminated => _step >= _totalTimeSteps;
 
         /// <summary>
         /// Read + Write + start and delimiter + 1 idle step for content jumping after the delimiter
         /// </summary>
-        public override int TotalTimeSteps => 2 * Sequence.Length + 2 + 1;
+        private int _totalTimeSteps => 2 * Sequence.Length + 2 + 1;
 
         public sealed override int RandomSeed { get; set; }
 

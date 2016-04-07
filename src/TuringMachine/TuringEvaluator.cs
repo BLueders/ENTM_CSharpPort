@@ -50,9 +50,6 @@ namespace ENTM.TuringMachine
 
             Utility.Debug.DLogHeader("STARTING EVAULATION", true);
 
-            Environment.ResetAll();
-            Environment.Controller = controller;
-
             double totalScore = 0;
 
             double[][] noveltyVectors = null;

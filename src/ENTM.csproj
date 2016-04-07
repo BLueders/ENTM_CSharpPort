@@ -51,10 +51,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseEvaluator.cs" />
+    <Compile Include="DefaultController.cs" />
     <Compile Include="Experiments\ITuringExperiment.cs" />
     <Compile Include="Experiments\SeasonTask\TwoStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\OneStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\ThreeStepSeasonTaskEnviroment.cs" />
+    <Compile Include="Experiments\Xor\XorEnvironment.cs" />
+    <Compile Include="Experiments\Xor\XorEvaluator.cs" />
+    <Compile Include="Experiments\Xor\XorExperiment.cs" />
     <Compile Include="NoveltySearch\INoveltyScorer.cs" />
     <Compile Include="NoveltySearch\Knn.cs" />
     <Compile Include="NoveltySearch\NoveltySearchListEvaluator.cs" />
@@ -125,6 +129,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\xor.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\copytask.config.xml">
       <SubType>Designer</SubType>
     </Content>

@@ -212,6 +212,8 @@ namespace ENTM.NoveltySearch
         /// <param name="genomeList"></param>
         private IDictionary<TGenome, FitnessInfo> EvaluateSerial(IList<TGenome> genomeList) 
         {
+            if (_generation == 1) _logger.Info($"Running serial");
+
             Dictionary<TGenome, FitnessInfo> fitness = new Dictionary<TGenome, FitnessInfo>();
             foreach (TGenome genome in genomeList)
             {

@@ -72,8 +72,8 @@ namespace SharpNeat.Domains
 
             XmlElement xmlComplexity = nodeList[0] as XmlElement;
 
-            string complexityRegulationStr = XmlUtils.TryGetValueAsString(xmlConfig, "ComplexityRegulationStrategy");
-            int? complexityThreshold = XmlUtils.TryGetValueAsInt(xmlConfig, "ComplexityThreshold");
+            string complexityRegulationStr = XmlUtils.TryGetValueAsString(xmlComplexity, "ComplexityRegulationStrategy");
+            int? complexityThreshold = XmlUtils.TryGetValueAsInt(xmlComplexity, "ComplexityThreshold");
 
             ComplexityCeilingType ceilingType;
             if(!Enum.TryParse<ComplexityCeilingType>(complexityRegulationStr, out ceilingType)) {

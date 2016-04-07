@@ -2,15 +2,14 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>CopyTask</Name>
+  <Name>Xor</Name>
   
   <!-- The fully qualified name of the experiment class -->
-  <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
+  <ExperimentClass>ENTM.Experiments.Xor.XorExperiment</ExperimentClass>
 
   <!-- Experiment description -->
   <Description>
-    Copy task experiment with turing controller.
-    The controller must record a bit-vector sequence to memory, and read it back.
+    Xor experiment with default controller.
   </Description>
   
   <!-- How many experiments will be performed (serially) -->
@@ -20,7 +19,7 @@
   <MaxGenerations>1000</MaxGenerations>
 
   <!-- NEAT -->
-  <PopulationSize>300</PopulationSize>
+  <PopulationSize>150</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
   <LogInterval>10</LogInterval>
@@ -31,68 +30,6 @@
   <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
   <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
   
-  
-  <!-- Turing Machine Parameters-->
-  <TuringMachineParams>
-
-    <!-- If set to false, the Turing machine will always return a 0 vector -->
-    <Enabled>true</Enabled>
-
-    <!-- Maximum memory size (-1 for unlimited) -->
-    <N>-1</N>
-
-    <!-- Write vector size -->
-    <M>5</M>
-
-    <!-- Number of Read/Write heads-->
-    <Heads>1</Heads>
-    
-    <!-- Number of shift inputs -->
-    <ShiftLength>3</ShiftLength>
-
-    <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
-    <ShiftMode>Multiple</ShiftMode>
-
-    <!-- "Interpolate" or "Absolute". 
-        Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
-        Absolute: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
-    -->
-    <WriteMode>Interpolate</WriteMode>
-
-  </TuringMachineParams>
-
-  
-  <!-- Copy Task Parameters -->
-  <CopyTaskParams>  
-
-    <!-- Evaluation iterations -->
-    <Iterations>50</Iterations>
-
-    <!-- The seed used for random environment generations -->
-    <RandomSeed>0</RandomSeed>
-
-    <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>2</VectorSize>
-
-    <!-- Maximum length of the sequence of bit vectors. 
-         If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
-         If LengthRule is Fixed, sequence will always be MaxLength. -->
-    <MaxLength>10</MaxLength>
-
-    <!-- "Random" or "Fixed" sequence lengths -->
-    <LengthRule>Random</LengthRule>
-
-    <!-- What fitness function to evalutate with.
-        StrictCloseToTarget
-        PartialScore
-        Emilarity
-        ClosestBinary
-        CompleteBinary
-    -->
-    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
-
-  </CopyTaskParams>
-
 
   <!-- Novelty Search Parameters -->
   <NoveltySearch>
@@ -141,14 +78,7 @@
                             or until the maximum iteration count is reached. -->
     <Scheme>Acyclic</Scheme>
 
-    <!-- CyclicFixedIters only -->
-    <Iters>3</Iters>
-    
-    <!-- CyclicRelax only -->
-    <Threshold>0.1</Threshold>
-    
-    <!-- CyclicRelax only -->
-    <MaxIters>5</MaxIters>
+
   
   </Activation>
 
@@ -161,7 +91,7 @@
     <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
-    <ComplexityThreshold>60</ComplexityThreshold>
+    <ComplexityThreshold>10</ComplexityThreshold>
 
   </ComplexityRegulation>
 
@@ -202,15 +132,15 @@
   <GenomeParams>
     <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
          The weight range is strictly enforced - e.g. when creating new connections and mutating existing ones. Default: 5.0 -->
-    <ConnectionWeightRange>10.0</ConnectionWeightRange>
+    <ConnectionWeightRange>5.0</ConnectionWeightRange>
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>1</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>0.05</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>0.3</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>0.1</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
     <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
@@ -219,13 +149,13 @@
     <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
-    <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
+    <AddConnectionMutationProbability>0.01</AddConnectionMutationProbability>
 
     <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
     <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.2</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.001</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

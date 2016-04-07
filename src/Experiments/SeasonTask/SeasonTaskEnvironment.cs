@@ -57,8 +57,8 @@ namespace ENTM.Experiments.SeasonTask
 
         public override double NormalizedScore => CurrentScore / MaxScore;
 
-        public override bool IsTerminated => _step >= TotalTimeSteps;
-        public override int TotalTimeSteps => Sequence.Length * 3;
+        private int _totalTimeSteps => Sequence.Length * 3;
+        public override bool IsTerminated => _step >= _totalTimeSteps;
         public override int RandomSeed { get; set; }
 
         public override IController Controller { get; set; }

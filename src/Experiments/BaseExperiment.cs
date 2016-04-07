@@ -216,10 +216,18 @@ namespace ENTM.Experiments
 
             FitnessInfo result = _evaluator.TestPhenome(phenome);
 
-            Bitmap bmp = Recorder.ToBitmap();
-
             CreateExperimentDirectoryIfNecessary();
-            bmp.Save(RecordingFile, ImageFormat.Png);
+
+            if (Recorder != null)
+            {
+                Bitmap bmp = Recorder.ToBitmap();
+                bmp.Save(RecordingFile, ImageFormat.Png);
+            }
+            else
+            {
+                _logger.Warn("Recorder was null");
+            }
+
 
             _logger.Info($"Done. Achieved fitness: {result._fitness:F4}");
 
@@ -230,7 +238,30 @@ namespace ENTM.Experiments
         {
             if (_didStart) _abort = true;
         }
- 
+
+        private void PrintEAStats()
+        {
+            uint gensSinceLastLog = _ea.CurrentGeneration - _lastLog;
+            if (gensSinceLastLog < 1) gensSinceLastLog = 1;
+
+            _lastLog = _ea.CurrentGeneration;
+
+            long spent = _timer.ElapsedMilliseconds - _lastLogTime;
+            long timePerGen = spent / gensSinceLastLog;
+            long gensRemaining = _maxGenerations - _ea.CurrentGeneration;
+            long timeRemainingEst = gensRemaining * timePerGen;
+
+            _lastLogTime = _timer.ElapsedMilliseconds;
+            _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
+              $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
+              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
+              $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
+              $"Champ: {_ea.CurrentChampGenome.Complexity} Strategy: {_ea.ComplexityRegulationMode}, " +
+              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
+              $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
+              );
+        }
+
         private void EAUpdateEvent(object sender, EventArgs e)
         {
             if (_ea.Statistics._maxFitness > _currentMaxFitness)
@@ -241,25 +272,7 @@ namespace ENTM.Experiments
 
             if (_lastLog == 0 || _ea.CurrentGeneration - _lastLog >= _logInterval)
             {
-                uint gensSinceLastLog = _ea.CurrentGeneration - _lastLog;
-                if (gensSinceLastLog < 1) gensSinceLastLog = 1;
-
-                _lastLog = _ea.CurrentGeneration;
-
-                long spent = _timer.ElapsedMilliseconds - _lastLogTime;
-                long timePerGen = spent / gensSinceLastLog;
-                long gensRemaining = _maxGenerations - _ea.CurrentGeneration;
-                long timeRemainingEst = gensRemaining * timePerGen;
-
-                _lastLogTime = _timer.ElapsedMilliseconds;
-                _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, "+
-                  $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
-                  $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
-                  $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
-                  $"Champ: {_ea.CurrentChampGenome.Complexity} Strategy: {_ea.ComplexityRegulationMode}, " +
-                  $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
-                  $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
-                  );
+                PrintEAStats();
             }
 
             // Novelty search 
@@ -285,6 +298,7 @@ namespace ENTM.Experiments
             // Check if the experiment has been aborted, the maximum generations count have been reached, or if the maximum fitness has been reached
             if (_abort || (_maxGenerations > 0 && _ea.CurrentGeneration >= _maxGenerations) || _evaluator.StopConditionSatisfied)
             {
+                PrintEAStats();
                 ExperimentCompleted = true;
                 _ea.RequestPause();
             }
@@ -487,34 +501,50 @@ namespace ENTM.Experiments
             _logInterval = XmlUtils.TryGetValueAsInt(xmlConfig, "LogInterval") ?? 10;
 
             // Evolutionary algorithm parameters
-            XmlElement xmlEAParams = xmlConfig.SelectSingleNode("EAParams") as XmlElement;
             _eaParams = new NeatEvolutionAlgorithmParameters();
 
-            _eaParams.SpecieCount = XmlUtils.GetValueAsInt(xmlEAParams, "SpecieCount");
-            _eaParams.ElitismProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "ElitismProportion");
-            _eaParams.SelectionProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "SelectionProportion");
-            _eaParams.OffspringAsexualProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "OffspringAsexualProportion");
-            _eaParams.OffspringSexualProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "OffspringSexualProportion");
-            _eaParams.InterspeciesMatingProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "InterspeciesMatingProportion");
-            _eaParams.BestFitnessMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "BestFitnessMovingAverageHistoryLength");
-            _eaParams.MeanSpecieChampFitnessMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "MeanSpecieChampFitnessMovingAverageHistoryLength");
-            _eaParams.ComplexityMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "ComplexityMovingAverageHistoryLength");
+            XmlElement xmlEAParams = xmlConfig.SelectSingleNode("EAParams") as XmlElement;
+
+            if (xmlEAParams != null)
+            {
+                _eaParams.SpecieCount = XmlUtils.GetValueAsInt(xmlEAParams, "SpecieCount");
+                _eaParams.ElitismProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "ElitismProportion");
+                _eaParams.SelectionProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "SelectionProportion");
+                _eaParams.OffspringAsexualProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "OffspringAsexualProportion");
+                _eaParams.OffspringSexualProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "OffspringSexualProportion");
+                _eaParams.InterspeciesMatingProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "InterspeciesMatingProportion");
+                _eaParams.BestFitnessMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "BestFitnessMovingAverageHistoryLength");
+                _eaParams.MeanSpecieChampFitnessMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "MeanSpecieChampFitnessMovingAverageHistoryLength");
+                _eaParams.ComplexityMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "ComplexityMovingAverageHistoryLength");
+            }
+            else
+            {
+                _logger.Info("EA parameters not found. Using default.");
+            }
 
             // NEAT Genome parameters
-            XmlElement xmlGenomeParams = xmlConfig.SelectSingleNode("GenomeParams") as XmlElement;
             _neatGenomeParams = new NeatGenomeParameters();
-
+            
             // Prevent recurrent connections if the activation scheme is acyclic
             _neatGenomeParams.FeedforwardOnly = _activationScheme.AcyclicNetwork;
-            _neatGenomeParams.ConnectionWeightRange = XmlUtils.GetValueAsDouble(xmlGenomeParams, "ConnectionWeightRange");
-            _neatGenomeParams.InitialInterconnectionsProportion = XmlUtils.GetValueAsDouble(xmlGenomeParams, "InitialInterconnectionsProportion");
-            _neatGenomeParams.DisjointExcessGenesRecombinedProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DisjointExcessGenesRecombinedProbability");
-            _neatGenomeParams.ConnectionWeightMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "ConnectionWeightMutationProbability");
-            _neatGenomeParams.AddNodeMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddNodeMutationProbability");
-            _neatGenomeParams.AddConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddConnectionMutationProbability");
-            _neatGenomeParams.NodeAuxStateMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "NodeAuxStateMutationProbability");
-            _neatGenomeParams.DeleteConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DeleteConnectionMutationProbability");
 
+            XmlElement xmlGenomeParams = xmlConfig.SelectSingleNode("GenomeParams") as XmlElement;
+
+            if (xmlGenomeParams != null)
+            {
+                _neatGenomeParams.ConnectionWeightRange = XmlUtils.GetValueAsDouble(xmlGenomeParams, "ConnectionWeightRange");
+                _neatGenomeParams.InitialInterconnectionsProportion = XmlUtils.GetValueAsDouble(xmlGenomeParams, "InitialInterconnectionsProportion");
+                _neatGenomeParams.DisjointExcessGenesRecombinedProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DisjointExcessGenesRecombinedProbability");
+                _neatGenomeParams.ConnectionWeightMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "ConnectionWeightMutationProbability");
+                _neatGenomeParams.AddNodeMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddNodeMutationProbability");
+                _neatGenomeParams.AddConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddConnectionMutationProbability");
+                _neatGenomeParams.NodeAuxStateMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "NodeAuxStateMutationProbability");
+                _neatGenomeParams.DeleteConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DeleteConnectionMutationProbability");
+            }
+            else
+            {
+                _logger.Info("Genome parameters not found. Using default.");
+            }
 
             XmlElement xmlNoveltySearchParams = xmlConfig.SelectSingleNode("NoveltySearch") as XmlElement;
 
