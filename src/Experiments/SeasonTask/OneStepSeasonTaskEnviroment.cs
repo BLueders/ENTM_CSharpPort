@@ -17,7 +17,7 @@ namespace ENTM.Experiments.SeasonTask
 
         }
 
-        public override int TotalTimeSteps => Sequence.Length;
+        private int _totalTimeSteps => Sequence.Length;
 
         public override double[] PerformAction(double[] action)
         {

@@ -111,6 +111,12 @@ namespace ENTM
         /// <returns>a new instance of TEnvironment</returns>
         protected abstract TController NewController();
 
+
+        /// <summary>
+        /// Main evaluation loop. Called from EA. Runs on separate / multiple threads.
+        /// </summary>
+        /// <param name="phenome"></param>
+        /// <returns></returns>
         public FitnessInfo Evaluate(IBlackBox phenome)
         {
 
@@ -121,6 +127,9 @@ namespace ENTM
             Controller.NoveltyVectorLength = NoveltyVectorLength;
 
             OnEvaluationStart();
+
+            Environment.ResetAll();
+            Environment.Controller = Controller;
 
             // Evaluate the controller / phenome
             FitnessInfo score = Evaluate(Controller, Iterations, false);
@@ -139,7 +148,7 @@ namespace ENTM
         }
 
         /// <summary>
-        /// Evaluate a single phenome only once. Use this to test a champion.
+        /// Evaluate a single phenome only once. Use this to test a champion. Runs on the main thread.
         /// </summary>
         /// <param name="phenome">The phenome to be tested</param>
         /// <param name="iterations">Number of evaluations</param>
