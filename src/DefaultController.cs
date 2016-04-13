@@ -21,6 +21,12 @@ namespace ENTM
             Phenome.InputSignalArray.CopyFrom(environmentOutput, 0);
             Phenome.Activate();
 
+            if (!Phenome.IsStateValid)
+            {
+                Console.WriteLine("Invalid state");
+            }
+
+
             double[] nnOutput = new double[Phenome.OutputSignalArray.Length];
             Phenome.OutputSignalArray.CopyTo(nnOutput, 0);
 

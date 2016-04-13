@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
@@ -64,6 +65,7 @@ namespace ENTM.Experiments
 
         const string CHAMPION_FILE = "champion{0:D4}.xml";
         const string RECORDING_FILE = "recording{0:D4}.png";
+        const string DATA_FILE = "data{0:D4}.csv";
 
         private NeatEvolutionAlgorithmParameters _eaParams;
         private NeatGenomeParameters _neatGenomeParams;
@@ -92,6 +94,7 @@ namespace ENTM.Experiments
 
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string RecordingFile => $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number)}";
+        private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
 
         public bool ExperimentCompleted { get; private set; } = false;
 
@@ -251,15 +254,52 @@ namespace ENTM.Experiments
             long gensRemaining = _maxGenerations - _ea.CurrentGeneration;
             long timeRemainingEst = gensRemaining * timePerGen;
 
+            uint gen = _ea.CurrentGeneration;
+            double fitMax = _ea.Statistics._maxFitness;
+            double fitMean = _ea.Statistics._meanFitness;
+            double cmpMax = _ea.Statistics._maxComplexity;
+            double cmpMean = _ea.Statistics._meanComplexity;
+            double cmpChamp = _ea.CurrentChampGenome.Complexity;
+            int spcMax = _ea.Statistics._maxSpecieSize;
+            int spcMin = _ea.Statistics._minSpecieSize;
+
             _lastLogTime = _timer.ElapsedMilliseconds;
-            _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
+            _logger.Info($"Generation: {gen}/{_maxGenerations}, " +
               $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
-              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
-              $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
-              $"Champ: {_ea.CurrentChampGenome.Complexity} Strategy: {_ea.ComplexityRegulationMode}, " +
-              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
+              $"Fitness - Max: {fitMax:F4} Mean: {fitMean:F4}, " +
+              $"Complexity - Max: {cmpMax:F0} Mean: {cmpMean:F2} " +
+              $"Champ: {cmpChamp:F0} Strategy: {_ea.ComplexityRegulationMode}, " +
+              $"Specie size - Max: {spcMax:D} Min: {spcMin:D}, " +
               $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
               );
+        }
+
+        private void WriteData()
+        {
+            uint gen = _ea.CurrentGeneration;
+            double fitMax = _ea.Statistics._maxFitness;
+            double fitMean = _ea.Statistics._meanFitness;
+            double cmpMax = _ea.Statistics._maxComplexity;
+            double cmpMean = _ea.Statistics._meanComplexity;
+            double cmpChamp = _ea.CurrentChampGenome.Complexity;
+            int spcMax = _ea.Statistics._maxSpecieSize;
+            int spcMin = _ea.Statistics._minSpecieSize;
+
+            if (!File.Exists(DataFile))
+            {
+                CreateExperimentDirectoryIfNecessary();
+                using (StreamWriter sw = File.AppendText(DataFile))
+                {
+                    sw.WriteLine($"Generation,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Max Specie Size,Min Specie Size");
+                }
+            }
+
+            using (StreamWriter sw = File.AppendText(DataFile))
+            {
+                sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                    "{0},{1:F4},{2:F4},{3:F0},{4:F4},{5:F0},{6},{7}",
+                    gen, fitMax, fitMean, cmpMax, cmpMean, cmpChamp, spcMax, spcMin));
+            }
         }
 
         private void EAUpdateEvent(object sender, EventArgs e)
@@ -274,6 +314,8 @@ namespace ENTM.Experiments
             {
                 PrintEAStats();
             }
+
+            if (_ea.CurrentGeneration > 0) WriteData();
 
             // Novelty search 
             if (_noveltySearchParams.Enabled)

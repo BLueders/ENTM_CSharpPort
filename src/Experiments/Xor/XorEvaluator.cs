@@ -16,7 +16,7 @@ namespace ENTM.Experiments.Xor
             
         }
 
-        public override int Iterations => 5;
+        public override int Iterations => 1;
         public override int MaxScore => 1;
         public override int EnvironmentInputCount => 1;
         public override int EnvironmentOutputCount => 2;
