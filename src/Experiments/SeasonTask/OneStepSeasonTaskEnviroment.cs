@@ -17,7 +17,7 @@ namespace ENTM.Experiments.SeasonTask
 
         }
 
-        private int _totalTimeSteps => Sequence.Length;
+        protected override int TotalTimeSteps => Sequence.Length + 1;
 
         public override double[] PerformAction(double[] action)
         {
@@ -61,14 +61,20 @@ namespace ENTM.Experiments.SeasonTask
         {
             double[] observation = new double[OutputCount];
 
-            Food currentFood = Sequence[step];
-            observation[currentFood.Type] = 1; // return the current food
+            if (step < Sequence.Length) // the last step is scoring for the previous food only, so only set the food before that
+            {
+                Food currentFood = Sequence[step];
+                observation[currentFood.Type] = 1; // return the current food
+            }
 
-            if (evaluation == 0) // return evaluation from last food
-                observation[observation.Length - 1] = 1;
-            else
-                observation[observation.Length - 2] = 1;
-
+            if (step != 0) // the first step has no feedback
+            {
+                //return punishment or reward for last food
+                if (Math.Abs(evaluation) < 0.001) // (evaluation == 0)
+                    observation[observation.Length - 1] = 1;
+                else
+                    observation[observation.Length - 2] = 1;
+            }
             return observation;
         }
     }

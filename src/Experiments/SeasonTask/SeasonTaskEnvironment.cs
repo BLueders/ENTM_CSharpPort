@@ -43,22 +43,33 @@ namespace ENTM.Experiments.SeasonTask
 
         protected readonly double _fitnessFactor;
 
-        public override double CurrentScore => _score * _fitnessFactor; // * ((double)_foodTypes * _seasons * _years / (double)_sequence.Length);
+        public override double CurrentScore => _score * _fitnessFactor; 
 
-        // do not score first day of each season of the first year, this is where the food is encountered the first time and for learning
-        public override double MaxScore => _fitnessFactor * _foodTypes * _days * _seasons * _years - (_fitnessFactor * _seasons * _foodTypes);
+        public override double MaxScore {
+            get
+            {
+                if (_ignoreFirstDayOfSeasonInFirstYear)
+                {
+                    // do not score first day of each season of the first year, this is where the food is encountered the first time and for learning
+                    return _fitnessFactor * _foodTypes * _days * _seasons * _years - (_fitnessFactor * _seasons * _foodTypes);
+                }
+                return _fitnessFactor*_foodTypes*_days*_seasons*_years;
+            }
+        } 
 
         // jk. do not score first day of each season of the first year. There we encounter each food the first time and cant know if its poisonous.
         protected bool ScoreThisStep(int step)
         {
             bool isFirstDay = step < _foodTypes * _days * _seasons && step % (_foodTypes * _days) < _foodTypes;
-            return !_ignoreFirstDayOfSeasonInFirstYear && !isFirstDay;
+            return !(!_ignoreFirstDayOfSeasonInFirstYear && isFirstDay);
         }
 
         public override double NormalizedScore => CurrentScore / MaxScore;
 
-        private int _totalTimeSteps => Sequence.Length * 3;
-        public override bool IsTerminated => _step >= _totalTimeSteps;
+        protected abstract int TotalTimeSteps { get; }
+
+        public override bool IsTerminated => _step >= TotalTimeSteps;
+
         public override int RandomSeed { get; set; }
 
         public override IController Controller { get; set; }

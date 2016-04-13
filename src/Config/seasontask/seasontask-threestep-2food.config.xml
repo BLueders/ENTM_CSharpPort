@@ -139,7 +139,7 @@
     <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
 
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
-    <ComplexityThreshold>15 0</ComplexityThreshold>
+    <ComplexityThreshold>150</ComplexityThreshold>
 
   </ComplexityRegulation>
 

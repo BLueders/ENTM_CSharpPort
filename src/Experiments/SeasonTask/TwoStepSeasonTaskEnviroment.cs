@@ -17,7 +17,8 @@ namespace ENTM.Experiments.SeasonTask
 
         }
 
-        private int _totalTimeSteps => Sequence.Length * 2 + 1; // we have one extra scoring step at the end for the last food eaten
+
+        protected override int TotalTimeSteps => Sequence.Length * 2 + 1; // we have one extra scoring step at the end for the last food eaten
 
         public override double[] PerformAction(double[] action)
         {
