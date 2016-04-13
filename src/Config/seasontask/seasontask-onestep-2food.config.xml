@@ -66,7 +66,7 @@
     <Seasons>1</Seasons>
     <Days>15</Days>
     <FoodTypes>2</FoodTypes>
-    <PoisonFoods>1</PoisonFoods>
+    <PoisonFoods>0</PoisonFoods>
     <PoisonousTypeChanges>0</PoisonousTypeChanges>
     <IgnoreFirstDayOfSeasonInFirstYear>false</IgnoreFirstDayOfSeasonInFirstYear>
     <StepsPerFood>One</StepsPerFood>

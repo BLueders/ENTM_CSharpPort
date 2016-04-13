@@ -61,7 +61,7 @@ namespace ENTM.Experiments.SeasonTask
         protected bool ScoreThisStep(int step)
         {
             bool isFirstDay = step < _foodTypes * _days * _seasons && step % (_foodTypes * _days) < _foodTypes;
-            return !(!_ignoreFirstDayOfSeasonInFirstYear && isFirstDay);
+            return !(_ignoreFirstDayOfSeasonInFirstYear && isFirstDay);
         }
 
         public override double NormalizedScore => CurrentScore / MaxScore;

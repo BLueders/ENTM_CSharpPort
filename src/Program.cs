@@ -34,6 +34,7 @@ namespace ENTM
         private static ITuringExperiment _experiment;
         private static readonly string _identifier = String.Format($"{DateTime.Now.ToString("MMddyyyy-HHmmss")}_{Guid.NewGuid().ToString().Substring(0, 8)}");
 
+        private static bool _didStartExperiment = false;
         private static bool _inputEnabled;
         private static int _currentConfig = -1;
         private static int _currentExperiment;
@@ -221,10 +222,12 @@ namespace ENTM
             _experiment.ExperimentResumedEvent += ExperimentResumedEvent;
             _experiment.ExperimentCompleteEvent += ExperimentCompleteEvent;
 
+ 
             _experiment.Initialize(name, config, _identifier, _currentConfig, _currentExperiment);
-
+            
             return true;
         }
+        
 
         private static void ExperimentStartedEvent(object sender, EventArgs e)
         {
@@ -270,7 +273,14 @@ namespace ENTM
                 if (InitializeExperiment(_configs[_currentConfig]))
                 {
                     ConfigPrinter.Print(_configs[_currentConfig]);
-                    _experiment.StartStopEA();
+                    if (!_inputEnabled || _didStartExperiment)
+                    {
+                        _experiment.StartStopEA();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Press [Spacebar] to start the experiment...");
+                    }
                 }
                 else
                 {
@@ -305,6 +315,10 @@ namespace ENTM
 
         private static void StartStop()
         {
+            if (!_didStartExperiment)
+            {
+                _didStartExperiment = true;
+            }
             _experiment.StartStopEA();
         }
 
