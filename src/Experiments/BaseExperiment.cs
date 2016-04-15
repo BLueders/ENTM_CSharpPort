@@ -245,7 +245,10 @@ namespace ENTM.Experiments
         private void PrintEAStats()
         {
             uint gensSinceLastLog = _ea.CurrentGeneration - _lastLog;
+
             if (gensSinceLastLog < 1) gensSinceLastLog = 1;
+
+            float[] assd = new float[] {2f, 4f};
 
             _lastLog = _ea.CurrentGeneration;
 
@@ -320,20 +323,21 @@ namespace ENTM.Experiments
             // Novelty search 
             if (_noveltySearchParams.Enabled)
             {
-                /*if (NoveltySearchEnabled)
+                if (NoveltySearchEnabled)
                 {
-                    if (_ea.CurrentGeneration - _noveltySearchActivatedGen > 100)
+                    if (_ea.CurrentGeneration - _noveltySearchActivatedGen > 300)
                     {
-                        NoveltySearchEnabled = false;
+                        CreateEAFromNoveltyArchive();
                     }
                 }
                 else
                 {
                     if (_ea.CurrentGeneration - _lastMaxFitnessImprovementGen > 1000)
                     {
+                        _logger.Info("1000 gens passed since last improvement " + _ea.CurrentGeneration + " " + _lastMaxFitnessImprovementGen);
                         NoveltySearchEnabled = true;
                     }
-                }*/
+                }
             }
 
 
@@ -458,8 +462,12 @@ namespace ENTM.Experiments
             _timer.Start();
 
             _logger.Info("\nCreating EA...");
+
             // Create evolution algorithm and attach events.
             _ea = CreateEvolutionAlgorithm();
+
+            NoveltySearchEnabled = _noveltySearchParams.Enabled;
+
             _ea.UpdateEvent += EAUpdateEvent;
             _ea.PausedEvent += EAPauseEvent;
 
@@ -475,6 +483,24 @@ namespace ENTM.Experiments
                     _logger.Info("ExperimentStartedEvent listener threw exception: " + ex.Message);
                 }
             }
+        }
+
+        private void CreateEAFromNoveltyArchive()
+        {
+            _ea.Stop();
+
+            List<NeatGenome> seedList = _listEvaluator.Archive;
+            _logger.Info($"Creating seeded EA from novelty archive (size {seedList.Count})...");
+
+            _ea = CreateEvolutionAlgorithm(_populationSize, _ea.CurrentGeneration, seedList);
+
+            _ea.UpdateEvent += EAUpdateEvent;
+            _ea.PausedEvent += EAPauseEvent;
+
+            NoveltySearchEnabled = false;
+            _lastMaxFitnessImprovementGen = 0;
+
+            _ea.StartContinue();
         }
 
         private void CreateExperimentDirectoryIfNecessary()
@@ -670,6 +696,21 @@ namespace ENTM.Experiments
 
 
         /// <summary>
+        /// Create and return a NeatEvolutionAlgorithm with a seeded population.
+        /// </summary>
+        public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(int populationSize, uint birthGeneration, List<NeatGenome> seedList)
+        {
+            // Create a genome factory with our neat genome parameters object and the appropriate number of input and output neuron genes.
+            IGenomeFactory<NeatGenome> genomeFactory = CreateGenomeFactory();
+
+            // Create an initial population of randomly generated genomes.
+            List<NeatGenome> genomeList = genomeFactory.CreateGenomeList(populationSize, birthGeneration, seedList);
+
+            // Create evolution algorithm.
+            return CreateEvolutionAlgorithm(genomeFactory, genomeList);
+        }
+
+        /// <summary>
         /// Create and return a NeatEvolutionAlgorithm object ready for running the NEAT algorithm/search. Various sub-parts
         /// of the algorithm are also constructed and connected up.
         /// This overload accepts a pre-built genome population and their associated/parent genome factory.
@@ -689,8 +730,6 @@ namespace ENTM.Experiments
             INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
             
             _listEvaluator = new NoveltySearchListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, noveltyScorer, _multiThreading, _parallelOptions);
-
-            NoveltySearchEnabled = _noveltySearchParams.Enabled;
 
             // Initialize the evolution algorithm.
             ea.Initialize(_listEvaluator, genomeFactory, genomeList);

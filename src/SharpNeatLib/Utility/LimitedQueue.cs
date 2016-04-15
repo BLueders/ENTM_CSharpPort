@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ namespace SharpNeat.Utility
     /// A queue limited to a given size. If the limit is exceeded, the oldest item in queueue is automatically dequeueueued
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class LimitedQueue<T>
+    public class LimitedQueue<T> : IEnumerable<T>
     {
         private readonly Queue<T> _queue = new Queue<T>();
         
@@ -41,6 +42,16 @@ namespace SharpNeat.Utility
         public List<T> ToList()
         {
             return _queue.ToList();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return _queue.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

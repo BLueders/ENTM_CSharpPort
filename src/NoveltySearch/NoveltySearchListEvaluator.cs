@@ -9,6 +9,17 @@ using SharpNeat.Core;
 
 namespace ENTM.NoveltySearch
 {
+    public struct Behaviour<TGenome> where TGenome : class, IGenome<TGenome>
+    {
+        internal TGenome Genome { get; }
+        internal FitnessInfo Score { get; }
+
+        internal Behaviour(TGenome genome, FitnessInfo score)
+        {
+            Genome = genome;
+            Score = score;
+        }
+    }
     /// <summary>
     /// Implementation of IGenomeListEvaluator.
     /// Provides a novelty search evaluation dependant on the entire generation under evaluation
@@ -23,13 +34,15 @@ namespace ENTM.NoveltySearch
     {
         private static readonly ILog _logger = LogManager.GetLogger("List Evaluator");
 
+
+
         readonly IGenomeDecoder<TGenome, TPhenome> _genomeDecoder;
         readonly IPhenomeEvaluator<TPhenome> _phenomeEvaluator;
         readonly INoveltyScorer<TGenome> _noveltyScorer; 
         readonly ParallelOptions _parallelOptions;
         readonly EvaluationMethod _evalMethod;
         
-        delegate IDictionary<TGenome, FitnessInfo> EvaluationMethod(IList<TGenome> genomeList);
+        delegate IList<Behaviour<TGenome>> EvaluationMethod(IList<TGenome> genomeList);
 
         private bool _noveltySearchEnabled;
         private bool _reevaluateOnce;
@@ -51,11 +64,7 @@ namespace ENTM.NoveltySearch
             }
         }
 
-        /// <summary>
-        /// The fraction of the final score that will be from novelty score.
-        /// If set to 1, only novelty score will be used, if set to 0, only environmental fitness will be used.
-        /// </summary>
-        public double NoveltyScoreFraction { get; set; }
+        public List<TGenome> Archive => new List<TGenome>(_noveltyScorer.Archive);
 
         #region Constructors
         /// <summary>
@@ -137,7 +146,7 @@ namespace ENTM.NoveltySearch
           
             // We save the fitness info in a dictionary, since we can't apply the scores directly, because the entire generation
             // must be evaluated to calculate novelty score
-            IDictionary<TGenome, FitnessInfo> fitness = _evalMethod(filteredList);
+            IList<Behaviour<TGenome>> fitness = _evalMethod(filteredList);
 
             if (NoveltySearchEnabled)
             {
@@ -156,11 +165,11 @@ namespace ENTM.NoveltySearch
         /// Apply the environment objective scores to the genomes, ignoring novelty search.
         /// </summary>
         /// <param name="fitness"></param>
-        private void ApplyEnvironmentScoresOnly(IDictionary<TGenome, FitnessInfo> fitness)
+        private void ApplyEnvironmentScoresOnly(IList<Behaviour<TGenome>> fitness)
         {
-            foreach (TGenome genome in fitness.Keys)
+            foreach (Behaviour<TGenome> b in fitness)
             {
-                genome.EvaluationInfo.SetFitness(fitness[genome]._fitness);
+                b.Genome.EvaluationInfo.SetFitness(b.Score._fitness);
             }
         }
 
@@ -189,7 +198,7 @@ namespace ENTM.NoveltySearch
         /// Evaluate on multiple threads, according to the parallel options
         /// </summary>
         /// <param name="genomeList"></param>
-        private IDictionary<TGenome, FitnessInfo> EvaluateParallel(IList<TGenome> genomeList)
+        private IList<Behaviour<TGenome>> EvaluateParallel(IList<TGenome> genomeList)
         {
             int concurrencyLevel = _parallelOptions.MaxDegreeOfParallelism == -1
                 ? Environment.ProcessorCount
@@ -197,29 +206,32 @@ namespace ENTM.NoveltySearch
 
             if (_generation == 1) _logger.Info($"Running parallel, number of threads: {concurrencyLevel}");
 
-            ConcurrentDictionary<TGenome, FitnessInfo> fitness = new ConcurrentDictionary<TGenome, FitnessInfo>(concurrencyLevel, genomeList.Count);
+            ConcurrentAddList<Behaviour<TGenome>> behaviours = new ConcurrentAddList<Behaviour<TGenome>>();
+
             Parallel.ForEach(genomeList, _parallelOptions, genome =>
             {
-                FitnessInfo scores = EvaluateGenome(genome);
-                fitness.TryAdd(genome, scores);
+                FitnessInfo score = EvaluateGenome(genome);
+                behaviours.Add(new Behaviour<TGenome>(genome, score));
             });
-            return fitness;
+
+            return behaviours.List;
         }
 
         /// <summary>
         /// Evaluate on a single thread
         /// </summary>
         /// <param name="genomeList"></param>
-        private IDictionary<TGenome, FitnessInfo> EvaluateSerial(IList<TGenome> genomeList) 
+        private IList<Behaviour<TGenome>> EvaluateSerial(IList<TGenome> genomeList) 
         {
             if (_generation == 1) _logger.Info($"Running serial");
 
-            Dictionary<TGenome, FitnessInfo> fitness = new Dictionary<TGenome, FitnessInfo>();
+            IList<Behaviour<TGenome>> fitness = new List<Behaviour<TGenome>>();
             foreach (TGenome genome in genomeList)
             {
-                FitnessInfo scores = EvaluateGenome(genome);
-                fitness.Add(genome, scores);
+                FitnessInfo score = EvaluateGenome(genome);
+                fitness.Add(new Behaviour<TGenome>(genome, score));
             }
+
             return fitness;
         }
 

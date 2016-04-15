@@ -7,8 +7,10 @@ using SharpNeat.Core;
 
 namespace ENTM.NoveltySearch
 {
-    public interface INoveltyScorer<TGenome> where TGenome : IGenome<TGenome>
+    public interface INoveltyScorer<TGenome> where TGenome : class, IGenome<TGenome>
     {
-        void Score(IDictionary<TGenome, FitnessInfo> behaviours);
+        IList<TGenome> Archive { get; }
+
+        void Score(IList<Behaviour<TGenome>> behaviours);
     }
 }
