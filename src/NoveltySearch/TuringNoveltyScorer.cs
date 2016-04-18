@@ -13,13 +13,27 @@ using Utilities = ENTM.Utility.Utilities;
 
 namespace ENTM.NoveltySearch
 {
-    class TuringNoveltyScorer<TGenome> : INoveltyScorer<TGenome> where TGenome : IGenome<TGenome>
+    class TuringNoveltyScorer<TGenome> : INoveltyScorer<TGenome> where TGenome : class, IGenome<TGenome>
     {
         private static readonly ILog _logger = LogManager.GetLogger("Novelty Search");
 
-        private readonly LimitedQueue<FitnessInfo> _archive;
-
         private readonly NoveltySearchParameters _params;
+        private readonly LimitedQueue<Behaviour<TGenome>> _archive;
+
+        public IList<TGenome> Archive
+        {
+            get
+            {
+                IList<TGenome> genomes = new List<TGenome>();
+                foreach (Behaviour<TGenome> b in _archive)
+                {
+                    genomes.Add(b.Genome);
+                }
+
+                return genomes;
+            }
+        }
+
 
         private double _pMin;
         private int _generationsSinceArchiveAddition = -1;
@@ -32,7 +46,7 @@ namespace ENTM.NoveltySearch
         public TuringNoveltyScorer(NoveltySearchParameters parameters)
         {
             _params = parameters;
-            _archive = new LimitedQueue<FitnessInfo>(_params.ArchiveLimit);
+            _archive = new LimitedQueue<Behaviour<TGenome>>(_params.ArchiveLimit);
 
             _pMin = _params.PMin;
             _generation = 0;
@@ -40,23 +54,24 @@ namespace ENTM.NoveltySearch
             _knnTotalTimeSpent = 0;
         }
 
-        public void Score(IDictionary<TGenome, FitnessInfo> behaviours)
+        public void Score(IList<Behaviour<TGenome>> behaviours)
         {
             _generation++;
-            List<FitnessInfo> combinedBehaviours = new List<FitnessInfo>(behaviours.Values);
-            combinedBehaviours.AddRange(_archive.ToList());
+            List<Behaviour<TGenome>> combinedBehaviours = new List<Behaviour<TGenome>>(_archive);
+            combinedBehaviours.AddRange(behaviours);
 
-            Knn knn = new Knn(_params.K);
+            Knn<TGenome> knn = new Knn<TGenome>(_params.K);
 
-            knn.Initialize(combinedBehaviours);
+            // Start index 1, since we use the 1 position in the array to store the minimum criteria.
+            knn.Initialize(combinedBehaviours, 1);
 
             _knnTotalTimeSpent += knn.TimeSpent;
 
             int added = 0;
 
-            foreach (TGenome genome in behaviours.Keys)
+            foreach (Behaviour<TGenome> b in behaviours)
             {
-                FitnessInfo behaviour = behaviours[genome];
+                FitnessInfo behaviour = b.Score;
 
                 double score;
 
@@ -65,7 +80,7 @@ namespace ENTM.NoveltySearch
                 // Check if behaviour meets minimum criteria
                 if (redundantTimeSteps / (behaviour._auxFitnessArr.Length - 1) >= _params.MinimumCriteriaReadWriteLowerThreshold)
                 {
-                    score = knn.AverageDistToKnn(behaviour);
+                    score = knn.AverageDistToKnn(b) * b.Score._fitness;
                 }
                 else
                 {
@@ -74,11 +89,11 @@ namespace ENTM.NoveltySearch
                     _belowMinimumCriteria++;
                 }
 
-                genome.EvaluationInfo.SetFitness(score);
-
+                b.Genome.EvaluationInfo.SetFitness(score);
+                
                 if (score > _pMin)
                 {
-                    _archive.Enqueue(behaviour);
+                    _archive.Enqueue(b);
                     added++;
                 }
             }
@@ -114,5 +129,6 @@ namespace ENTM.NoveltySearch
                 _belowMinimumCriteria = 0;
             }
         }
+
     }
 }

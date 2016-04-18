@@ -8,7 +8,7 @@ using SharpNeat.Core;
 
 namespace ENTM.NoveltySearch
 {
-    public class Knn
+    public class Knn<TGenome> where TGenome : class, IGenome<TGenome>
     {
         public int K { get; }
 
@@ -22,35 +22,38 @@ namespace ENTM.NoveltySearch
             _timer = new Stopwatch();
         }
 
-        private Dictionary<FitnessInfo, double[]> neighbourhoods;
+        private Dictionary<Behaviour<TGenome>, double[]> neighbourhoods;
 
-        public void Initialize(List<FitnessInfo> behaviourList)
+        /// <summary>
+        /// Initialize KNN with a list of fitness info structs. The supplied start index determines where the algorithm will start comparing values in
+        /// the auxFitnessArr array. Use this if not all values of the vector should be considered.
+        /// </summary>
+        public void Initialize(List<Behaviour<TGenome>> behaviourList, int startIndex)
         {
             _timer.Start();
-            FitnessInfo[] behaviours = behaviourList.ToArray();
+            Behaviour<TGenome>[] behaviours = behaviourList.ToArray();
 
 
             int count = behaviours.Length;
-            int vectorLength = behaviours[0]._auxFitnessArr.Length;
-            neighbourhoods = new Dictionary<FitnessInfo, double[]>(count);
+            int vectorLength = behaviours[0].Score._auxFitnessArr.Length;
+            neighbourhoods = new Dictionary<Behaviour<TGenome>, double[]>(count);
 
             for (int i = 0; i < count; i++)
             {
-                FitnessInfo neighbour1 = behaviours[i];
+                Behaviour<TGenome> neighbour1 = behaviours[i];
                 double[] neighbourhood1 = GetNeighbourhood(neighbour1, count);
 
                 for (int j = i + 1; j < count; j++)
                 {
-                    FitnessInfo neighbour2 = behaviours[j];
+                    Behaviour<TGenome> neighbour2 = behaviours[j];
                     double[] neighbourhood2 = GetNeighbourhood(neighbour2, count);
 
                     // Euclidian distance squared
                     double total = 0;
-                    for (int k = 1; k < vectorLength; k++)
+                    for (int k = startIndex; k < vectorLength; k++)
                     {
-                        double d = neighbour1._auxFitnessArr[k]._value - neighbour2._auxFitnessArr[k]._value;
+                        double d = neighbour1.Score._auxFitnessArr[k]._value - neighbour2.Score._auxFitnessArr[k]._value;
                         total += d * d;
-                        //total += Math.Abs(neighbour1._auxFitnessArr[k]._value - neighbour2._auxFitnessArr[k]._value);
                     }
 
                     neighbourhood1[j - 1] = total;
@@ -63,7 +66,7 @@ namespace ENTM.NoveltySearch
             _timer.Stop();
         }
 
-        public double AverageDistToKnn(FitnessInfo behaviour)
+        public double AverageDistToKnn(Behaviour<TGenome> behaviour)
         {
             double[] neighbourhood = neighbourhoods[behaviour];
             double total = 0;
@@ -75,7 +78,7 @@ namespace ENTM.NoveltySearch
             return total / K;
         }
 
-        private double[] GetNeighbourhood(FitnessInfo behaviour, int count)
+        private double[] GetNeighbourhood(Behaviour<TGenome> behaviour, int count)
         {
             double[] neighbourhood;
             if (!neighbourhoods.TryGetValue(behaviour, out neighbourhood))
