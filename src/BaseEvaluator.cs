@@ -143,11 +143,11 @@ namespace ENTM
         /// <param name="iterations">Number of evaluations</param>
         /// <param name="record">Determines if the evaluation should be recorded</param>
         /// <returns></returns>
-        public FitnessInfo TestPhenome(IBlackBox phenome)
+        public FitnessInfo TestPhenome(IBlackBox phenome, int iterations)
         {
             SetupTest();
 
-            FitnessInfo score = Evaluate(phenome, 1, true);
+            FitnessInfo score = Evaluate(phenome, iterations, true);
 
             TearDownTest();
 

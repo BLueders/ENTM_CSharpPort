@@ -64,9 +64,9 @@
     <FitnessFactor>1</FitnessFactor>
     <Years>1</Years>
     <Seasons>1</Seasons>
-    <Days>15</Days>
+    <Days>8</Days>
     <FoodTypes>2</FoodTypes>
-    <PoisonFoods>0</PoisonFoods>
+    <PoisonFoods>1</PoisonFoods>
     <PoisonousTypeChanges>0</PoisonousTypeChanges>
     <IgnoreFirstDayOfSeasonInFirstYear>false</IgnoreFirstDayOfSeasonInFirstYear>
     <StepsPerFood>One</StepsPerFood>

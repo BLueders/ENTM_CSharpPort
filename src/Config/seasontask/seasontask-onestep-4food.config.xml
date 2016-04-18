@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-3Step-2Food</Name>
+  <Name>SeasonTask-1Step-4Food</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
@@ -65,11 +65,11 @@
     <Years>1</Years>
     <Seasons>1</Seasons>
     <Days>8</Days>
-    <FoodTypes>2</FoodTypes>
-    <PoisonFoods>1</PoisonFoods>
+    <FoodTypes>4</FoodTypes>
+    <PoisonFoods>2</PoisonFoods>
     <PoisonousTypeChanges>0</PoisonousTypeChanges>
     <IgnoreFirstDayOfSeasonInFirstYear>false</IgnoreFirstDayOfSeasonInFirstYear>
-    <StepsPerFood>Three</StepsPerFood>
+    <StepsPerFood>One</StepsPerFood>
 
   </SeasonTaskParams>
 
