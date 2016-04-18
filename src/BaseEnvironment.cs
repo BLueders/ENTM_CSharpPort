@@ -42,7 +42,7 @@ namespace ENTM
             get
             {
                 if (_sealedRandom == null)
-                    throw new ArgumentNullException("Random object was null, ResetRandom() was not called on this Thread");
+                    ResetRandom();
 
                 return _sealedRandom;
             }

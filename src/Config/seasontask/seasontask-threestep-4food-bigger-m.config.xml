@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-3Step-2Food</Name>
+  <Name>SeasonTask-3Step-4Food</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
@@ -18,7 +18,7 @@
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>2500</MaxGenerations>
+  <MaxGenerations>5000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -39,7 +39,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>5</M>
+    <M>10</M>
 
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
@@ -65,8 +65,8 @@
     <Years>1</Years>
     <Seasons>1</Seasons>
     <Days>8</Days>
-    <FoodTypes>2</FoodTypes>
-    <PoisonFoods>1</PoisonFoods>
+    <FoodTypes>4</FoodTypes>
+    <PoisonFoods>2</PoisonFoods>
     <PoisonousTypeChanges>0</PoisonousTypeChanges>
     <IgnoreFirstDayOfSeasonInFirstYear>false</IgnoreFirstDayOfSeasonInFirstYear>
     <StepsPerFood>Three</StepsPerFood>

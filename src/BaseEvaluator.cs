@@ -163,6 +163,9 @@ namespace ENTM
             Controller.ScoreNovelty = NoveltySearchEnabled;
             Controller.NoveltyVectorLength = NoveltyVectorLength;
 
+            Environment.ResetAll();
+            Environment.Controller = Controller;
+
             FitnessInfo score = Evaluate(Controller, 1, true);
 
             Controller.Phenome = null;
