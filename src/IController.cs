@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ENTM.NoveltySearch;
 using SharpNeat.Phenomes;
 
 namespace ENTM
@@ -31,6 +32,11 @@ namespace ENTM
         /// Length of the novelty vector
         /// </summary>
         int NoveltyVectorLength { get; set; }
+
+        /// <summary>
+        /// Novely vector mode - what type of data to use as novelty vector
+        /// </summary>
+        NoveltyVector NoveltyVectorMode { get; set; }
 
         /// <summary>
         /// Return the novelty score vector for a given evaluation

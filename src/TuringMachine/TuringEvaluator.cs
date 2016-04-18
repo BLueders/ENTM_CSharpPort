@@ -9,7 +9,7 @@ namespace ENTM.TuringMachine
 {
     public abstract class TuringEvaluator<TEnvironment> : BaseEvaluator<TEnvironment, TuringController> where TEnvironment : IEnvironment
     {
-        private TuringMachineProperties _turingMachineProps;
+        protected TuringMachineProperties _turingMachineProps;
 
         public override void Initialize(XmlElement xmlConfig)
         {

@@ -3,6 +3,7 @@ using System.Xml;
 using SharpNeat.Core;
 using SharpNeat.Phenomes;
 using System.Threading;
+using ENTM.NoveltySearch;
 using ENTM.Replay;
 
 namespace ENTM
@@ -18,6 +19,8 @@ namespace ENTM
         public bool StopConditionSatisfied => _stopConditionSatisfied;
 
         public bool NoveltySearchEnabled { get; set; }
+
+        public NoveltySearchParameters NoveltySearchParameters { get; set; }
 
         public Recorder Recorder;
 
@@ -119,23 +122,9 @@ namespace ENTM
         /// <returns></returns>
         public FitnessInfo Evaluate(IBlackBox phenome)
         {
-
-            // Register the phenome
-            Controller.Phenome = phenome;
-
-            Controller.ScoreNovelty = NoveltySearchEnabled;
-            Controller.NoveltyVectorLength = NoveltyVectorLength;
-
             OnEvaluationStart();
 
-            Environment.ResetAll();
-            Environment.Controller = Controller;
-
-            // Evaluate the controller / phenome
-            FitnessInfo score = Evaluate(Controller, Iterations, false);
-
-            // Unregister the phenome
-            Controller.Phenome = null;
+            FitnessInfo score = Evaluate(phenome, Iterations, false);
 
             _evaluationCount++;
 
@@ -158,16 +147,30 @@ namespace ENTM
         {
             SetupTest();
 
+            FitnessInfo score = Evaluate(phenome, 1, true);
+
+            TearDownTest();
+
+            return score;
+        }
+
+        private FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record)
+        {
+            // Register the phenome
             Controller.Phenome = phenome;
 
             Controller.ScoreNovelty = NoveltySearchEnabled;
             Controller.NoveltyVectorLength = NoveltyVectorLength;
+            Controller.NoveltyVectorMode = NoveltySearchParameters.NoveltyVectorMode;
 
-            FitnessInfo score = Evaluate(Controller, 1, true);
+            Environment.ResetAll();
+            Environment.Controller = Controller;
 
+            // Evaluate the controller / phenome
+            FitnessInfo score = Evaluate(Controller, iterations, record);
+
+            // Unregister the phenome
             Controller.Phenome = null;
-
-            TearDownTest();
 
             return score;
         }

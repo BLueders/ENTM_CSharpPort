@@ -487,6 +487,9 @@ namespace ENTM.Experiments
 
         private void CreateEAFromNoveltyArchive()
         {
+            _ea.UpdateEvent -= EAUpdateEvent;
+            _ea.PausedEvent -= EAPauseEvent;
+
             _ea.Stop();
 
             List<NeatGenome> seedList = _listEvaluator.Archive;
@@ -628,6 +631,7 @@ namespace ENTM.Experiments
             // Create IBlackBox evaluator.
             _evaluator = new TEvaluator();
             _evaluator.Initialize(xmlConfig);
+            _evaluator.NoveltySearchParameters = _noveltySearchParams;
         }
 
         /// <summary>

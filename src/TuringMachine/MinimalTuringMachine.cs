@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
 using ENTM.Experiments.CopyTask;
+using ENTM.NoveltySearch;
 using ENTM.Replay;
 using ENTM.Utility;
 
@@ -58,6 +59,8 @@ namespace ENTM.TuringMachine
         public bool ScoreNovelty { get; set; }
 
         public int NoveltyVectorLength { get; set; }
+
+        public NoveltyVector NoveltyVectorMode { get; set; }
 
         private double[] _noveltyVector;
 
@@ -245,8 +248,26 @@ namespace ENTM.TuringMachine
 
                     if (ScoreNovelty)
                     {
-                        // Save the write position as a behavioural trait
-                        _noveltyVector[_currentTimeStep] = correctedWritePosition;
+                        switch (NoveltyVectorMode)
+                        {
+                            case NoveltySearch.NoveltyVector.WritePattern:
+                                // Save the write position as a behavioural trait
+                                _noveltyVector[_currentTimeStep] = correctedWritePosition;
+
+                                break;
+
+                            case NoveltySearch.NoveltyVector.ReadContent:
+
+                                // Skip position 1, it's used for minimum criteria. Timestep 0 is not recorded here, so subtract 1
+                                int startIndex = 1 + (_currentTimeStep - 1) * _m;
+                                Array.Copy(result[i], 0, _noveltyVector, startIndex, result[i].Length);
+
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                   
 
                         // Check for non-empty reads, to see if novelty search minimum criteria has been reached
                         for (int j = 0; j < result[i].Length; j++)
@@ -271,8 +292,7 @@ namespace ENTM.TuringMachine
                         int readPosition = _headPositions[i];
                         int correctedReadPosition = readPosition - _zeroPosition;
 
-                        _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], result[i], written[i],
-                       writePositions[i], readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
+                        _prevTimeStep = new TuringMachineTimeStep(writeKeys[i], interps[i], jumps[i], shifts[i], result[i], written[i], writePositions[i], readPosition, _zeroPosition, correctedWritePosition, correctedReadPosition, _tape.Count);
                     }
                 }
             }
@@ -283,8 +303,6 @@ namespace ENTM.TuringMachine
 
             return result;
         }
-
-
 
 
         // PRIVATE HELPER METHODS
@@ -311,9 +329,12 @@ namespace ENTM.TuringMachine
         {
             switch (_shiftMode)
             {
-                case ShiftMode.Single:      return 1;
-                case ShiftMode.Multiple:    return _shiftLength;
-                default: throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
+                case ShiftMode.Single:
+                    return 1;
+                case ShiftMode.Multiple:
+                    return _shiftLength;
+                default:
+                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
             }
         }
 
@@ -356,7 +377,6 @@ namespace ENTM.TuringMachine
                         _didWrite = true;
                     }
                     break;
-
             }
 
             //Log write activities
@@ -368,7 +388,7 @@ namespace ENTM.TuringMachine
             double[] result = new double[first.Length];
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = interp * first[i] + (1 - interp) * second[i];
+                result[i] = interp*first[i] + (1 - interp)*second[i];
             }
             return result;
         }
@@ -401,7 +421,6 @@ namespace ENTM.TuringMachine
 
                 // Jump the head to the best position found
                 _headPositions[head] = best;
-
             }
             else
             {
@@ -415,12 +434,17 @@ namespace ENTM.TuringMachine
             int highest;
             switch (_shiftMode)
             {
-                case ShiftMode.Single:      highest = (int) (shift[0] * _shiftLength);  break;
-                case ShiftMode.Multiple:    highest = Utilities.MaxPos(shift);          break;
-                default: throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
+                case ShiftMode.Single:
+                    highest = (int) (shift[0]*_shiftLength);
+                    break;
+                case ShiftMode.Multiple:
+                    highest = Utilities.MaxPos(shift);
+                    break;
+                default:
+                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
             }
 
-            int offset = highest - (_shiftLength / 2);
+            int offset = highest - (_shiftLength/2);
 
             //Debug.Log("Highest=" + highest, true);
             //Debug.Log("Offset=" + offset, true);
@@ -430,7 +454,6 @@ namespace ENTM.TuringMachine
                 // Right shift (positive)
                 if (offset > 0)
                 {
-
                     // Wrap around if memory size is limited and the limit is reached
                     if (_n > 0 && _tape.Count >= _n && _headPositions[head] == _tape.Count - 1)
                     {
@@ -450,7 +473,6 @@ namespace ENTM.TuringMachine
                             //_readActivities.Add(0);
                         }
                     }
-
                 }
                 // Left shift (negative)
                 else
@@ -476,7 +498,7 @@ namespace ENTM.TuringMachine
                             // Moving all heads accordingly
                             for (int i = 0; i < _heads; i++)
                             {
-                               _headPositions[i] = _headPositions[i] + 1;
+                                _headPositions[i] = _headPositions[i] + 1;
                             }
 
                             _increasedSizeDown = true;
@@ -495,7 +517,7 @@ namespace ENTM.TuringMachine
             // log debug read activity
             //_readActivities[_headPositions[head]]++;
 
-            return (double[])_tape[_headPositions[head]].Clone();
+            return (double[]) _tape[_headPositions[head]].Clone();
         }
 
         #region Replayable

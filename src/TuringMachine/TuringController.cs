@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ENTM.NoveltySearch;
 using SharpNeat.Phenomes;
 using ENTM.Utility;
 using log4net;
@@ -17,6 +18,8 @@ namespace ENTM.TuringMachine
         public bool ScoreNovelty { get; set; }
 
         public int NoveltyVectorLength { get; set; }
+
+        public NoveltyVector NoveltyVectorMode { get; set; }
 
         public double[] NoveltyVector => TuringMachine.NoveltyVector;
 
@@ -63,6 +66,7 @@ namespace ENTM.TuringMachine
         {
             TuringMachine.ScoreNovelty = ScoreNovelty;
             TuringMachine.NoveltyVectorLength = NoveltyVectorLength;
+            TuringMachine.NoveltyVectorMode = NoveltyVectorMode;
             TuringMachine.Reset();
 
             _turingMachineOutput = ProcessTuringMachineOutput(TuringMachine.DefaultRead); 

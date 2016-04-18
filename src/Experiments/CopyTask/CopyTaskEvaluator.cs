@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Xml;
+using ENTM.NoveltySearch;
 using ENTM.Replay;
 using ENTM.TuringMachine;
 using ENTM.Utility;
@@ -53,6 +54,23 @@ namespace ENTM.Experiments.CopyTask
 
         public override int Iterations => _copyTaskProps.Iterations;
 
-        public override int NoveltyVectorLength => _copyTaskProps.MaxSequenceLength * 2 + 3;
+        public override int NoveltyVectorLength
+        {
+            get
+            {
+                switch (NoveltySearchParameters.NoveltyVectorMode)
+                {
+                    case NoveltyVector.WritePattern:
+                        return _copyTaskProps.MaxSequenceLength*2 + 2 + 1;
+
+                    case NoveltyVector.ReadContent:
+
+                        // total timesteps * M + 1 for minimum criteria
+                        return (_copyTaskProps.MaxSequenceLength*2 + 2)*_turingMachineProps.M + 1;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
     }
 }

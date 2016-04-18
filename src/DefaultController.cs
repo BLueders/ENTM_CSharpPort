@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ENTM.NoveltySearch;
 using SharpNeat.Phenomes;
 
 namespace ENTM
@@ -35,6 +36,7 @@ namespace ENTM
 
         public bool ScoreNovelty { get; set; }
         public int NoveltyVectorLength { get; set; }
+        public NoveltyVector NoveltyVectorMode { get; set; }
         public double[] NoveltyVector { get; }
     }
 }
