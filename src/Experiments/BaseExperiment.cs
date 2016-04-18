@@ -183,10 +183,15 @@ namespace ENTM.Experiments
 
             IBlackBox champion = decoder.Decode(_ea.CurrentChampGenome);
 
-            return TestPhenome(champion);
+            return TestPhenome(champion, 1);
         }
 
         public FitnessInfo TestSavedChampion(string xmlPath)
+        {
+            return TestSavedChampion(xmlPath, 1);
+        }
+
+        public FitnessInfo TestSavedChampion(string xmlPath, int iterations)
         {
             // Load genome from the xml file
             XmlDocument xmlChampion = new XmlDocument();
@@ -203,10 +208,10 @@ namespace ENTM.Experiments
             // Decode the genome (genotype => phenotype)
             IBlackBox champion = decoder.Decode(championGenome);
 
-            return TestPhenome(champion);
+            return TestPhenome(champion, iterations);
         }
 
-        private FitnessInfo TestPhenome(IBlackBox phenome)
+        private FitnessInfo TestPhenome(IBlackBox phenome, int iterations)
         {
             if (_ea != null)
             {
@@ -217,7 +222,7 @@ namespace ENTM.Experiments
             Debug.On = true;
             _logger.Info("Testing phenome...");
 
-            FitnessInfo result = _evaluator.TestPhenome(phenome);
+            FitnessInfo result = _evaluator.TestPhenome(phenome, iterations);
 
             CreateExperimentDirectoryIfNecessary();
 

@@ -310,7 +310,8 @@ namespace ENTM
             _dirStack.Clear();
 
             string[] champions = Browse();
-            _experiment.TestSavedChampion(champions[0]);
+             int iterations = GetIntegerConsoleInput("Enter number of test iterations");
+            _experiment.TestSavedChampion(champions[0], iterations);
         }
 
         private static void StartStop()
@@ -413,6 +414,22 @@ namespace ENTM
             {
                 return $"-{$"{Key}:",-10} {Description}";
             }
+        }
+
+        private static int GetIntegerConsoleInput(string prompt)
+        {
+            Console.WriteLine($"{prompt}: ");
+            do
+            {
+                try
+                {
+                    return Convert.ToInt32(Console.ReadLine());
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine($"Can't do that sir, please put in a number.");
+                }
+            } while (true);
         }
     }
 }

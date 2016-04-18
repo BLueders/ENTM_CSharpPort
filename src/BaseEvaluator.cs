@@ -154,7 +154,7 @@ namespace ENTM
         /// <param name="iterations">Number of evaluations</param>
         /// <param name="record">Determines if the evaluation should be recorded</param>
         /// <returns></returns>
-        public FitnessInfo TestPhenome(IBlackBox phenome)
+        public FitnessInfo TestPhenome(IBlackBox phenome, int iterations)
         {
             SetupTest();
 
@@ -166,7 +166,7 @@ namespace ENTM
             Environment.ResetAll();
             Environment.Controller = Controller;
 
-            FitnessInfo score = Evaluate(Controller, 1, true);
+            FitnessInfo score = Evaluate(Controller, iterations, true);
 
             Controller.Phenome = null;
 
