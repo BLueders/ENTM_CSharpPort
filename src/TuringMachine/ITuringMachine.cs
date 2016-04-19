@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Dynamic;
+using ENTM.NoveltySearch;
 using ENTM.Replay;
 
 namespace ENTM.TuringMachine
@@ -20,6 +21,8 @@ namespace ENTM.TuringMachine
         bool ScoreNovelty { get; set; }
 
         int NoveltyVectorLength { get; set; }
+
+        NoveltyVector NoveltyVectorMode { get; set; }
 
         // Get an internal state vector to determine a novelty score
         double[] NoveltyVector { get; }

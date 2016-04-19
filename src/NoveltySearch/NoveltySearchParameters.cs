@@ -8,9 +8,10 @@ using SharpNeat.Domains;
 
 namespace ENTM.NoveltySearch
 {
-    class NoveltySearchParameters
+    public class NoveltySearchParameters
     {
         public bool Enabled;
+        public NoveltyVector NoveltyVectorMode;
         public double PMin;
         public int ArchiveLimit;
         public double PMinAdjustUp;
@@ -35,8 +36,15 @@ namespace ENTM.NoveltySearch
             props.K = XmlUtils.GetValueAsInt(xmlConfig, "K");
             props.ReportInterval = XmlUtils.GetValueAsInt(xmlConfig, "ReportInterval");
             props.MinimumCriteriaReadWriteLowerThreshold = XmlUtils.GetValueAsDouble(xmlConfig, "MinimumCriteriaReadWriteLowerThreshold");
+            props.NoveltyVectorMode = (NoveltyVector) Enum.Parse(typeof(NoveltyVector), XmlUtils.TryGetValueAsString(xmlConfig, "NoveltyVector") ?? "WritePattern");
 
             return props;
         }
+    }
+
+    public enum NoveltyVector
+    {
+        WritePattern,
+        ReadContent
     }
 }
