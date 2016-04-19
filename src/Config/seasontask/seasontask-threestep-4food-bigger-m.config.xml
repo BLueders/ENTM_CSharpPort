@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-3Step-4Food</Name>
+  <Name>SeasonTask-3Step-4Food-BiggerM</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
@@ -15,7 +15,7 @@
   </Description>
 
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>10</ExperimentCount>
+  <ExperimentCount>4</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
   <MaxGenerations>5000</MaxGenerations>
@@ -139,7 +139,7 @@
     <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
 
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
-    <ComplexityThreshold>150</ComplexityThreshold>
+    <ComplexityThreshold>400</ComplexityThreshold>
 
   </ComplexityRegulation>
 
@@ -185,7 +185,7 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>1.0</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>0.5</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
