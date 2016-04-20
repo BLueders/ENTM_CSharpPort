@@ -363,7 +363,7 @@ namespace ENTM.TuringMachine
                     _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
 
                     // We set a minimum threshold for write interpolation required to reach the novelty search minimum criteria
-                    if (interp > .3f)
+                    if (interp > .1f)
                     {
                         _didWrite = true;
                     }

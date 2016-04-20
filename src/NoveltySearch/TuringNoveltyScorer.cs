@@ -34,6 +34,7 @@ namespace ENTM.NoveltySearch
             }
         }
 
+        public bool StopConditionSatisfied => _pMinLowerThresholdReached || _generation >= _params.MaxNoveltySearchGenerations;
 
         private double _pMin;
         private int _generationsSinceArchiveAddition = -1;
@@ -42,6 +43,7 @@ namespace ENTM.NoveltySearch
         private int _generation;
         private long _knnTotalTimeSpent;
         private int _belowMinimumCriteria;
+        private bool _pMinLowerThresholdReached = false;
 
         public TuringNoveltyScorer(NoveltySearchParameters parameters)
         {
@@ -119,6 +121,14 @@ namespace ENTM.NoveltySearch
                     _pMin *= _params.PMinAdjustDown;
 
                     _logger.Info($"PMin adjusted down to {_pMin.ToString("0.00")}");
+
+                    // If the minimum threshold for pMin is reached, we can assume that the behaviour space has been exhausted, or that the algorithm
+                    // can not find any new novel behaviours for other reasons.
+                    if (_pMin < _params.PMinLowerThreshold)
+                    {
+                        _logger.Info($"PMin lower threshold reached.");
+                        _pMinLowerThresholdReached = true;
+                    }
                 }
             }
 

@@ -344,6 +344,11 @@ namespace ENTM
             _experiment.TestCurrentChampion();
         }
 
+        private static void TestCurrentPopulation()
+        {
+            _experiment.TestCurrentPopulation();
+        }
+
         private static void AbortCurrentExperiment()
         {
             _experiment.AbortCurrentExperiment();
@@ -376,6 +381,7 @@ namespace ENTM
                 new InputOption(ConsoleKey.D, "Toggle Debug (only available for debug builds)", ToggleDebug);
                 new InputOption(ConsoleKey.N, "Toggle Novelty Search", ToggleNoveltySearch);
                 new InputOption(ConsoleKey.C, "Test current champion", TestCurrentChampion);
+                new InputOption(ConsoleKey.P, "Test current population", TestCurrentPopulation);
                 new InputOption(ConsoleKey.S, "Test saved champion (from xml)", LoadGenomeFromXml);
                 new InputOption(ConsoleKey.A, "Abort current experiment and continue with the next, if any", AbortCurrentExperiment);
             }

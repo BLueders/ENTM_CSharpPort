@@ -18,6 +18,7 @@ namespace ENTM.Experiments.CopyTask
         public int MaxSequenceLength;
         public FitnessFunction FitnessFunction;
         public LengthRule LengthRule;
+        public bool EliminateZeroVectors;
 
         public CopyTaskProperties(XmlElement xmlConfig)
         {
@@ -27,7 +28,7 @@ namespace ENTM.Experiments.CopyTask
             MaxSequenceLength = XmlUtils.TryGetValueAsInt(xmlConfig, "MaxLength") ?? DEFAULT_SEQUENCE_MAXLENGTH;
             LengthRule = (LengthRule)Enum.Parse(typeof(LengthRule), XmlUtils.GetValueAsString(xmlConfig, "LengthRule"));
             FitnessFunction = (FitnessFunction)Enum.Parse(typeof(FitnessFunction), XmlUtils.GetValueAsString(xmlConfig, "FitnessFunction"));
-            
+            EliminateZeroVectors = XmlUtils.TryGetValueAsBool(xmlConfig, "EliminateZeroVectors") ?? false;
         }
 
         public CopyTaskProperties()

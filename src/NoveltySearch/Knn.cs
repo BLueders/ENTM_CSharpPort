@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpNeat.Core;
 
 namespace ENTM.NoveltySearch
@@ -46,6 +47,9 @@ namespace ENTM.NoveltySearch
                 for (int j = i + 1; j < count; j++)
                 {
                     Behaviour<TGenome> neighbour2 = behaviours[j];
+
+                    Assert.AreNotEqual(neighbour1, neighbour2, "asdf");
+
                     double[] neighbourhood2 = GetNeighbourhood(neighbour2, count);
 
                     // Euclidian distance squared

@@ -64,7 +64,7 @@ namespace ENTM.Experiments
         private static readonly ILog _logger = LogManager.GetLogger("Experiment");
 
         const string CHAMPION_FILE = "champion{0:D4}.xml";
-        const string RECORDING_FILE = "recording{0:D4}.png";
+        const string RECORDING_FILE = "recording{0:D4}_{1}.png";
         const string DATA_FILE = "data{0:D4}.csv";
 
         private NeatEvolutionAlgorithmParameters _eaParams;
@@ -93,8 +93,12 @@ namespace ENTM.Experiments
         private uint _noveltySearchActivatedGen;
 
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
-        private string RecordingFile => $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number)}";
         private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
+
+        private string RecordingFile(uint id)
+        {
+            return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
+        }
 
         public bool ExperimentCompleted { get; private set; } = false;
 
@@ -179,11 +183,23 @@ namespace ENTM.Experiments
                 return FitnessInfo.Zero;
             }
 
-            IGenomeDecoder<NeatGenome, IBlackBox> decoder = CreateGenomeDecoder();
+            return TestGenome(_ea.CurrentChampGenome, 1);
+        }
 
-            IBlackBox champion = decoder.Decode(_ea.CurrentChampGenome);
+        public void TestCurrentPopulation()
+        {
+            if (_ea == null)
+            {
+                Console.WriteLine("No current population");
+                return;
+            }
 
-            return TestPhenome(champion, 1);
+            Console.WriteLine("Testing current population...");
+
+            foreach (NeatGenome genome in _ea.GenomeList)
+            {
+                TestGenome(genome, 1);
+            }
         }
 
         public FitnessInfo TestSavedChampion(string xmlPath)
@@ -202,25 +218,25 @@ namespace ENTM.Experiments
             // Create and set the genome factory
             championGenome.GenomeFactory = CreateGenomeFactory() as NeatGenomeFactory;
 
-            // Create the genome decoder
-            IGenomeDecoder<NeatGenome, IBlackBox> decoder = CreateGenomeDecoder();
 
-            // Decode the genome (genotype => phenotype)
-            IBlackBox champion = decoder.Decode(championGenome);
-
-            return TestPhenome(champion, iterations);
+            return TestGenome(championGenome, iterations);
         }
 
-        private FitnessInfo TestPhenome(IBlackBox phenome, int iterations)
+        private FitnessInfo TestGenome(NeatGenome genome, int iterations)
         {
-            if (_ea != null)
+            if (_ea != null && _ea.RunState == RunState.Running)
             {
                 _ea.RequestPause();
             }
 
+            // Create the genome decoder
+            IGenomeDecoder<NeatGenome, IBlackBox> decoder = CreateGenomeDecoder();
+
+            // Decode the genome (genotype => phenotype)
+            IBlackBox phenome = decoder.Decode(genome);
 
             Debug.On = true;
-            _logger.Info("Testing phenome...");
+            _logger.Info($"Testing phenome (ID: {genome.Id})...");
 
             FitnessInfo result = _evaluator.TestPhenome(phenome, iterations);
 
@@ -229,7 +245,7 @@ namespace ENTM.Experiments
             if (Recorder != null)
             {
                 Bitmap bmp = Recorder.ToBitmap();
-                bmp.Save(RecordingFile, ImageFormat.Png);
+                bmp.Save($"{RecordingFile(genome.Id)}", ImageFormat.Png);
             }
             else
             {
@@ -330,7 +346,8 @@ namespace ENTM.Experiments
             {
                 if (NoveltySearchEnabled)
                 {
-                    if (_ea.CurrentGeneration - _noveltySearchActivatedGen > 300)
+                    // Novelty search has been completed, so we switch to objective search using the archive as seeded generation.
+                    if (_listEvaluator.NoveltySearchComplete)
                     {
                         CreateEAFromNoveltyArchive();
                     }

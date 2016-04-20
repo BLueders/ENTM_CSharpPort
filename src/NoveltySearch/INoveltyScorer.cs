@@ -11,6 +11,8 @@ namespace ENTM.NoveltySearch
     {
         IList<TGenome> Archive { get; }
 
+        bool StopConditionSatisfied { get; }
+
         void Score(IList<Behaviour<TGenome>> behaviours);
     }
 }

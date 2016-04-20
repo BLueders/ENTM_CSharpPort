@@ -18,6 +18,8 @@ namespace ENTM.Experiments.CopyTask
         // The maximum length that the sequence can be (if random), else the actual sequence length.
         public int MaxSequenceLength;
 
+        public bool EliminiateZeroVectors { get; set; }
+
         public double[][] Sequence { get; private set; }
 
         // Current time step
@@ -25,6 +27,7 @@ namespace ENTM.Experiments.CopyTask
 
         // Current fitness score
         private double _score;
+
 
         public override IController Controller { get; set; }
 
@@ -57,6 +60,7 @@ namespace ENTM.Experiments.CopyTask
 
         public sealed override int RandomSeed { get; set; }
 
+
         public CopyTaskEnvironment(CopyTaskProperties props)
         {
             _vectorSize = props.VectorSize;
@@ -64,6 +68,7 @@ namespace ENTM.Experiments.CopyTask
             LengthRule = props.LengthRule;
             _fitnessFunction = props.FitnessFunction;
             RandomSeed = props.RandomSeed;
+            EliminiateZeroVectors = props.EliminateZeroVectors;
         }
 
         public override void ResetAll()
@@ -168,7 +173,7 @@ namespace ENTM.Experiments.CopyTask
 
                         Sequence[i][j] = value;
                     }
-                } while (_vectorSize > 1 && !hasOnes);
+                } while (EliminiateZeroVectors && _vectorSize > 1 && !hasOnes);
 
             }
         }

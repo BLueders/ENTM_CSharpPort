@@ -40,6 +40,13 @@ class Connection(object):
 	def to_xml(self):
 		return etree.Element("Con", id=str(self.id), src=str(self.src), tgt=str(self.dest), wght=self.weight)
 
+if len(sys.argv) != 3:
+    print "Usage: arg 1: input filename, arg 2: output file name"
+    exit()
+
+input = sys.argv[1]
+output = sys.argv[2]
+
 neurons = []
 connections = []
 
@@ -48,7 +55,7 @@ Handler = GenomeHandler()
 parser = xml.sax.make_parser()
 parser.setContentHandler( Handler )
 
-parser.parse("chromosome11943.xml")
+parser.parse(input)
 
 bias = None
 for n in neurons :
@@ -86,7 +93,7 @@ for c in connections:
 
 root.append(xmlConns)
 
-file = open("fromanji2.xml", "w+")
+file = open(output + ".xml", "w+")
 
 et = etree.ElementTree(root)
 et.write(file, pretty_print=True)

@@ -66,6 +66,11 @@ namespace ENTM.NoveltySearch
 
         public List<TGenome> Archive => new List<TGenome>(_noveltyScorer.Archive);
 
+        /// <summary>
+        /// Returns true if the novelty search has been completed, and the evaluation should switch to objective search.
+        /// </summary>
+        public bool NoveltySearchComplete => _noveltyScorer.StopConditionSatisfied;
+
         #region Constructors
         /// <summary>
         /// Construct with the provided IGenomeDecoder, IPhenomeEvaluator, enableMultiThreading flag, ParalleOptions and enablePhenomeCaching flag.
