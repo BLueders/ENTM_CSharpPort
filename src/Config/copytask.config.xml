@@ -44,6 +44,9 @@
     <!-- Write vector size -->
     <M>5</M>
 
+    <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
+    <MinSimilarityToJump>0.5</MinSimilarityToJump>
+
     <!-- Number of Read/Write heads-->
     <Heads>1</Heads>
     

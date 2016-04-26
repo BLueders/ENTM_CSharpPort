@@ -21,17 +21,11 @@ namespace ENTM.Experiments.SeasonTask
 
         protected override SeasonTaskEnvironment NewEnvironment()
         {
-            switch (_seasonTaskProps.StepsPerFood)
-            {
-                case SeasonTaskProperties.FoodSteps.One:
-                    return new OneStepSeasonTaskEnviroment(_seasonTaskProps);
-                case SeasonTaskProperties.FoodSteps.Two:
-                    return new TwoStepSeasonTaskEnviroment(_seasonTaskProps);
-                case SeasonTaskProperties.FoodSteps.Three:
-                    return new ThreeStepSeasonTaskEnviroment(_seasonTaskProps);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            if (_seasonTaskProps.StepsPerFood == 1)
+                return new OneStepSeasonTaskEnviroment(_seasonTaskProps);
+            if (_seasonTaskProps.StepsPerFood == 2)
+                return new TwoStepSeasonTaskEnviroment(_seasonTaskProps);
+            return new MultiStepSeasonTaskEnviroment(_seasonTaskProps, _seasonTaskProps.StepsPerFood);
         }
 
         public override void Initialize(XmlElement xmlConfig)
@@ -56,7 +50,7 @@ namespace ENTM.Experiments.SeasonTask
         public override int EnvironmentInputCount => 1;
 
         // + 2 for punishing and reward inputs
-        public override int EnvironmentOutputCount => _seasonTaskProps.FoodTypes*_seasonTaskProps.Seasons + 2;
+        public override int EnvironmentOutputCount => _seasonTaskProps.FoodTypes * _seasonTaskProps.Seasons + 2;
 
         // TODO: Novelty vector length - should be total number of timesteps in environment
         public override int NoveltyVectorLength => 0;
