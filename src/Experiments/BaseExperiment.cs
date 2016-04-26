@@ -28,6 +28,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using ENTM.NoveltySearch;
@@ -269,8 +270,6 @@ namespace ENTM.Experiments
 
             if (gensSinceLastLog < 1) gensSinceLastLog = 1;
 
-            float[] assd = new float[] {2f, 4f};
-
             _lastLog = _ea.CurrentGeneration;
 
             long spent = _timer.ElapsedMilliseconds - _lastLogTime;
@@ -278,22 +277,13 @@ namespace ENTM.Experiments
             long gensRemaining = _maxGenerations - _ea.CurrentGeneration;
             long timeRemainingEst = gensRemaining * timePerGen;
 
-            uint gen = _ea.CurrentGeneration;
-            double fitMax = _ea.Statistics._maxFitness;
-            double fitMean = _ea.Statistics._meanFitness;
-            double cmpMax = _ea.Statistics._maxComplexity;
-            double cmpMean = _ea.Statistics._meanComplexity;
-            double cmpChamp = _ea.CurrentChampGenome.Complexity;
-            int spcMax = _ea.Statistics._maxSpecieSize;
-            int spcMin = _ea.Statistics._minSpecieSize;
-
             _lastLogTime = _timer.ElapsedMilliseconds;
-            _logger.Info($"Generation: {gen}/{_maxGenerations}, " +
+            _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
               $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
-              $"Fitness - Max: {fitMax:F4} Mean: {fitMean:F4}, " +
-              $"Complexity - Max: {cmpMax:F0} Mean: {cmpMean:F2} " +
-              $"Champ: {cmpChamp:F0} Strategy: {_ea.ComplexityRegulationMode}, " +
-              $"Specie size - Max: {spcMax:D} Min: {spcMin:D}, " +
+              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
+              $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
+              $"Champ: {_ea.CurrentChampGenome.Complexity:F0} Strategy: {_ea.ComplexityRegulationMode}, " +
+              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
               $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
               );
         }
@@ -309,20 +299,65 @@ namespace ENTM.Experiments
             int spcMax = _ea.Statistics._maxSpecieSize;
             int spcMin = _ea.Statistics._minSpecieSize;
 
+            int spcCount = _ea.SpecieList.Count;
+
+            int champHidCount = _ea.CurrentChampGenome.NodeList.Count - _ea.CurrentChampGenome.InputBiasOutputNeuronCount;
+
+            double[] spcSize = new double[spcCount];
+            double[] spcFitMean = new double[spcCount];
+            double[] spcCmpMean = new double[spcCount];
+            for (int i = 0; i < spcCount; i++)
+            {
+                Specie<NeatGenome> s = _ea.SpecieList[i];
+                spcSize[i] = s.GenomeList.Count;
+                spcFitMean[i] = s.CalcMeanFitness();
+                spcCmpMean[i] = s.CalcMeanComplexity();
+            }
+
             if (!File.Exists(DataFile))
             {
                 CreateExperimentDirectoryIfNecessary();
                 using (StreamWriter sw = File.AppendText(DataFile))
                 {
-                    sw.WriteLine($"Generation,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Max Specie Size,Min Specie Size");
+                    StringBuilder header = new StringBuilder("Generation,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
+
+                    for (int i = 0; i < spcCount; i++)
+                    {
+                        header.Append($",SS{i}");
+                    }
+                    for (int i = 0; i < spcCount; i++)
+                    {
+                        header.Append($",SMF{i}");
+                    }
+                    for (int i = 0; i < spcCount; i++)
+                    {
+                        header.Append($",SMC{i}");
+                    }
+
+                    sw.WriteLine(header.ToString());
                 }
             }
 
             using (StreamWriter sw = File.AppendText(DataFile))
             {
-                sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0},{1:F4},{2:F4},{3:F0},{4:F4},{5:F0},{6},{7}",
-                    gen, fitMax, fitMean, cmpMax, cmpMean, cmpChamp, spcMax, spcMin));
+                StringBuilder data = new StringBuilder(string.Format(CultureInfo.InvariantCulture,
+                    "{0},{1:F4},{2:F4},{3:F0},{4:F4},{5:F0},{6},{7},{8}",
+                    gen, fitMax, fitMean, cmpMax, cmpMean, cmpChamp, champHidCount, spcMax, spcMin));
+
+                for (int i = 0; i < spcCount; i++)
+                {
+                    data.Append(string.Format(CultureInfo.InvariantCulture, ",{0}", spcSize[i]));
+                }
+                for (int i = 0; i < spcCount; i++)
+                {
+                    data.Append(string.Format(CultureInfo.InvariantCulture, ",{0:F4}", spcFitMean[i]));
+                }
+                for (int i = 0; i < spcCount; i++)
+                {
+                    data.Append(string.Format(CultureInfo.InvariantCulture, ",{0:F4}", spcCmpMean[i]));
+                }
+
+                sw.WriteLine(data.ToString());
             }
         }
 
