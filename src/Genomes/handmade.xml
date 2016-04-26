@@ -1,0 +1,44 @@
+<Network id="1">
+  <Nodes>
+    <Node type="bias" id="0" />
+    <Node type="in" id="1" />
+    <Node type="in" id="2" />
+    <Node type="in" id="3" />
+    <Node type="in" id="4" />
+    <Node type="in" id="5" />
+    <Node type="in" id="6" />
+    <Node type="in" id="7" />
+    <Node type="in" id="8" />
+    <Node type="in" id="9" />
+    <Node type="out" id="10" />
+    <Node type="out" id="11" />
+    <Node type="out" id="12" />
+    <Node type="out" id="13" />
+    <Node type="out" id="14" />
+    <Node type="out" id="15" />
+    <Node type="out" id="16" />
+    <Node type="out" id="17" />
+    <Node type="out" id="18" />
+    <Node type="out" id="19" />
+    <Node type="out" id="20" />
+    <Node type="out" id="21" />
+  </Nodes>
+  <Connections>
+    <Con id="22" src="0" tgt="17" wght="1" />
+    <Con id="23" src="0" tgt="19" wght="1" />
+    <Con id="24" src="1" tgt="14" wght="1" />
+    <Con id="25" src="2" tgt="14" wght="1" />
+    <Con id="26" src="2" tgt="17" wght="-2" />
+    <Con id="27" src="2" tgt="18" wght="5" />
+    <Con id="28" src="3" tgt="12" wght="5" />
+    <Con id="29" src="4" tgt="13" wght="5" />
+    <Con id="30" src="5" tgt="10" wght="5" />
+    <Con id="31" src="6" tgt="11" wght="5" />
+    <Con id="32" src="0" tgt="18" wght="-2" />
+    <Con id="33" src="0" tgt="12" wght="-2" />
+    <Con id="34" src="0" tgt="13" wght="-2" />
+    <Con id="35" src="0" tgt="10" wght="-2" />
+    <Con id="36" src="0" tgt="11" wght="-2" />
+
+  </Connections>
+</Network>

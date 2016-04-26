@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>CopyTask-Relative</Name>
+  <Name>CopyTask</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
@@ -17,13 +17,13 @@
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>2000</MaxGenerations>
+  <MaxGenerations>1500</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>50</LogInterval>
+  <LogInterval>10</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -91,6 +91,9 @@
     -->
     <FitnessFunction>StrictCloseToTarget</FitnessFunction>
 
+    <!-- Set to true to eliminate zero vectors in the sequence, as the algorithm can have problems with them. -->
+    <EliminateZeroVectors>false</EliminateZeroVectors>
+    
   </CopyTaskParams>
 
 
@@ -100,24 +103,36 @@
     <!-- If false, only environmental objective fitness will be used. -->
     <Enabled>false</Enabled>
 
+    <!-- What behaviour we want to score
+      WritePattern: Use the write position over time as the novelty vector.
+      ReadContent: Use the read vector over time as the novelty vector.
+      -->
+    <NoveltyVector>ReadContent</NoveltyVector>
+    
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>50</PMin>
+    <PMin>40</PMin>
 
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
-    <ArchiveLimit>300</ArchiveLimit>
+    <ArchiveLimit>500</ArchiveLimit>
 
     <!-- PMin up adjustment factor-->
     <PMinAdjustUp>1.05</PMinAdjustUp>
 
     <!-- PMin down adjustment factor -->
     <PMinAdjustDown>0.95</PMinAdjustDown>
-
+    
+    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
+    <PMinLowerThreshold>10</PMinLowerThreshold>
+    
     <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
     <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
 
     <!-- How many generations without archihve additions before PMin is adjusted down -->
     <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
 
+    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
+    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
+    
     <!-- K nearest neighbors -->
     <K>10</K>
 
@@ -158,10 +173,10 @@
     <!-- "Absolute" or "Relative"
        Absolute: Defines an absolute ceiling on complexity.
        Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
-    <ComplexityRegulationStrategy>Relative</ComplexityRegulationStrategy>
+    <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
   
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
-    <ComplexityThreshold>50</ComplexityThreshold>
+    <ComplexityThreshold>120</ComplexityThreshold>
 
   </ComplexityRegulation>
 
@@ -169,7 +184,7 @@
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
     <!-- Number of species in the population. Default: 10 -->
-    <SpecieCount>10</SpecieCount>
+    <SpecieCount>5</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
     <ElitismProportion>0.2</ElitismProportion>
@@ -179,10 +194,10 @@
     <SelectionProportion>0.2</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
-    <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
+    <OffspringAsexualProportion>0.8</OffspringAsexualProportion>
 
     <!-- The proportion of offspring to be produced from sexual reproduction. Default: 0.5 -->
-    <OffspringSexualProportion>0.5</OffspringSexualProportion>
+    <OffspringSexualProportion>0.2</OffspringSexualProportion>
 
     <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
     <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
@@ -206,26 +221,26 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>0.6</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>.85</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>0.3</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>.3</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.9</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.8</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
     <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
-    <AddConnectionMutationProbability>0.1</AddConnectionMutationProbability>
+    <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
 
     <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
     <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.1</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

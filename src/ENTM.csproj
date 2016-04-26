@@ -131,6 +131,21 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\CopyTask\copytask5.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\CopyTask\copytask4.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\CopyTask\copytask3.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\CopyTask\copytask2.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\CopyTask\copytask1.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\xor.config.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -142,7 +157,6 @@
     <Content Include="Genomes\chromosome11943.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Config\CopyTask\" />
     <Folder Include="Config\SeasonTask\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

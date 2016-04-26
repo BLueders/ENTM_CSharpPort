@@ -44,9 +44,6 @@
     <!-- Write vector size -->
     <M>5</M>
 
-    <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
-    <MinSimilarityToJump>0.5</MinSimilarityToJump>
-
     <!-- Number of Read/Write heads-->
     <Heads>1</Heads>
     
@@ -194,13 +191,13 @@
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
-    <SelectionProportion>0.2</SelectionProportion>
+    <SelectionProportion>0.5</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
-    <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
+    <OffspringAsexualProportion>0.8</OffspringAsexualProportion>
 
     <!-- The proportion of offspring to be produced from sexual reproduction. Default: 0.5 -->
-    <OffspringSexualProportion>0.5</OffspringSexualProportion>
+    <OffspringSexualProportion>0.2</OffspringSexualProportion>
 
     <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
     <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
@@ -224,7 +221,7 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>.8</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>.90</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
