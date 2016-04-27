@@ -132,6 +132,21 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config\copytask1.txt" />
+    <Content Include="Config\CopyTask\copytask10.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\CopyTask\copytask9.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\CopyTask\copytask8.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\CopyTask\copytask7.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\CopyTask\copytask6.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\CopyTask\copytask5.config.xml">
       <SubType>Designer</SubType>
     </Content>

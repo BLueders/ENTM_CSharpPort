@@ -19,8 +19,10 @@ namespace ENTM.Experiments.SeasonTask
 
         protected int StepNum;
 
-        public override int TotalTimeSteps => SequenceLength * StepNum; 
-                
+        public override int TotalTimeSteps => Sequence.Length * StepNum;
+
+        public override int MaxTimeSteps => SequenceLength * StepNum;
+
         public override double[] PerformAction(double[] action)
         {
             Debug.DLogHeader("SEASON TASK START", true);

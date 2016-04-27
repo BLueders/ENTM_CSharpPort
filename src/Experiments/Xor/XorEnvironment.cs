@@ -27,6 +27,8 @@ namespace ENTM.Experiments.Xor
 
         public override int TotalTimeSteps => _sequence.Length + 1;
 
+        public override int MaxTimeSteps => 5;
+        
         private int _step;
         private double _score;
 
@@ -129,5 +131,7 @@ namespace ENTM.Experiments.Xor
         }
 
         public override EnvironmentTimeStep PreviousTimeStep => _prevTimeStep;
+
+       
     }
 }

@@ -143,12 +143,12 @@ namespace ENTM.TuringMachine
                     case NoveltySearch.NoveltyVector.WritePattern:
 
                         // total timesteps - 1 (initial timestep is not scored) + 1 (minimum criteria)
-                        return Environment.TotalTimeSteps;
+                        return Environment.MaxTimeSteps;
 
                     case NoveltySearch.NoveltyVector.ReadContent:
 
                         // total timesteps - 1 (initial timestep is not scored) * M + 1 (minimum criteria)
-                        return (Environment.TotalTimeSteps - 1) * _turingMachineProps.M + 1;
+                        return (Environment.MaxTimeSteps - 1) * _turingMachineProps.M + 1;
                     default:
                         throw new ArgumentOutOfRangeException("Unknown novelty vector mode" + NoveltySearchParameters.NoveltyVectorMode);
                 }

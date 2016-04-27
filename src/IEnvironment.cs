@@ -70,5 +70,7 @@ namespace ENTM
         bool IsTerminated { get; }
 
         int TotalTimeSteps { get; }
+
+        int MaxTimeSteps { get; }
     }
 }

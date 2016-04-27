@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Config>
-  
+
   <!-- The name of the experiment -->
   <Name>CopyTask</Name>
-  
+
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
 
@@ -12,9 +12,9 @@
     Copy task experiment with turing controller.
     The controller must record a bit-vector sequence to memory, and read it back.
   </Description>
-  
+
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>10</ExperimentCount>
+  <ExperimentCount>20</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
   <MaxGenerations>1500</MaxGenerations>
@@ -23,15 +23,15 @@
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>50</LogInterval>
+  <LogInterval>100</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
 
   <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
   <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
-  
-  
+
+
   <!-- Turing Machine Parameters-->
   <TuringMachineParams>
 
@@ -44,9 +44,12 @@
     <!-- Write vector size -->
     <M>5</M>
 
+    <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
+    <MinSimilarityToJump>0.5</MinSimilarityToJump>
+
     <!-- Number of Read/Write heads-->
     <Heads>1</Heads>
-    
+
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
 
@@ -61,9 +64,9 @@
 
   </TuringMachineParams>
 
-  
+
   <!-- Copy Task Parameters -->
-  <CopyTaskParams>  
+  <CopyTaskParams>
 
     <!-- Evaluation iterations -->
     <Iterations>50</Iterations>
@@ -93,7 +96,7 @@
 
     <!-- Set to true to eliminate zero vectors in the sequence, as the algorithm can have problems with them. -->
     <EliminateZeroVectors>false</EliminateZeroVectors>
-    
+
   </CopyTaskParams>
 
 
@@ -108,7 +111,7 @@
       ReadContent: Use the read vector over time as the novelty vector.
       -->
     <NoveltyVector>ReadContent</NoveltyVector>
-    
+
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
     <PMin>40</PMin>
 
@@ -120,10 +123,10 @@
 
     <!-- PMin down adjustment factor -->
     <PMinAdjustDown>0.95</PMinAdjustDown>
-    
+
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
     <PMinLowerThreshold>10</PMinLowerThreshold>
-    
+
     <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
     <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
 
@@ -132,7 +135,7 @@
 
     <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
     <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
-    
+
     <!-- K nearest neighbors -->
     <K>10</K>
 
@@ -142,13 +145,13 @@
     <!-- How many redundant iterations an individual can have before it does not meet minimum criteria. 
       0-1 relative to total timesteps during lifetime. -->
     <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
-    
+
   </NoveltySearch>
 
-  
+
   <!-- The network activation scheme to use -->
   <Activation>
-    
+
     <!-- "Acyclic", "CyclicFixedIters" or "CyclicRelax"
          Acyclic:           Does not support recurrent connections. Network is fully activated each activation.
          CyclicFixedIters:  Each iteration will iterate signals one step from input -> output.
@@ -158,23 +161,23 @@
 
     <!-- CyclicFixedIters only -->
     <Iters>3</Iters>
-    
+
     <!-- CyclicRelax only -->
     <Threshold>0.1</Threshold>
-    
+
     <!-- CyclicRelax only -->
     <MaxIters>5</MaxIters>
-  
+
   </Activation>
 
-  
+
   <!-- Complexity Regulation Parameters -->
   <ComplexityRegulation>
     <!-- "Absolute" or "Relative"
        Absolute: Defines an absolute ceiling on complexity.
        Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
     <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
-  
+
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
     <ComplexityThreshold>120</ComplexityThreshold>
 
@@ -191,7 +194,7 @@
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
-    <SelectionProportion>0.5</SelectionProportion>
+    <SelectionProportion>0.4</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
     <OffspringAsexualProportion>0.8</OffspringAsexualProportion>
@@ -212,7 +215,7 @@
     <ComplexityMovingAverageHistoryLength>100</ComplexityMovingAverageHistoryLength>
   </EAParams>
 
-  
+
   <!-- Genome Parameters -->
   <GenomeParams>
     <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 

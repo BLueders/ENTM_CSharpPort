@@ -187,20 +187,20 @@
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
     <!-- Number of species in the population. Default: 10 -->
-    <SpecieCount>8</SpecieCount>
+    <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.02</ElitismProportion>
+    <ElitismProportion>0.05</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
     <SelectionProportion>0.4</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
-    <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
+    <OffspringAsexualProportion>0.8</OffspringAsexualProportion>
 
     <!-- The proportion of offspring to be produced from sexual reproduction. Default: 0.5 -->
-    <OffspringSexualProportion>0.5</OffspringSexualProportion>
+    <OffspringSexualProportion>0.2</OffspringSexualProportion>
 
     <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
     <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
@@ -224,11 +224,11 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>0.05</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>1</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>.1</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>.3</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
     <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
@@ -237,13 +237,13 @@
     <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
-    <AddConnectionMutationProbability>0.01</AddConnectionMutationProbability>
+    <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
 
     <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
     <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.001</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

@@ -41,7 +41,6 @@ namespace ENTM.Experiments.CopyTask
         protected override void TearDownTest()
         {
             Environment.LengthRule = _copyTaskProps.LengthRule;
-            Environment.MaxSequenceLength = _copyTaskProps.MaxSequenceLength;
             Environment.RandomSeed = _copyTaskProps.RandomSeed;
         }
 

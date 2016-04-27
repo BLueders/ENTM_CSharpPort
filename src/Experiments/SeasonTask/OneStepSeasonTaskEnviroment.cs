@@ -18,6 +18,7 @@ namespace ENTM.Experiments.SeasonTask
         }
 
         public override int TotalTimeSteps => Sequence.Length + 1;
+        public override int MaxTimeSteps => SequenceLength * 1;
 
         public override double[] PerformAction(double[] action)
         {
