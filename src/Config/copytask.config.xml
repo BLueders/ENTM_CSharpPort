@@ -194,7 +194,7 @@
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
-    <SelectionProportion>0.5</SelectionProportion>
+    <SelectionProportion>0.4</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
     <OffspringAsexualProportion>0.8</OffspringAsexualProportion>

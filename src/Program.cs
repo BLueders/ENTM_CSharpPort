@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -22,8 +23,7 @@ namespace ENTM
         public const string ROOT_PATH = "ENTM/";
         private const string CONFIG_PATH = ROOT_PATH + "Config/";
         private const string LOG4NET_CONFIG = "log4net.properties";
-
-        private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
+        private const string RESULTS_FILE = "results.csv";
 
         private static Stopwatch _stopwatch = new Stopwatch();
 
@@ -251,32 +251,24 @@ namespace ENTM
 
         private static void ExperimentCompleteEvent(object sender, ExperimentCompleteEventArgs e)
         {
-            _logger.Info($"Time spent: {Utilities.TimeToString(e.TimeSpent)}");
+            string timeSpent = Utilities.TimeToString(e.TimeSpent);
+            _logger.Info($"Time spent: {timeSpent}");
 
             _experiment.TestCurrentChampion();
 
-            if (!File.Exists(DataFile))
+            string resultsFile = $"{e.Directory}{RESULTS_FILE}";
+            bool writeHeader = !File.Exists(resultsFile);
+
+            using (StreamWriter sw = File.AppendText(resultsFile))
             {
-                CreateExperimentDirectoryIfNecessary();
-                using (StreamWriter sw = File.AppendText(DataFile))
+                if (writeHeader)
                 {
-                    StringBuilder header = new StringBuilder("Generation,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
-
-                    for (int i = 0; i < spcCount; i++)
-                    {
-                        header.Append($",SS{i}");
-                    }
-                    for (int i = 0; i < spcCount; i++)
-                    {
-                        header.Append($",SMF{i}");
-                    }
-                    for (int i = 0; i < spcCount; i++)
-                    {
-                        header.Append($",SMC{i}");
-                    }
-
-                    sw.WriteLine(header.ToString());
+                    sw.WriteLine("Experiment,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation");
                 }
+
+                sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                    "{0},{1},{2},{3},{4:F4},{5:F0},{6},{7}",
+                    e.Experiment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen));
             }
 
             NextExperiment();

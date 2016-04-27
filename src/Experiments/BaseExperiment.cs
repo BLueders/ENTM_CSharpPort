@@ -93,6 +93,8 @@ namespace ENTM.Experiments
         private uint _lastMaxFitnessImprovementGen;
         private uint _noveltySearchActivatedGen;
 
+        public string CurrentDirectory => string.Format($"{Program.ROOT_PATH}{Name}/{_identifier}/{_subIdentifier}/");
+
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
 
@@ -312,11 +314,13 @@ namespace ENTM.Experiments
                 spcCmpMean[i] = s.CalcMeanComplexity();
             }
 
-            if (!File.Exists(DataFile))
+            bool writeHeader = !File.Exists(DataFile);
+
+            using (StreamWriter sw = File.AppendText(DataFile))
             {
-                CreateExperimentDirectoryIfNecessary();
-                using (StreamWriter sw = File.AppendText(DataFile))
+                if (writeHeader)
                 {
+                    CreateExperimentDirectoryIfNecessary();
                     StringBuilder header = new StringBuilder("Generation,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
 
                     for (int i = 0; i < spcCount; i++)
@@ -334,10 +338,7 @@ namespace ENTM.Experiments
 
                     sw.WriteLine(header.ToString());
                 }
-            }
 
-            using (StreamWriter sw = File.AppendText(DataFile))
-            {
                 StringBuilder data = new StringBuilder(string.Format(CultureInfo.InvariantCulture,
                     "{0},{1:F4},{2:F4},{3:F0},{4:F4},{5:F0},{6},{7},{8}",
                     gen, fitMax, fitMean, cmpMax, cmpMean, cmpChamp, champHidCount, spcMax, spcMin));
@@ -435,7 +436,19 @@ namespace ENTM.Experiments
                 {
                     try
                     {
-                        ExperimentCompleteEvent(this, new ExperimentCompleteEventArgs(_evaluator.StopConditionSatisfied, _ea.CurrentGeneration, _timer.Elapsed));
+                        ExperimentCompleteEventArgs args = new ExperimentCompleteEventArgs();
+                        args.Experiment = _number;
+                        args.Directory = CurrentDirectory;
+                        args.TimeSpent = _timer.Elapsed;
+            
+                        args.Solved = _evaluator.StopConditionSatisfied;
+                        args.Generations = _ea.CurrentGeneration;
+                        args.ChampFitness = _ea.Statistics._maxFitness;
+                        args.ChampComplexity = _ea.CurrentChampGenome.Complexity;
+                        args.ChampHiddenNodes = _ea.CurrentChampGenome.NodeList.Count - _ea.CurrentChampGenome.InputBiasOutputNeuronCount;
+                        args.ChampBirthGen = _ea.CurrentChampGenome.BirthGeneration;
+
+                        ExperimentCompleteEvent(this, args);
                     }
                     catch (Exception ex)
                     {
@@ -575,7 +588,6 @@ namespace ENTM.Experiments
 
         public string Name => _name;
 
-        public string CurrentDirectory => string.Format($"{Program.ROOT_PATH}{Name}/{_identifier}/{_subIdentifier}/");
 
         /// <summary>
         /// Gets the default population size to use for the experiment
@@ -801,15 +813,15 @@ namespace ENTM.Experiments
 
     public class ExperimentCompleteEventArgs : EventArgs
     {
-        public bool Solved { get; private set; }
-        public uint Generations { get; private set; }
-        public TimeSpan TimeSpent { get; private set; }
+        public int Experiment { get; internal set; }
+        public string Directory { get; internal set; }
+        public TimeSpan TimeSpent { get; internal set; }
 
-        public ExperimentCompleteEventArgs(bool solved, uint generations, TimeSpan timeSpent)
-        {
-            Solved = solved;
-            Generations = generations;
-            TimeSpent = timeSpent;
-        }
+        public bool Solved { get; internal set; }
+        public uint Generations { get; internal set; }
+        public double ChampFitness { get; internal set; }
+        public double ChampComplexity { get; internal set; }
+        public int ChampHiddenNodes { get; internal set; }
+        public uint ChampBirthGen { get; internal set; }
     }
 }
