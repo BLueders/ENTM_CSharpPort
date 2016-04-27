@@ -131,6 +131,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\copytask1.txt" />
     <Content Include="Config\CopyTask\copytask5.config.xml">
       <SubType>Designer</SubType>
     </Content>

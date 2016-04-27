@@ -77,15 +77,24 @@ namespace ENTM
 
         private static string[] ParseArgs(string[] args)
         {
-            string[] configs = new string[args.Length];
+            string[] configs = null;
 
-            for (int i = 0; i < args.Length; i++)
+            if (args[0].EndsWith(".txt"))
             {
-                string config = args[i];
+                configs = File.ReadAllLines($"{CONFIG_PATH}{args[0]}");
+            }
+            else
+            {
+                configs = args;
+            }
+
+            for (int i = 0; i < configs.Length; i++)
+            {
+                string config = configs[i];
                 if (!config.EndsWith(".config.xml"))
                 {
                     config = config.EndsWith(".config") ? $"{config}.xml" : $"{config}.config.xml";
-                } 
+                }
                 configs[i] = $"ENTM/Config/{config}";
             }
 
@@ -94,7 +103,7 @@ namespace ENTM
 
         private static string[] Prompt()
         {
-            Console.WriteLine("Select config");
+            Console.WriteLine("Select config:");
 
             Console.WriteLine($"A: Execute all experiments in the current directory serially");
 
@@ -191,6 +200,8 @@ namespace ENTM
                     Console.WriteLine($"File not found: {configPaths[i]}");
                 }
             }
+
+            Console.WriteLine($"Loaded {_configs.Length} configs");
         }
 
         private static bool InitializeExperiment(XmlElement config)
