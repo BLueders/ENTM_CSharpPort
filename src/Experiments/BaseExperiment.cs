@@ -113,8 +113,6 @@ namespace ENTM.Experiments
         public Recorder Recorder => _evaluator.Recorder;
         private Stopwatch _timer;
 
-        public TimeSpan TimeSpent => _timer?.Elapsed ?? TimeSpan.Zero;
-
         public int InputCount => EnvironmentOutputCount + ControllerOutputCount;
         public int OutputCount => EnvironmentInputCount + ControllerInputCount;
 
@@ -171,7 +169,7 @@ namespace ENTM.Experiments
         /// <summary>
         /// Notifies listeners that the experiment is complete - that is; maximum generations or fitness was reached
         /// </summary>
-        public event EventHandler ExperimentCompleteEvent;
+        public event EventHandler<ExperimentCompleteEventArgs> ExperimentCompleteEvent;
 
         /// <summary>
         /// Test the champion of the current EA
@@ -430,19 +428,19 @@ namespace ENTM.Experiments
                 }
                 else
                 {
-                    _logger.Info("Experiment completed");
+                    _logger.Info($"Experiment completed in {_ea.CurrentGeneration} generations");
                 }
 
                 if (ExperimentCompleteEvent != null)
                 {
                     try
                     {
-                        ExperimentCompleteEvent(this, EventArgs.Empty);
+                        ExperimentCompleteEvent(this, new ExperimentCompleteEventArgs(_evaluator.StopConditionSatisfied, _ea.CurrentGeneration, _timer.Elapsed));
                     }
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        _logger.Info("ExperimentCompleteEvent listener threw exception: " + ex.Message);
+                        _logger.Warn("ExperimentCompleteEvent listener threw exception: " + ex.Message);
                     }
                 }
             }
@@ -458,7 +456,7 @@ namespace ENTM.Experiments
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        _logger.Info("ExperimentPausedEvent listener threw exception: " + ex.Message);
+                        _logger.Warn("ExperimentPausedEvent listener threw exception: " + ex.Message);
                     }
                 }
             }
@@ -493,7 +491,7 @@ namespace ENTM.Experiments
                             catch (Exception ex)
                             {
                                 // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                                _logger.Info("ExperimentResumedEvent listener threw exception: " + ex.Message);
+                                _logger.Warn("ExperimentResumedEvent listener threw exception: " + ex.Message);
                             }
                         }
                         _ea.StartContinue();
@@ -537,7 +535,7 @@ namespace ENTM.Experiments
                 catch (Exception ex)
                 {
                     // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                    _logger.Info("ExperimentStartedEvent listener threw exception: " + ex.Message);
+                    _logger.Warn("ExperimentStartedEvent listener threw exception: " + ex.Message);
                 }
             }
         }
@@ -799,5 +797,19 @@ namespace ENTM.Experiments
             return ea;
         }
         #endregion
+    }
+
+    public class ExperimentCompleteEventArgs : EventArgs
+    {
+        public bool Solved { get; private set; }
+        public uint Generations { get; private set; }
+        public TimeSpan TimeSpent { get; private set; }
+
+        public ExperimentCompleteEventArgs(bool solved, uint generations, TimeSpan timeSpent)
+        {
+            Solved = solved;
+            Generations = generations;
+            TimeSpent = timeSpent;
+        }
     }
 }

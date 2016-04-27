@@ -23,7 +23,7 @@
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>10</LogInterval>
+  <LogInterval>50</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -187,11 +187,11 @@
     <SpecieCount>8</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.02</ElitismProportion>
+    <ElitismProportion>0.01</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
-    <SelectionProportion>0.4</SelectionProportion>
+    <SelectionProportion>0.75</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
     <OffspringAsexualProportion>0.8</OffspringAsexualProportion>
@@ -217,18 +217,18 @@
   <GenomeParams>
     <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
          The weight range is strictly enforced - e.g. when creating new connections and mutating existing ones. Default: 5.0 -->
-    <ConnectionWeightRange>10.0</ConnectionWeightRange>
+    <ConnectionWeightRange>12.0</ConnectionWeightRange>
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>.85</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>1</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
     <DisjointExcessGenesRecombinedProbability>.3</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.8</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.9</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
     <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
@@ -240,7 +240,7 @@
     <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.05</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

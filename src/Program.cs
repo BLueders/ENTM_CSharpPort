@@ -23,6 +23,8 @@ namespace ENTM
         private const string CONFIG_PATH = ROOT_PATH + "Config/";
         private const string LOG4NET_CONFIG = "log4net.properties";
 
+        private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
+
         private static Stopwatch _stopwatch = new Stopwatch();
 
         private static string _currentDir;
@@ -247,11 +249,35 @@ namespace ENTM
             _stopwatch.Start();
         }
 
-        private static void ExperimentCompleteEvent(object sender, EventArgs e)
+        private static void ExperimentCompleteEvent(object sender, ExperimentCompleteEventArgs e)
         {
-            _logger.Info($"Time spent: {Utilities.TimeToString(_experiment.TimeSpent)}");
+            _logger.Info($"Time spent: {Utilities.TimeToString(e.TimeSpent)}");
 
             _experiment.TestCurrentChampion();
+
+            if (!File.Exists(DataFile))
+            {
+                CreateExperimentDirectoryIfNecessary();
+                using (StreamWriter sw = File.AppendText(DataFile))
+                {
+                    StringBuilder header = new StringBuilder("Generation,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
+
+                    for (int i = 0; i < spcCount; i++)
+                    {
+                        header.Append($",SS{i}");
+                    }
+                    for (int i = 0; i < spcCount; i++)
+                    {
+                        header.Append($",SMF{i}");
+                    }
+                    for (int i = 0; i < spcCount; i++)
+                    {
+                        header.Append($",SMC{i}");
+                    }
+
+                    sw.WriteLine(header.ToString());
+                }
+            }
 
             NextExperiment();
         }

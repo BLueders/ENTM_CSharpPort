@@ -23,7 +23,7 @@
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>10</LogInterval>
+  <LogInterval>50</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -184,14 +184,14 @@
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
     <!-- Number of species in the population. Default: 10 -->
-    <SpecieCount>10</SpecieCount>
+    <SpecieCount>8</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.2</ElitismProportion>
+    <ElitismProportion>0.01</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
-    <SelectionProportion>0.2</SelectionProportion>
+    <SelectionProportion>0.4</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
     <OffspringAsexualProportion>0.8</OffspringAsexualProportion>
@@ -228,19 +228,19 @@
     <DisjointExcessGenesRecombinedProbability>.3</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.6</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.8</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
     <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
-    <AddConnectionMutationProbability>0.1</AddConnectionMutationProbability>
+    <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
 
     <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
     <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.05</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>
