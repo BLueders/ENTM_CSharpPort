@@ -162,6 +162,10 @@
     <Content Include="Config\CopyTask\copytask1.config.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Config\SeasonTask\seasontask-5steps-noveltysearch.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Config\SeasonTask\seasontask-5steps.config.xml" />
     <Content Include="Config\xor.config.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -172,9 +176,7 @@
     <Content Include="Genomes\anji2sharpneat.py" />
     <Content Include="Genomes\chromosome11943.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Config\SeasonTask\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>XCOPY "$(SolutionDir)Config" "$(TargetDir)\ENTM\Config\" /S /Y

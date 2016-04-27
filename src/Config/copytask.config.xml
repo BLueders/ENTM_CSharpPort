@@ -104,7 +104,7 @@
   <NoveltySearch>
 
     <!-- If false, only environmental objective fitness will be used. -->
-    <Enabled>false</Enabled>
+    <Enabled>true</Enabled>
 
     <!-- What behaviour we want to score
       WritePattern: Use the write position over time as the novelty vector.
@@ -113,8 +113,11 @@
     <NoveltyVector>ReadContent</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>40</PMin>
+    <PMin>5</PMin>
 
+    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
+    <PMinLowerThreshold>1</PMinLowerThreshold>
+    
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
     <ArchiveLimit>500</ArchiveLimit>
 
@@ -123,9 +126,6 @@
 
     <!-- PMin down adjustment factor -->
     <PMinAdjustDown>0.95</PMinAdjustDown>
-
-    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
-    <PMinLowerThreshold>10</PMinLowerThreshold>
 
     <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
     <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
