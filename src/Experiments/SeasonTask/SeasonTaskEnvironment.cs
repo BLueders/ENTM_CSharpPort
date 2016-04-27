@@ -39,11 +39,13 @@ namespace ENTM.Experiments.SeasonTask
         // will not score the first day of each season in the first year
         protected bool _ignoreFirstDayOfSeasonInFirstYear;
 
-        public Food[] Sequence { get; protected set; }
-
         protected readonly double _fitnessFactor;
 
-        public override double CurrentScore => _score * _fitnessFactor; 
+        public Food[] Sequence { get; protected set; }
+
+        public int SequenceLength => _years * _seasons * _days * _foodTypes;
+
+        public override double CurrentScore => _score * _fitnessFactor;
 
         public override double MaxScore {
             get
@@ -65,8 +67,6 @@ namespace ENTM.Experiments.SeasonTask
         }
 
         public override double NormalizedScore => CurrentScore / MaxScore;
-
-        protected abstract int TotalTimeSteps { get; }
 
         public override bool IsTerminated => _step >= TotalTimeSteps;
 
@@ -151,7 +151,7 @@ namespace ENTM.Experiments.SeasonTask
             _poisonousFoodTypes = GetPoisonousFoodTypes();
 
             // create the actual sequence
-            Sequence = new Food[_years * _seasons * _days * _foodTypes];
+            Sequence = new Food[SequenceLength];
             // if we are going to change which foods are poisonous during sequence, this is where
             LinkedList<int> poisonFoodShufflePositions = GetPoisonousFoodShufflePositions(Sequence.Length);
 

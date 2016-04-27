@@ -52,9 +52,6 @@ namespace ENTM.Experiments.SeasonTask
         // + 2 for punishing and reward inputs
         public override int EnvironmentOutputCount => _seasonTaskProps.FoodTypes * _seasonTaskProps.Seasons + 2;
 
-        // TODO: Novelty vector length - should be total number of timesteps in environment
-        public override int NoveltyVectorLength => 0;
-
         public override int Iterations => _seasonTaskProps.Iterations;
     }
 }

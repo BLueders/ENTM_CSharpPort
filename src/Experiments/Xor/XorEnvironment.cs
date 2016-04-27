@@ -15,16 +15,17 @@ namespace ENTM.Experiments.Xor
         public override int InputCount => 1;
         public override int OutputCount => 2;
         public override double CurrentScore => _score;
-        public override double MaxScore => _totalTimeSteps - 1;
-        public override double NormalizedScore => _score / (_totalTimeSteps - 1);
-        public override bool IsTerminated => _step >= _totalTimeSteps;
+        public override double MaxScore => TotalTimeSteps - 1;
+        public override double NormalizedScore => _score / (TotalTimeSteps - 1);
+        public override bool IsTerminated => _step >= TotalTimeSteps;
         public override int RandomSeed { get; set; }
         public override double[] InitialObservation => GetObservation(0);
 
         public int SequenceLength { get; set; }
 
         private double[][] _sequence;
-        private int _totalTimeSteps => _sequence.Length + 1;
+
+        public override int TotalTimeSteps => _sequence.Length + 1;
 
         private int _step;
         private double _score;
@@ -93,7 +94,7 @@ namespace ENTM.Experiments.Xor
 
         private double[] GetObservation(int step)
         {
-            if (step < _totalTimeSteps - 1)
+            if (step < TotalTimeSteps - 1)
             {
                 return _sequence[step];
             }
