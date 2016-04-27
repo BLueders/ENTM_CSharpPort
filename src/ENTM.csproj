@@ -56,7 +56,7 @@
     <Compile Include="Experiments\ITuringExperiment.cs" />
     <Compile Include="Experiments\SeasonTask\TwoStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\OneStepSeasonTaskEnviroment.cs" />
-    <Compile Include="Experiments\SeasonTask\ThreeStepSeasonTaskEnviroment.cs" />
+    <Compile Include="Experiments\SeasonTask\MultiStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\Xor\XorEnvironment.cs" />
     <Compile Include="Experiments\Xor\XorEvaluator.cs" />
     <Compile Include="Experiments\Xor\XorExperiment.cs" />

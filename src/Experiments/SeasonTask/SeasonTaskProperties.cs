@@ -10,11 +10,6 @@ namespace ENTM.Experiments.SeasonTask
 {
     class SeasonTaskProperties
     {
-        public enum FoodSteps
-        {
-            One, Two, Three
-        }
-
         private XmlElement xmlConfig;
         private const int DEFAULT_ITERATIONS = 10;
         private const double DEFAULT_FITNESS_FACTOR = 1;
@@ -32,7 +27,8 @@ namespace ENTM.Experiments.SeasonTask
             PoisonFoods = XmlUtils.TryGetValueAsInt(xmlConfig, "PoisonFoods") ?? 0;
             PoisonousTypeChanges = XmlUtils.TryGetValueAsInt(xmlConfig, "PoisonousTypeChanges") ?? 0;
             IgnoreFirstDayOfSeasonInFirstYear = XmlUtils.TryGetValueAsBool(xmlConfig, "IgnoreFirstDayOfSeasonInFirstYear") ?? false;
-            StepsPerFood = (FoodSteps)Enum.Parse(typeof(FoodSteps), XmlUtils.GetValueAsString(xmlConfig, "StepsPerFood"));
+            StepsPerFood = XmlUtils.TryGetValueAsInt(xmlConfig, "StepsPerFood") ?? 3;
+
         }
 
         public int Iterations { get; set; }
@@ -44,7 +40,7 @@ namespace ENTM.Experiments.SeasonTask
         public int Days { get; set; }
         public int FoodTypes { get; set; }
         public int PoisonFoods { get; set; }
-        public FoodSteps StepsPerFood { get; set; }
+        public int StepsPerFood { get; set; }
         public int PoisonousTypeChanges;
         public bool IgnoreFirstDayOfSeasonInFirstYear; // this could be chosen not to be scored, as the algorithm cant know the answer here
     }

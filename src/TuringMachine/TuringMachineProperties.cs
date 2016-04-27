@@ -13,6 +13,7 @@ namespace ENTM.TuringMachine
         public int ShiftLength;
         public ShiftMode ShiftMode;
         public WriteMode WriteMode;
+        public double MinSimilarityToJump;
 
         public TuringMachineProperties(XmlElement xmlConfig)
         {
@@ -21,12 +22,14 @@ namespace ENTM.TuringMachine
             N = XmlUtils.TryGetValueAsInt(xmlConfig, "N") ?? -1;
             Heads = XmlUtils.TryGetValueAsInt(xmlConfig, "Heads") ?? 1;
             ShiftLength = XmlUtils.GetValueAsInt(xmlConfig, "ShiftLength");
+            MinSimilarityToJump = XmlUtils.TryGetValueAsDouble(xmlConfig, "MinSimilarityToJump") ?? 0;
 
             string shiftModeStr = XmlUtils.TryGetValueAsString(xmlConfig, "ShiftMode");
             ShiftMode = shiftModeStr == null ? ShiftMode.Multiple : (ShiftMode) Enum.Parse(typeof(ShiftMode), shiftModeStr);
 
             string writeModeStr = XmlUtils.TryGetValueAsString(xmlConfig, "WriteMode");
             WriteMode = writeModeStr == null ? WriteMode.Interpolate : (WriteMode) Enum.Parse(typeof(WriteMode), writeModeStr);
+
         }
 
         public TuringMachineProperties(int m, int n, int shiftLength, ShiftMode shiftMode, bool enabled, int heads)
@@ -42,6 +45,7 @@ namespace ENTM.TuringMachine
         public TuringMachineProperties()
         {
         }
+
     }
 
     public enum ShiftMode

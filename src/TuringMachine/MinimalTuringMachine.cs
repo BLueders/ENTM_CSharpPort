@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Text;
-using ENTM.Experiments.CopyTask;
 using ENTM.NoveltySearch;
-using ENTM.Replay;
 using ENTM.Utility;
 
 namespace ENTM.TuringMachine
@@ -56,6 +53,10 @@ namespace ENTM.TuringMachine
         private int _zeroPosition;
         private bool _didWrite, _didRead;
 
+        // The minimal similarity for the tm to jump to that position, if non is found that satisfies this, the tm will
+        // jump to the start of the tape.
+        private double _minSimilarityToJump;
+
         public bool ScoreNovelty { get; set; }
 
         public int NoveltyVectorLength { get; set; }
@@ -69,7 +70,7 @@ namespace ENTM.TuringMachine
         public int ReadHeadCount => 1;
 
         public int WriteHeadCount => 1;
-
+        
         // WriteKey, Interpolation, ToContentJump, Shift
         public int InputCount => _heads * (_m + 2 + GetShiftInputs());
 
@@ -92,7 +93,7 @@ namespace ENTM.TuringMachine
             _shiftLength = props.ShiftLength;
             _shiftMode = props.ShiftMode;
             _writeMode = props.WriteMode;
-
+            _minSimilarityToJump = props.MinSimilarityToJump;
             _tape = new List<double[]>();
 
             Reset();
@@ -395,11 +396,12 @@ namespace ENTM.TuringMachine
 
         private void PerformContentJump(int head, double contentJump, double[] key)
         {
-            if (contentJump >= .5f)
+            if (contentJump >= .5)
             {
                 // JUMPING POINTER TO BEST MATCH
                 int best = 0;
                 double similarity = double.MinValue;
+                bool doJump = false;
                 for (int i = 0; i < _tape.Count; i++)
                 {
                     double curSim = Utilities.Emilarity(key, _tape[i]);
@@ -413,14 +415,27 @@ namespace ENTM.TuringMachine
                         best = i;
                     }
 
+                    if (_minSimilarityToJump > similarity)
+                    {
+                        continue;
+                    }
+
+                    doJump = true;
                     // Perfect similarity, we don't need to check the rest
-                    if (similarity == 1.0) break;
+                    if (similarity > 0.9999) break;
                 }
 
                 Debug.DLog($"Content Jump Head {head} from {_headPositions[head]} to {best}", true);
 
-                // Jump the head to the best position found
-                _headPositions[head] = best;
+                // Jump the head to the best position found, or to the end if no simillar position was found
+                if (doJump)
+                {
+                    _headPositions[head] = best;
+                }
+                else
+                {
+                    _headPositions[head] = _tape.Count -1;
+                }
             }
             else
             {
