@@ -15,10 +15,10 @@
   </Description>
 
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>2</ExperimentCount>
+  <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>2500</MaxGenerations>
+  <MaxGenerations>20000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -71,7 +71,7 @@
     <FoodTypes>4</FoodTypes>
     <PoisonFoods>2</PoisonFoods>
     <PoisonousTypeChanges>1</PoisonousTypeChanges>
-    <IgnoreFirstDayOfSeasonInFirstYear>false</IgnoreFirstDayOfSeasonInFirstYear>
+    <IgnoreFirstDayOfSeasonInFirstYear>true</IgnoreFirstDayOfSeasonInFirstYear>
     <StepsPerFood>5</StepsPerFood>
 
   </SeasonTaskParams>
@@ -162,11 +162,11 @@
     <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.2</ElitismProportion>
+    <ElitismProportion>0.02</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
-    <SelectionProportion>0.2</SelectionProportion>
+    <SelectionProportion>0.4</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
     <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
