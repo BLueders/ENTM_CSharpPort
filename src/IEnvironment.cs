@@ -68,5 +68,7 @@ namespace ENTM
          * @return True in case the simulation must stop now (e.g. you won/lost the entire thing)
          */
         bool IsTerminated { get; }
+
+        int TotalTimeSteps { get; }
     }
 }

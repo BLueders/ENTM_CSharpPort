@@ -388,11 +388,11 @@ namespace ENTM.Experiments
                 }
                 else
                 {
-                    if (_ea.CurrentGeneration - _lastMaxFitnessImprovementGen > 1000)
-                    {
-                        _logger.Info("1000 gens passed since last improvement " + _ea.CurrentGeneration + " " + _lastMaxFitnessImprovementGen);
-                        NoveltySearchEnabled = true;
-                    }
+                    //if (_ea.CurrentGeneration - _lastMaxFitnessImprovementGen > 1000)
+                    //{
+                    //    _logger.Info("1000 gens passed since last improvement " + _ea.CurrentGeneration + " " + _lastMaxFitnessImprovementGen);
+                    //    NoveltySearchEnabled = true;
+                    //}
                 }
             }
 
