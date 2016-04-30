@@ -117,6 +117,12 @@
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
     <PMinLowerThreshold>1</PMinLowerThreshold>
+
+    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
+    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
+
+    <!-- Switch to Objective search if the Objective score has reached this value. -->
+    <ObjectiveScoreThreshold>.9</ObjectiveScoreThreshold>
     
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
     <ArchiveLimit>500</ArchiveLimit>
@@ -133,8 +139,6 @@
     <!-- How many generations without archihve additions before PMin is adjusted down -->
     <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
 
-    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
-    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
 
     <!-- K nearest neighbors -->
     <K>10</K>
@@ -145,6 +149,9 @@
     <!-- How many redundant iterations an individual can have before it does not meet minimum criteria. 
       0-1 relative to total timesteps during lifetime. -->
     <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
+    
+    <!-- Multiply the Novely Score with the Objective fitness to the power of x. 0 to use only Novelty Score. -->
+    <ObjectiveFactorExponent>2</ObjectiveFactorExponent>
 
   </NoveltySearch>
 
