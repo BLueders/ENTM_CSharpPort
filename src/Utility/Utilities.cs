@@ -171,6 +171,26 @@ namespace ENTM.Utility
             return newArray;
         }
 
+        public static double Mean(double[] values)
+        {
+            double mean = 0;
+            for (int i = 0; i < values.Length; i++)
+            {
+                mean += values[i];
+            }
+            return mean / values.Length;
+        }
+
+        public static double StandartDeviation(double[] values) {
+            double mean = Mean(values);
+            double sd = 0;
+            for (int i = 0; i < values.Length; i++)
+            {
+                sd += (values[i] - mean) * (values[i] - mean);
+            }
+            return Math.Sqrt(sd / values.Length);
+        }
+
         public static string TimeToString(TimeSpan time)
         {
             return string.Format($"{time.Hours:D2}h:{time.Minutes:D2}m:{time.Seconds:D2}s:{time.Milliseconds:D3}ms");

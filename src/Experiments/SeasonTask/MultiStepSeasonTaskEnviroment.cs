@@ -76,6 +76,7 @@ namespace ENTM.Experiments.SeasonTask
             if (task == StepNum - 1)
             {
                 if (evaluation < 0.0001)
+                //if(SealedRandom.Next(0,2) > 0)
                     observation[observation.Length - 1] = 1;
                 else
                     observation[observation.Length - 2] = 1;
