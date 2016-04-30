@@ -175,6 +175,7 @@
     <Content Include="Config\seasontask.config.xml" />
     <Content Include="Genomes\anji2sharpneat.py" />
     <Content Include="Genomes\chromosome11943.xml" />
+    <Content Include="results_analysis.py" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
