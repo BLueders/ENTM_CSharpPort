@@ -80,9 +80,11 @@ namespace ENTM.NoveltySearch
                 double redundantTimeSteps = behaviour._auxFitnessArr[0]._value;
 
                 // Check if behaviour meets minimum criteria
-                if (redundantTimeSteps / (behaviour._auxFitnessArr.Length - 1) >= _params.MinimumCriteriaReadWriteLowerThreshold)
+                if (redundantTimeSteps / (behaviour._auxFitnessArr.Length - 1) <= _params.MinimumCriteriaReadWriteLowerThreshold)
                 {
                     score = knn.AverageDistToKnn(b);
+
+                    score *= behaviour._fitness * behaviour._fitness;
                 }
                 else
                 {

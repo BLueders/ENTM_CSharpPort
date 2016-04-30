@@ -86,7 +86,7 @@ namespace ENTM.NoveltySearch
             double[] neighbourhood;
             if (!neighbourhoods.TryGetValue(behaviour, out neighbourhood))
             {
-                neighbourhoods.Add(behaviour, neighbourhood = new double[count]);
+                neighbourhoods.Add(behaviour, neighbourhood = new double[count-1]);
             }
 
             return neighbourhood;
