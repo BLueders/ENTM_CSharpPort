@@ -339,8 +339,10 @@ namespace ENTM
             _dirStack.Clear();
 
             string[] champions = Browse();
-             int iterations = GetIntegerConsoleInput("Enter number of test iterations");
-            _experiment.TestSavedChampion(champions[0], iterations);
+            int runs = GetIntegerConsoleInput("Enter number of test runs");
+            int iterations = GetIntegerConsoleInput("Enter number of iterations per run");
+            bool record = GetBoolConsoleInput("Create recordings for each run? (y/n)");
+            _experiment.TestSavedChampion(champions[0], iterations, runs, record);
         }
 
         private static void StartStop()
@@ -463,6 +465,27 @@ namespace ENTM
                 catch (Exception)
                 {
                     Console.WriteLine($"Can't do that sir, please put in a number.");
+                }
+            } while (true);
+        }
+
+        private static bool GetBoolConsoleInput(string prompt) {
+            Console.WriteLine($"{prompt}: ");
+            do
+            {
+                try
+                {
+                    string input = Console.ReadLine();
+                    input = input.ToLower();
+                    if (input[0] == 'y')
+                        return true;
+                    if (input[0] == 'n')
+                        return false;
+                    Console.WriteLine($"Write n for No or y for Yes");
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine($"Can't do that sir, please put in y or n.");
                 }
             } while (true);
         }

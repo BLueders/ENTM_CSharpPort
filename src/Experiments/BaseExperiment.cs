@@ -103,6 +103,11 @@ namespace ENTM.Experiments
             return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
         }
 
+        private string RecordingFile(string id)
+        {
+            return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
+        }
+
         public bool ExperimentCompleted { get; private set; } = false;
 
         // Used for folder structure
@@ -184,7 +189,7 @@ namespace ENTM.Experiments
                 return FitnessInfo.Zero;
             }
 
-            return TestGenome(_ea.CurrentChampGenome, 1);
+            return TestGenome(_ea.CurrentChampGenome, 1, 1, true);
         }
 
         public void TestCurrentPopulation()
@@ -199,16 +204,16 @@ namespace ENTM.Experiments
 
             foreach (NeatGenome genome in _ea.GenomeList)
             {
-                TestGenome(genome, 1);
+                TestGenome(genome, 1, 1, true);
             }
         }
 
         public FitnessInfo TestSavedChampion(string xmlPath)
         {
-            return TestSavedChampion(xmlPath, 1);
+            return TestSavedChampion(xmlPath, 1, 1, true);
         }
 
-        public FitnessInfo TestSavedChampion(string xmlPath, int iterations)
+        public FitnessInfo TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings)
         {
             // Load genome from the xml file
             XmlDocument xmlChampion = new XmlDocument();
@@ -220,10 +225,10 @@ namespace ENTM.Experiments
             championGenome.GenomeFactory = CreateGenomeFactory() as NeatGenomeFactory;
 
 
-            return TestGenome(championGenome, iterations);
+            return TestGenome(championGenome, iterations, runs, createRecordings);
         }
 
-        private FitnessInfo TestGenome(NeatGenome genome, int iterations)
+        private FitnessInfo TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings)
         {
             if (_ea != null && _ea.RunState == RunState.Running)
             {
@@ -236,27 +241,62 @@ namespace ENTM.Experiments
             // Decode the genome (genotype => phenotype)
             IBlackBox phenome = decoder.Decode(genome);
 
+            //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
+            //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
             Debug.On = true;
             _logger.Info($"Testing phenome (ID: {genome.Id})...");
+            Console.WriteLine($"Testing phenome (ID: {genome.Id})...");
 
-            FitnessInfo result = _evaluator.TestPhenome(phenome, iterations);
+            double[] fitnessInfos = new double[runs];
 
             CreateExperimentDirectoryIfNecessary();
 
-            if (Recorder != null)
+            // run evaluations
+            double minFitness = double.MaxValue;
+            double maxFitness = double.MinValue;
+            for (int i = 0; i < runs; i++)
             {
-                Bitmap bmp = Recorder.ToBitmap();
-                bmp.Save($"{RecordingFile(genome.Id)}", ImageFormat.Png);
+                fitnessInfos[i] = _evaluator.TestPhenome(phenome, iterations)._fitness;
+                if (fitnessInfos[i] < minFitness) {
+                    minFitness = fitnessInfos[i];
+                }
+                if (fitnessInfos[i] > maxFitness)
+                {
+                    maxFitness = fitnessInfos[i];
+                }
+                if (createRecordings)
+                {
+                    if (Recorder != null)
+                    {
+                        Bitmap bmp = Recorder.ToBitmap();
+                        bmp.Save($"{RecordingFile($"{genome.Id}_{i}")}", ImageFormat.Png);
+                    }
+                    else
+                    {
+                        _logger.Warn("Recorder was null");
+                        break;
+                    }
+                    _logger.Info($"Run {i}: Achieved fitness: {fitnessInfos[i]:F4}");
+                    Console.WriteLine($"Run {i}: Achieved fitness: {fitnessInfos[i]:F4}");
+                }
             }
-            else
+
+            // evaluate runs
+            double result = 0;
+            if (runs > 1)
             {
-                _logger.Warn("Recorder was null");
+                result = Utilities.Mean(fitnessInfos);
+                double sd = Utilities.StandartDeviation(fitnessInfos);
+                //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
+                //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
+                _logger.Info($"Done. Average fitness: {result:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
+                Console.WriteLine($"Done. Average fitness: {result:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
+            } else
+            {
+                result = fitnessInfos[0];
             }
 
-
-            _logger.Info($"Done. Achieved fitness: {result._fitness:F4}");
-
-            return result;
+            return new FitnessInfo(result, 0);
         }
 
         public void AbortCurrentExperiment()
@@ -278,7 +318,19 @@ namespace ENTM.Experiments
             long timeRemainingEst = gensRemaining * timePerGen;
 
             _lastLogTime = _timer.ElapsedMilliseconds;
+
+            //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
+            //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
             _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
+              $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
+              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
+              $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
+              $"Champ: {_ea.CurrentChampGenome.Complexity:F0} Strategy: {_ea.ComplexityRegulationMode}, " +
+              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
+              $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
+              );
+
+            Console.WriteLine($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
               $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
               $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
               $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
