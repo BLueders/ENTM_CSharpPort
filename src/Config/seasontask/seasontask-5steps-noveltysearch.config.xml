@@ -2,68 +2,61 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>CopyTask</Name>
+  <Name>SeasonTask-5Steps-NoveltySearch</Name>
   
   <!-- The fully qualified name of the experiment class -->
-  <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
-
+  <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
+  
   <!-- Experiment description -->
   <Description>
-    Copy task experiment with turing controller.
-    The controller must record a bit-vector sequence to memory, and read it back.
+    Season task experiment with turing controller. 
+    In multible seasons the controller must learn wich foods are edible and which are poisonous for each. 
+    Then recall the information when it encounters that season again to decide wich to eat.
   </Description>
-  
+
   <!-- How many experiments will be performed (serially) -->
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>1500</MaxGenerations>
+  <MaxGenerations>20000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>10</LogInterval>
+  <LogInterval>5</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
-
-  <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
-  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
   
+    <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
+  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
   
   <!-- Turing Machine Parameters-->
   <TuringMachineParams>
-
-    <!-- If set to false, the Turing machine will always return a 0 vector -->
     <Enabled>true</Enabled>
-
     <!-- Maximum memory size (-1 for unlimited) -->
     <N>-1</N>
 
     <!-- Write vector size -->
     <M>8</M>
 
-    <!-- Number of Read/Write heads-->
-    <Heads>1</Heads>
+    <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
+    <MinSimilarityToJump>0.65</MinSimilarityToJump>
     
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
 
-    <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
+    <!-- Shift mode: "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
     <ShiftMode>Multiple</ShiftMode>
 
-    <!-- "Interpolate" or "Absolute". 
-        Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
-        Absolute: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
-    -->
-    <WriteMode>Interpolate</WriteMode>
-
+    <!-- Number of Read/Write heads-->
+    <Heads>1</Heads>
   </TuringMachineParams>
 
   
-  <!-- Copy Task Parameters -->
-  <CopyTaskParams>  
+  <!-- Season Task Parameters -->
+  <SeasonTaskParams>
 
     <!-- Evaluation iterations -->
     <Iterations>50</Iterations>
@@ -71,59 +64,45 @@
     <!-- The seed used for random environment generations -->
     <RandomSeed>0</RandomSeed>
 
-    <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>1</VectorSize>
+    <FitnessFactor>1</FitnessFactor>
+    <Years>1</Years>
+    <Seasons>1</Seasons>
+    <Days>8</Days>
+    <FoodTypes>4</FoodTypes>
+    <PoisonFoods>2</PoisonFoods>
+    <PoisonousTypeChanges>1</PoisonousTypeChanges>
+    <IgnoreFirstDayOfSeasonInFirstYear>true</IgnoreFirstDayOfSeasonInFirstYear>
+    <StepsPerFood>5</StepsPerFood>
 
-    <!-- Maximum length of the sequence of bit vectors. 
-         If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
-         If LengthRule is Fixed, sequence will always be MaxLength. -->
-    <MaxLength>10</MaxLength>
-
-    <!-- "Random" or "Fixed" sequence lengths -->
-    <LengthRule>Random</LengthRule>
-
-    <!-- What fitness function to evalutate with.
-        StrictCloseToTarget
-        PartialScore
-        Emilarity
-        ClosestBinary
-        CompleteBinary
-    -->
-    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
-
-    <!-- Set to true to eliminate zero vectors in the sequence, as the algorithm can have problems with them. -->
-    <EliminateZeroVectors>false</EliminateZeroVectors>
-    
-  </CopyTaskParams>
-
+  </SeasonTaskParams>
 
   <!-- Novelty Search Parameters -->
   <NoveltySearch>
 
     <!-- If false, only environmental objective fitness will be used. -->
-    <Enabled>false</Enabled>
-
-    <!-- What behaviour we want to score
+    <Enabled>true</Enabled>
+    
+	<!-- What behaviour we want to score
       WritePattern: Use the write position over time as the novelty vector.
       ReadContent: Use the read vector over time as the novelty vector.
       -->
     <NoveltyVector>ReadContent</NoveltyVector>
-    
+	
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>40</PMin>
-
+    <PMin>50</PMin>
+	
+    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
+    <PMinLowerThreshold>10</PMinLowerThreshold>
+	
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
-    <ArchiveLimit>500</ArchiveLimit>
+    <ArchiveLimit>300</ArchiveLimit>
 
     <!-- PMin up adjustment factor-->
     <PMinAdjustUp>1.05</PMinAdjustUp>
 
     <!-- PMin down adjustment factor -->
     <PMinAdjustDown>0.95</PMinAdjustDown>
-    
-    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
-    <PMinLowerThreshold>10</PMinLowerThreshold>
-    
+       
     <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
     <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
 
@@ -131,7 +110,7 @@
     <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
 
     <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
-    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
+    <MaxNoveltySearchGenerations>5000</MaxNoveltySearchGenerations>
     
     <!-- K nearest neighbors -->
     <K>10</K>
@@ -144,11 +123,11 @@
     <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
     
   </NoveltySearch>
-
+  
   
   <!-- The network activation scheme to use -->
   <Activation>
-    
+
     <!-- "Acyclic", "CyclicFixedIters" or "CyclicRelax"
          Acyclic:           Does not support recurrent connections. Network is fully activated each activation.
          CyclicFixedIters:  Each iteration will iterate signals one step from input -> output.
@@ -158,46 +137,47 @@
 
     <!-- CyclicFixedIters only -->
     <Iters>3</Iters>
-    
+
     <!-- CyclicRelax only -->
     <Threshold>0.1</Threshold>
-    
+
     <!-- CyclicRelax only -->
     <MaxIters>5</MaxIters>
-  
+
   </Activation>
 
-  
   <!-- Complexity Regulation Parameters -->
   <ComplexityRegulation>
     <!-- "Absolute" or "Relative"
        Absolute: Defines an absolute ceiling on complexity.
        Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
     <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
-  
+
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
-    <ComplexityThreshold>300</ComplexityThreshold>
+    <ComplexityThreshold>450</ComplexityThreshold>
 
   </ComplexityRegulation>
 
+ 
 
+  
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
     <!-- Number of species in the population. Default: 10 -->
     <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.2</ElitismProportion>
+    <ElitismProportion>0.02</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
-    <SelectionProportion>0.2</SelectionProportion>
+    <SelectionProportion>0.4</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
-    <OffspringAsexualProportion>0.8</OffspringAsexualProportion>
+    <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
 
     <!-- The proportion of offspring to be produced from sexual reproduction. Default: 0.5 -->
-    <OffspringSexualProportion>0.19</OffspringSexualProportion>
+    <OffspringSexualProportion>0.5</OffspringSexualProportion>
 
     <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
     <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
@@ -212,7 +192,6 @@
     <ComplexityMovingAverageHistoryLength>100</ComplexityMovingAverageHistoryLength>
   </EAParams>
 
-  
   <!-- Genome Parameters -->
   <GenomeParams>
     <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
@@ -221,17 +200,17 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>.5</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>0.3</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>.3</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>0.5</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.6</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
-    <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
+    <AddNodeMutationProbability>0.005</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
     <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>

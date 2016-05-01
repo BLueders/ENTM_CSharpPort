@@ -15,8 +15,8 @@ namespace ENTM.Experiments.CopyTask
         // The length of an element in the sequence (usually M - 1)
         private readonly int _vectorSize;
 
-        // The maximum length that the sequence can be (if random), else the actual sequence length.
-        public int MaxSequenceLength;
+        // The maximum length that the sequence can be(if random), else the actual sequence length.
+        private readonly int _maxSequenceLength;
 
         public bool EliminiateZeroVectors { get; set; }
 
@@ -27,6 +27,7 @@ namespace ENTM.Experiments.CopyTask
 
         // Current fitness score
         private double _score;
+
 
 
         public override IController Controller { get; set; }
@@ -42,21 +43,26 @@ namespace ENTM.Experiments.CopyTask
         /// </summary>
         public override int OutputCount => _vectorSize + 2;
 
-        public override double CurrentScore => _score * ((double) MaxSequenceLength / (double) Sequence.Length);
+        public override double CurrentScore => _score * ((double)_maxSequenceLength / (double) Sequence.Length);
 
-        public override double MaxScore => MaxSequenceLength;
+        public override double MaxScore => _maxSequenceLength;
 
         public override double NormalizedScore => CurrentScore / MaxScore;
 
         /// <summary>
         /// Terminate when the write and read sequences are complete
         /// </summary>
-        public override bool IsTerminated => _step >= _totalTimeSteps;
+        public override bool IsTerminated => _step >= TotalTimeSteps;
 
         /// <summary>
         /// Read + Write + start and delimiter + 1 idle step for content jumping after the delimiter
         /// </summary>
-        private int _totalTimeSteps => 2 * Sequence.Length + 2 + 1;
+        public override int TotalTimeSteps => 2 * Sequence.Length + 2 + 1;
+
+        /// <summary>
+        /// The maximum amount of timesteps in a non random environment
+        /// </summary>
+        public override int MaxTimeSteps => 2 * _maxSequenceLength + 2 + 1;
 
         public sealed override int RandomSeed { get; set; }
 
@@ -64,7 +70,7 @@ namespace ENTM.Experiments.CopyTask
         public CopyTaskEnvironment(CopyTaskProperties props)
         {
             _vectorSize = props.VectorSize;
-            MaxSequenceLength = props.MaxSequenceLength;
+            _maxSequenceLength = props.MaxSequenceLength;
             LengthRule = props.LengthRule;
             _fitnessFunction = props.FitnessFunction;
             RandomSeed = props.RandomSeed;
@@ -86,11 +92,11 @@ namespace ENTM.Experiments.CopyTask
             switch (LengthRule)
             {
                 case LengthRule.Fixed:
-                    length = MaxSequenceLength;
+                    length = _maxSequenceLength;
                     break;
 
                 case LengthRule.Random:
-                    length = ThreadSafeRandom.Next(0, MaxSequenceLength) + 1;
+                    length = ThreadSafeRandom.Next(0, _maxSequenceLength) + 1;
                     //length = random.Next(0, _maxSequenceLength) + 1;
 
                     break;

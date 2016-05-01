@@ -34,7 +34,10 @@ namespace ENTM.NoveltySearch
             }
         }
 
-        public bool StopConditionSatisfied => _pMinLowerThresholdReached || _generation >= _params.MaxNoveltySearchGenerations;
+        public bool StopConditionSatisfied => 
+            _maxObjectiveScore >= _params.ObjectiveScoreThreshold ||
+            _pMinLowerThresholdReached || 
+            _generation >= _params.MaxNoveltySearchGenerations;
 
         private double _pMin;
         private int _generationsSinceArchiveAddition = -1;
@@ -44,6 +47,7 @@ namespace ENTM.NoveltySearch
         private long _knnTotalTimeSpent;
         private int _belowMinimumCriteria;
         private bool _pMinLowerThresholdReached = false;
+        private double _maxObjectiveScore = 0d;
 
         public TuringNoveltyScorer(NoveltySearchParameters parameters)
         {
@@ -75,14 +79,24 @@ namespace ENTM.NoveltySearch
             {
                 FitnessInfo behaviour = b.Score;
 
+                if (behaviour._fitness >= _maxObjectiveScore)
+                {
+                    _maxObjectiveScore = behaviour._fitness;
+                }
+
                 double score;
 
                 double redundantTimeSteps = behaviour._auxFitnessArr[0]._value;
 
                 // Check if behaviour meets minimum criteria
-                if (redundantTimeSteps / (behaviour._auxFitnessArr.Length - 1) >= _params.MinimumCriteriaReadWriteLowerThreshold)
+                if (redundantTimeSteps / (behaviour._auxFitnessArr.Length - 1) <= _params.MinimumCriteriaReadWriteLowerThreshold)
                 {
                     score = knn.AverageDistToKnn(b);
+
+                    if (_params.ObjectiveFactorExponent > 0)
+                    {
+                        score *= Math.Pow(behaviour._fitness, _params.ObjectiveFactorExponent);
+                    }
                 }
                 else
                 {
@@ -134,7 +148,7 @@ namespace ENTM.NoveltySearch
 
             if (_generation % _reportInterval == 0)
             {
-                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin.ToString("0.00")}. Avg knn time spent/gen: {_knnTotalTimeSpent / _reportInterval} ms." + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria / (float) _reportInterval}");
+                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin:F2}. Avg knn time spent/gen: {_knnTotalTimeSpent / _reportInterval} ms. " + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria / (float) _reportInterval}, Max Objective Score: {_maxObjectiveScore:F4}");
                 _knnTotalTimeSpent = 0;
                 _belowMinimumCriteria = 0;
             }

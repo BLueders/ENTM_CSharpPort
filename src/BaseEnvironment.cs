@@ -31,6 +31,8 @@ namespace ENTM
         public abstract void ResetAll();
         public abstract void ResetIteration();
         public abstract double[] PerformAction(double[] action);
+        public abstract int TotalTimeSteps { get; }
+        public abstract int MaxTimeSteps { get; }
 
         public void ResetRandom()
         {

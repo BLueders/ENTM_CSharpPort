@@ -93,10 +93,17 @@ namespace ENTM.Experiments
         private uint _lastMaxFitnessImprovementGen;
         private uint _noveltySearchActivatedGen;
 
+        public string CurrentDirectory => string.Format($"{Program.ROOT_PATH}{Name}/{_identifier}/{_subIdentifier}/");
+
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
 
         private string RecordingFile(uint id)
+        {
+            return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
+        }
+
+        private string RecordingFile(string id)
         {
             return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
         }
@@ -112,8 +119,6 @@ namespace ENTM.Experiments
 
         public Recorder Recorder => _evaluator.Recorder;
         private Stopwatch _timer;
-
-        public TimeSpan TimeSpent => _timer?.Elapsed ?? TimeSpan.Zero;
 
         public int InputCount => EnvironmentOutputCount + ControllerOutputCount;
         public int OutputCount => EnvironmentInputCount + ControllerInputCount;
@@ -171,7 +176,7 @@ namespace ENTM.Experiments
         /// <summary>
         /// Notifies listeners that the experiment is complete - that is; maximum generations or fitness was reached
         /// </summary>
-        public event EventHandler ExperimentCompleteEvent;
+        public event EventHandler<ExperimentCompleteEventArgs> ExperimentCompleteEvent;
 
         /// <summary>
         /// Test the champion of the current EA
@@ -184,7 +189,7 @@ namespace ENTM.Experiments
                 return FitnessInfo.Zero;
             }
 
-            return TestGenome(_ea.CurrentChampGenome, 1);
+            return TestGenome(_ea.CurrentChampGenome, 1, 1, true);
         }
 
         public void TestCurrentPopulation()
@@ -199,16 +204,16 @@ namespace ENTM.Experiments
 
             foreach (NeatGenome genome in _ea.GenomeList)
             {
-                TestGenome(genome, 1);
+                TestGenome(genome, 1, 1, true);
             }
         }
 
         public FitnessInfo TestSavedChampion(string xmlPath)
         {
-            return TestSavedChampion(xmlPath, 1);
+            return TestSavedChampion(xmlPath, 1, 1, true);
         }
 
-        public FitnessInfo TestSavedChampion(string xmlPath, int iterations)
+        public FitnessInfo TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings)
         {
             // Load genome from the xml file
             XmlDocument xmlChampion = new XmlDocument();
@@ -220,10 +225,10 @@ namespace ENTM.Experiments
             championGenome.GenomeFactory = CreateGenomeFactory() as NeatGenomeFactory;
 
 
-            return TestGenome(championGenome, iterations);
+            return TestGenome(championGenome, iterations, runs, createRecordings);
         }
 
-        private FitnessInfo TestGenome(NeatGenome genome, int iterations)
+        private FitnessInfo TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings)
         {
             if (_ea != null && _ea.RunState == RunState.Running)
             {
@@ -236,27 +241,62 @@ namespace ENTM.Experiments
             // Decode the genome (genotype => phenotype)
             IBlackBox phenome = decoder.Decode(genome);
 
+            //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
+            //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
             Debug.On = true;
             _logger.Info($"Testing phenome (ID: {genome.Id})...");
+            Console.WriteLine($"Testing phenome (ID: {genome.Id})...");
 
-            FitnessInfo result = _evaluator.TestPhenome(phenome, iterations);
+            double[] fitnessInfos = new double[runs];
 
             CreateExperimentDirectoryIfNecessary();
 
-            if (Recorder != null)
+            // run evaluations
+            double minFitness = double.MaxValue;
+            double maxFitness = double.MinValue;
+            for (int i = 0; i < runs; i++)
             {
-                Bitmap bmp = Recorder.ToBitmap();
-                bmp.Save($"{RecordingFile(genome.Id)}", ImageFormat.Png);
+                fitnessInfos[i] = _evaluator.TestPhenome(phenome, iterations)._fitness;
+                if (fitnessInfos[i] < minFitness) {
+                    minFitness = fitnessInfos[i];
+                }
+                if (fitnessInfos[i] > maxFitness)
+                {
+                    maxFitness = fitnessInfos[i];
+                }
+                if (createRecordings)
+                {
+                    if (Recorder != null)
+                    {
+                        Bitmap bmp = Recorder.ToBitmap();
+                        bmp.Save($"{RecordingFile($"{genome.Id}_{i}")}", ImageFormat.Png);
+                    }
+                    else
+                    {
+                        _logger.Warn("Recorder was null");
+                        break;
+                    }
+                    _logger.Info($"Run {i}: Achieved fitness: {fitnessInfos[i]:F4}");
+                    Console.WriteLine($"Run {i}: Achieved fitness: {fitnessInfos[i]:F4}");
+                }
             }
-            else
+
+            // evaluate runs
+            double result = 0;
+            if (runs > 1)
             {
-                _logger.Warn("Recorder was null");
+                result = Utilities.Mean(fitnessInfos);
+                double sd = Utilities.StandartDeviation(fitnessInfos);
+                //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
+                //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
+                _logger.Info($"Done. Average fitness: {result:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
+                Console.WriteLine($"Done. Average fitness: {result:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
+            } else
+            {
+                result = fitnessInfos[0];
             }
 
-
-            _logger.Info($"Done. Achieved fitness: {result._fitness:F4}");
-
-            return result;
+            return new FitnessInfo(result, 0);
         }
 
         public void AbortCurrentExperiment()
@@ -278,7 +318,19 @@ namespace ENTM.Experiments
             long timeRemainingEst = gensRemaining * timePerGen;
 
             _lastLogTime = _timer.ElapsedMilliseconds;
+
+            //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
+            //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
             _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
+              $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
+              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
+              $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
+              $"Champ: {_ea.CurrentChampGenome.Complexity:F0} Strategy: {_ea.ComplexityRegulationMode}, " +
+              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
+              $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
+              );
+
+            Console.WriteLine($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
               $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
               $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
               $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
@@ -314,11 +366,13 @@ namespace ENTM.Experiments
                 spcCmpMean[i] = s.CalcMeanComplexity();
             }
 
-            if (!File.Exists(DataFile))
+            bool writeHeader = !File.Exists(DataFile);
+
+            using (StreamWriter sw = File.AppendText(DataFile))
             {
-                CreateExperimentDirectoryIfNecessary();
-                using (StreamWriter sw = File.AppendText(DataFile))
+                if (writeHeader)
                 {
+                    CreateExperimentDirectoryIfNecessary();
                     StringBuilder header = new StringBuilder("Generation,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
 
                     for (int i = 0; i < spcCount; i++)
@@ -336,10 +390,7 @@ namespace ENTM.Experiments
 
                     sw.WriteLine(header.ToString());
                 }
-            }
 
-            using (StreamWriter sw = File.AppendText(DataFile))
-            {
                 StringBuilder data = new StringBuilder(string.Format(CultureInfo.InvariantCulture,
                     "{0},{1:F4},{2:F4},{3:F0},{4:F4},{5:F0},{6},{7},{8}",
                     gen, fitMax, fitMean, cmpMax, cmpMean, cmpChamp, champHidCount, spcMax, spcMin));
@@ -389,11 +440,11 @@ namespace ENTM.Experiments
                 }
                 else
                 {
-                    if (_ea.CurrentGeneration - _lastMaxFitnessImprovementGen > 1000)
-                    {
-                        _logger.Info("1000 gens passed since last improvement " + _ea.CurrentGeneration + " " + _lastMaxFitnessImprovementGen);
-                        NoveltySearchEnabled = true;
-                    }
+                    //if (_ea.CurrentGeneration - _lastMaxFitnessImprovementGen > 1000)
+                    //{
+                    //    _logger.Info("1000 gens passed since last improvement " + _ea.CurrentGeneration + " " + _lastMaxFitnessImprovementGen);
+                    //    NoveltySearchEnabled = true;
+                    //}
                 }
             }
 
@@ -430,19 +481,31 @@ namespace ENTM.Experiments
                 }
                 else
                 {
-                    _logger.Info("Experiment completed");
+                    _logger.Info($"Experiment completed in {_ea.CurrentGeneration} generations");
                 }
 
                 if (ExperimentCompleteEvent != null)
                 {
                     try
                     {
-                        ExperimentCompleteEvent(this, EventArgs.Empty);
+                        ExperimentCompleteEventArgs args = new ExperimentCompleteEventArgs();
+                        args.Experiment = _number;
+                        args.Directory = CurrentDirectory;
+                        args.TimeSpent = _timer.Elapsed;
+            
+                        args.Solved = _evaluator.StopConditionSatisfied;
+                        args.Generations = _ea.CurrentGeneration;
+                        args.ChampFitness = _ea.Statistics._maxFitness;
+                        args.ChampComplexity = _ea.CurrentChampGenome.Complexity;
+                        args.ChampHiddenNodes = _ea.CurrentChampGenome.NodeList.Count - _ea.CurrentChampGenome.InputBiasOutputNeuronCount;
+                        args.ChampBirthGen = _ea.CurrentChampGenome.BirthGeneration;
+
+                        ExperimentCompleteEvent(this, args);
                     }
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        _logger.Info("ExperimentCompleteEvent listener threw exception: " + ex.Message);
+                        _logger.Warn("ExperimentCompleteEvent listener threw exception: " + ex.Message);
                     }
                 }
             }
@@ -458,7 +521,7 @@ namespace ENTM.Experiments
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        _logger.Info("ExperimentPausedEvent listener threw exception: " + ex.Message);
+                        _logger.Warn("ExperimentPausedEvent listener threw exception: " + ex.Message);
                     }
                 }
             }
@@ -493,7 +556,7 @@ namespace ENTM.Experiments
                             catch (Exception ex)
                             {
                                 // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                                _logger.Info("ExperimentResumedEvent listener threw exception: " + ex.Message);
+                                _logger.Warn("ExperimentResumedEvent listener threw exception: " + ex.Message);
                             }
                         }
                         _ea.StartContinue();
@@ -537,7 +600,7 @@ namespace ENTM.Experiments
                 catch (Exception ex)
                 {
                     // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                    _logger.Info("ExperimentStartedEvent listener threw exception: " + ex.Message);
+                    _logger.Warn("ExperimentStartedEvent listener threw exception: " + ex.Message);
                 }
             }
         }
@@ -577,7 +640,6 @@ namespace ENTM.Experiments
 
         public string Name => _name;
 
-        public string CurrentDirectory => string.Format($"{Program.ROOT_PATH}{Name}/{_identifier}/{_subIdentifier}/");
 
         /// <summary>
         /// Gets the default population size to use for the experiment
@@ -799,5 +861,19 @@ namespace ENTM.Experiments
             return ea;
         }
         #endregion
+    }
+
+    public class ExperimentCompleteEventArgs : EventArgs
+    {
+        public int Experiment { get; internal set; }
+        public string Directory { get; internal set; }
+        public TimeSpan TimeSpent { get; internal set; }
+
+        public bool Solved { get; internal set; }
+        public uint Generations { get; internal set; }
+        public double ChampFitness { get; internal set; }
+        public double ChampComplexity { get; internal set; }
+        public int ChampHiddenNodes { get; internal set; }
+        public uint ChampBirthGen { get; internal set; }
     }
 }

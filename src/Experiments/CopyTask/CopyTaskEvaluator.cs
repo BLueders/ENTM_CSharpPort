@@ -41,7 +41,6 @@ namespace ENTM.Experiments.CopyTask
         protected override void TearDownTest()
         {
             Environment.LengthRule = _copyTaskProps.LengthRule;
-            Environment.MaxSequenceLength = _copyTaskProps.MaxSequenceLength;
             Environment.RandomSeed = _copyTaskProps.RandomSeed;
         }
 
@@ -53,24 +52,5 @@ namespace ENTM.Experiments.CopyTask
         public override int EnvironmentOutputCount => _copyTaskProps.VectorSize + 2;
 
         public override int Iterations => _copyTaskProps.Iterations;
-
-        public override int NoveltyVectorLength
-        {
-            get
-            {
-                switch (NoveltySearchParameters.NoveltyVectorMode)
-                {
-                    case NoveltyVector.WritePattern:
-                        return _copyTaskProps.MaxSequenceLength*2 + 2 + 1;
-
-                    case NoveltyVector.ReadContent:
-
-                        // total timesteps * M + 1 for minimum criteria
-                        return (_copyTaskProps.MaxSequenceLength*2 + 2)*_turingMachineProps.M + 1;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
     }
 }

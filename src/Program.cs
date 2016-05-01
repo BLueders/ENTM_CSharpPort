@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +23,7 @@ namespace ENTM
         public const string ROOT_PATH = "ENTM/";
         private const string CONFIG_PATH = ROOT_PATH + "Config/";
         private const string LOG4NET_CONFIG = "log4net.properties";
+        private const string RESULTS_FILE = "results.csv";
 
         private static Stopwatch _stopwatch = new Stopwatch();
 
@@ -75,15 +77,24 @@ namespace ENTM
 
         private static string[] ParseArgs(string[] args)
         {
-            string[] configs = new string[args.Length];
+            string[] configs = null;
 
-            for (int i = 0; i < args.Length; i++)
+            if (args[0].EndsWith(".txt"))
             {
-                string config = args[i];
+                configs = File.ReadAllLines($"{CONFIG_PATH}{args[0]}");
+            }
+            else
+            {
+                configs = args;
+            }
+
+            for (int i = 0; i < configs.Length; i++)
+            {
+                string config = configs[i];
                 if (!config.EndsWith(".config.xml"))
                 {
                     config = config.EndsWith(".config") ? $"{config}.xml" : $"{config}.config.xml";
-                } 
+                }
                 configs[i] = $"ENTM/Config/{config}";
             }
 
@@ -92,7 +103,7 @@ namespace ENTM
 
         private static string[] Prompt()
         {
-            Console.WriteLine("Select config");
+            Console.WriteLine("Select config:");
 
             Console.WriteLine($"A: Execute all experiments in the current directory serially");
 
@@ -189,6 +200,8 @@ namespace ENTM
                     Console.WriteLine($"File not found: {configPaths[i]}");
                 }
             }
+
+            Console.WriteLine($"Loaded {_configs.Length} configs");
         }
 
         private static bool InitializeExperiment(XmlElement config)
@@ -247,11 +260,27 @@ namespace ENTM
             _stopwatch.Start();
         }
 
-        private static void ExperimentCompleteEvent(object sender, EventArgs e)
+        private static void ExperimentCompleteEvent(object sender, ExperimentCompleteEventArgs e)
         {
-            _logger.Info($"Time spent: {Utilities.TimeToString(_experiment.TimeSpent)}");
+            string timeSpent = Utilities.TimeToString(e.TimeSpent);
+            _logger.Info($"Time spent: {timeSpent}");
 
             _experiment.TestCurrentChampion();
+
+            string resultsFile = $"{e.Directory}{RESULTS_FILE}";
+            bool writeHeader = !File.Exists(resultsFile);
+
+            using (StreamWriter sw = File.AppendText(resultsFile))
+            {
+                if (writeHeader)
+                {
+                    sw.WriteLine("Experiment,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation");
+                }
+
+                sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                    "{0},{1},{2},{3},{4:F4},{5:F0},{6},{7}",
+                    e.Experiment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen));
+            }
 
             NextExperiment();
         }
@@ -310,8 +339,10 @@ namespace ENTM
             _dirStack.Clear();
 
             string[] champions = Browse();
-             int iterations = GetIntegerConsoleInput("Enter number of test iterations");
-            _experiment.TestSavedChampion(champions[0], iterations);
+            int runs = GetIntegerConsoleInput("Enter number of test runs");
+            int iterations = GetIntegerConsoleInput("Enter number of iterations per run");
+            bool record = GetBoolConsoleInput("Create recordings for each run? (y/n)");
+            _experiment.TestSavedChampion(champions[0], iterations, runs, record);
         }
 
         private static void StartStop()
@@ -434,6 +465,27 @@ namespace ENTM
                 catch (Exception)
                 {
                     Console.WriteLine($"Can't do that sir, please put in a number.");
+                }
+            } while (true);
+        }
+
+        private static bool GetBoolConsoleInput(string prompt) {
+            Console.WriteLine($"{prompt}: ");
+            do
+            {
+                try
+                {
+                    string input = Console.ReadLine();
+                    input = input.ToLower();
+                    if (input[0] == 'y')
+                        return true;
+                    if (input[0] == 'n')
+                        return false;
+                    Console.WriteLine($"Write n for No or y for Yes");
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine($"Can't do that sir, please put in y or n.");
                 }
             } while (true);
         }

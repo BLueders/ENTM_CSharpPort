@@ -13,8 +13,6 @@ namespace ENTM.Experiments
     {
         Recorder Recorder { get; }
 
-        TimeSpan TimeSpent { get; }
-
         bool NoveltySearchEnabled { get; set; }
 
         void Initialize(string name, XmlElement xmlConfig, string identifier, int subIdentifier, int number);
@@ -23,7 +21,7 @@ namespace ENTM.Experiments
     
         FitnessInfo TestCurrentChampion();
         FitnessInfo TestSavedChampion(string xmlChampion);
-        FitnessInfo TestSavedChampion(string xmlPath, int iterations);
+        FitnessInfo TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings);
         void TestCurrentPopulation();
 
         void AbortCurrentExperiment();
@@ -31,7 +29,7 @@ namespace ENTM.Experiments
         event EventHandler ExperimentStartedEvent;
         event EventHandler ExperimentPausedEvent;
         event EventHandler ExperimentResumedEvent;
-        event EventHandler ExperimentCompleteEvent;
+        event EventHandler<ExperimentCompleteEventArgs> ExperimentCompleteEvent;
 
         #region From INeatExperiment.cs
 

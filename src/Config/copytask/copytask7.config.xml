@@ -17,13 +17,13 @@
   <ExperimentCount>20</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>500</MaxGenerations>
+  <MaxGenerations>1500</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>50</LogInterval>
+  <LogInterval>100</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -104,7 +104,7 @@
   <NoveltySearch>
 
     <!-- If false, only environmental objective fitness will be used. -->
-    <Enabled>true</Enabled>
+    <Enabled>false</Enabled>
 
     <!-- What behaviour we want to score
       WritePattern: Use the write position over time as the novelty vector.
@@ -113,17 +113,8 @@
     <NoveltyVector>ReadContent</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>5</PMin>
+    <PMin>40</PMin>
 
-    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
-    <PMinLowerThreshold>1</PMinLowerThreshold>
-
-    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
-    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
-
-    <!-- Switch to Objective search if the Objective score has reached this value. -->
-    <ObjectiveScoreThreshold>.9</ObjectiveScoreThreshold>
-    
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
     <ArchiveLimit>500</ArchiveLimit>
 
@@ -133,12 +124,17 @@
     <!-- PMin down adjustment factor -->
     <PMinAdjustDown>0.95</PMinAdjustDown>
 
+    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
+    <PMinLowerThreshold>10</PMinLowerThreshold>
+
     <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
     <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
 
     <!-- How many generations without archihve additions before PMin is adjusted down -->
     <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
 
+    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
+    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
 
     <!-- K nearest neighbors -->
     <K>10</K>
@@ -149,9 +145,6 @@
     <!-- How many redundant iterations an individual can have before it does not meet minimum criteria. 
       0-1 relative to total timesteps during lifetime. -->
     <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
-    
-    <!-- Multiply the Novely Score with the Objective fitness to the power of x. 0 to use only Novelty Score. -->
-    <ObjectiveFactorExponent>2</ObjectiveFactorExponent>
 
   </NoveltySearch>
 
@@ -194,10 +187,10 @@
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
     <!-- Number of species in the population. Default: 10 -->
-    <SpecieCount>8</SpecieCount>
+    <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.02</ElitismProportion>
+    <ElitismProportion>0.1</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
@@ -227,7 +220,7 @@
   <GenomeParams>
     <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
          The weight range is strictly enforced - e.g. when creating new connections and mutating existing ones. Default: 5.0 -->
-    <ConnectionWeightRange>10.0</ConnectionWeightRange>
+    <ConnectionWeightRange>15.0</ConnectionWeightRange>
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
@@ -238,7 +231,7 @@
     <DisjointExcessGenesRecombinedProbability>.3</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.8</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
     <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
