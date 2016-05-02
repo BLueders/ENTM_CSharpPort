@@ -117,6 +117,8 @@ namespace ENTM.TuringMachine
             if (ScoreNovelty)
             {
                 _noveltyVector = new double[NoveltyVectorLength];
+
+                // Mimimum criteria
                 _noveltyVector[0] = 0;
             }
 
@@ -262,6 +264,16 @@ namespace ENTM.TuringMachine
                                 // Skip position 1, it's used for minimum criteria. Timestep 0 is not recorded here, so subtract 1
                                 int startIndex = 1 + (_currentTimeStep - 1) * _m;
                                 Array.Copy(result[i], 0, _noveltyVector, startIndex, result[i].Length);
+
+                                break;
+
+                            case NoveltySearch.NoveltyVector.WritePatternAndInterp:
+
+                                // Head position (we use corrected write position to account for downward shifts)
+                                _noveltyVector[_currentTimeStep] = correctedWritePosition;
+
+                                // Write interpolation
+                                _noveltyVector[((NoveltyVectorLength - 1) / 2) + _currentTimeStep] = interps[i];
 
                                 break;
 

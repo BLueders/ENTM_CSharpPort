@@ -319,25 +319,20 @@ namespace ENTM.Experiments
 
             _lastLogTime = _timer.ElapsedMilliseconds;
 
+            string log = $"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
+                         $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
+                         $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
+                         $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
+                         $"Champ: {_ea.CurrentChampGenome.Complexity:F0} Strategy: {_ea.ComplexityRegulationMode}, " +
+                         $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
+                         $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}";
+
+
             //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
             //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
-            _logger.Info($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
-              $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
-              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
-              $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
-              $"Champ: {_ea.CurrentChampGenome.Complexity:F0} Strategy: {_ea.ComplexityRegulationMode}, " +
-              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
-              $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
-              );
+            _logger.Info(log);
 
-            Console.WriteLine($"Generation: {_ea.CurrentGeneration}/{_maxGenerations}, " +
-              $"Time/gen: {timePerGen} ms, Est. time remaining: {Utilities.TimeToString(timeRemainingEst)} " +
-              $"Fitness - Max: {_ea.Statistics._maxFitness:F4} Mean: {_ea.Statistics._meanFitness:F4}, " +
-              $"Complexity - Max: {_ea.Statistics._maxComplexity:F0} Mean: {_ea.Statistics._meanComplexity:F2} " +
-              $"Champ: {_ea.CurrentChampGenome.Complexity:F0} Strategy: {_ea.ComplexityRegulationMode}, " +
-              $"Specie size - Max: {_ea.Statistics._maxSpecieSize:D} Min: {_ea.Statistics._minSpecieSize:D}, " +
-              $"Generations since last improvement: {_ea.CurrentGeneration - _lastMaxFitnessImprovementGen}"
-              );
+           // Console.WriteLine(log);
         }
 
         private void WriteData()
@@ -373,7 +368,7 @@ namespace ENTM.Experiments
                 if (writeHeader)
                 {
                     CreateExperimentDirectoryIfNecessary();
-                    StringBuilder header = new StringBuilder("Generation,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
+                    StringBuilder header = new StringBuilder("Generation,Novelty Search,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
 
                     for (int i = 0; i < spcCount; i++)
                     {
@@ -392,8 +387,8 @@ namespace ENTM.Experiments
                 }
 
                 StringBuilder data = new StringBuilder(string.Format(CultureInfo.InvariantCulture,
-                    "{0},{1:F4},{2:F4},{3:F0},{4:F4},{5:F0},{6},{7},{8}",
-                    gen, fitMax, fitMean, cmpMax, cmpMean, cmpChamp, champHidCount, spcMax, spcMin));
+                    "{0},{1},{2:F4},{3:F4},{4:F0},{5:F4},{6:F0},{7},{8},{9}",
+                    gen, NoveltySearchEnabled, fitMax, fitMean, cmpMax, cmpMean, cmpChamp, champHidCount, spcMax, spcMin));
 
                 for (int i = 0; i < spcCount; i++)
                 {

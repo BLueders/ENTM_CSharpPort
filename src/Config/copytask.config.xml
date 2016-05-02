@@ -23,7 +23,7 @@
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>50</LogInterval>
+  <LogInterval>10</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -107,16 +107,17 @@
     <Enabled>true</Enabled>
 
     <!-- What behaviour we want to score
-      WritePattern: Use the write position over time as the novelty vector.
-      ReadContent: Use the read vector over time as the novelty vector.
+      WritePattern:           Use the write position over time as the novelty vector.
+      ReadContent:            Use the read vector over time as the novelty vector.
+      WritePatternAndInterp:  Use write position and interp as novelty vector.
       -->
-    <NoveltyVector>ReadContent</NoveltyVector>
+    <NoveltyVector>WritePatternAndInterp</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>5</PMin>
+    <PMin>50</PMin>
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
-    <PMinLowerThreshold>1</PMinLowerThreshold>
+    <PMinLowerThreshold>5</PMinLowerThreshold>
 
     <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
     <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
@@ -151,7 +152,7 @@
     <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
     
     <!-- Multiply the Novely Score with the Objective fitness to the power of x. 0 to use only Novelty Score. -->
-    <ObjectiveFactorExponent>2</ObjectiveFactorExponent>
+    <ObjectiveFactorExponent>0</ObjectiveFactorExponent>
 
   </NoveltySearch>
 

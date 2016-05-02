@@ -53,6 +53,7 @@ namespace ENTM.NoveltySearch
     public enum NoveltyVector
     {
         WritePattern,
-        ReadContent
+        ReadContent,
+        WritePatternAndInterp
     }
 }

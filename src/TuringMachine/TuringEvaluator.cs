@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
+using ENTM.NoveltySearch;
 using ENTM.Replay;
 using SharpNeat.Core;
 using SharpNeat.Phenomes;
@@ -149,6 +150,11 @@ namespace ENTM.TuringMachine
 
                         // total timesteps - 1 (initial timestep is not scored) * M + 1 (minimum criteria)
                         return (Environment.MaxTimeSteps - 1) * _turingMachineProps.M + 1;
+
+                        // total timesteps - 1 (initial timestep is not scored) * 2 (head position and interp) + 1 (minimum criteria)
+                    case NoveltyVector.WritePatternAndInterp:
+                        return (Environment.MaxTimeSteps - 1) * 2 + 1;
+
                     default:
                         throw new ArgumentOutOfRangeException("Unknown novelty vector mode" + NoveltySearchParameters.NoveltyVectorMode);
                 }
