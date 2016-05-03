@@ -268,8 +268,10 @@ namespace ENTM.Experiments
                 {
                     if (Recorder != null)
                     {
-                        Bitmap bmp = Recorder.ToBitmap();
-                        bmp.Save($"{RecordingFile($"{genome.Id}_{i}")}", ImageFormat.Png);
+                        using (Bitmap bmp = Recorder.ToBitmap())
+                        {
+                            bmp.Save($"{RecordingFile($"{genome.Id}_{i}")}", ImageFormat.Png);
+                        }
                     }
                     else
                     {
@@ -302,6 +304,14 @@ namespace ENTM.Experiments
         public void AbortCurrentExperiment()
         {
             if (_didStart) _abort = true;
+        }
+
+        public void Terminate()
+        {
+            if (_ea != null)
+            {
+                _ea.Terminate();
+            }
         }
 
         private void PrintEAStats()
@@ -851,6 +861,7 @@ namespace ENTM.Experiments
 
             // Initialize the evolution algorithm.
             ea.Initialize(_listEvaluator, genomeFactory, genomeList);
+            
 
             // Finished. Return the evolution algorithm
             return ea;

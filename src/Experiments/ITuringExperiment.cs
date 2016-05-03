@@ -25,6 +25,7 @@ namespace ENTM.Experiments
         void TestCurrentPopulation();
 
         void AbortCurrentExperiment();
+        void Terminate();
 
         event EventHandler ExperimentStartedEvent;
         event EventHandler ExperimentPausedEvent;

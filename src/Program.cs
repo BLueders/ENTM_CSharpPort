@@ -206,6 +206,8 @@ namespace ENTM
 
         private static bool InitializeExperiment(XmlElement config)
         {
+            _experiment?.Terminate();
+
             if (config == null)
             {
                 Console.WriteLine("Config was null, aborting...");

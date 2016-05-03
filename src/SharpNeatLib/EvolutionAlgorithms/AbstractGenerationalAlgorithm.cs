@@ -58,6 +58,7 @@ namespace SharpNeat.EvolutionAlgorithms
         // Misc working variables.
         Thread _algorithmThread;
         bool _pauseRequestFlag;
+        bool _terminateRequestFlag;
         readonly AutoResetEvent _awaitPauseEvent = new AutoResetEvent(false);
         readonly AutoResetEvent _awaitRestartEvent = new AutoResetEvent(false);
 
@@ -203,6 +204,12 @@ namespace SharpNeat.EvolutionAlgorithms
             RequestPause();
         }
 
+        public void Terminate()
+        {
+            _terminateRequestFlag = true;
+            _awaitRestartEvent.Set();
+        }
+
         /// <summary>
         /// Requests that the algorithm pauses but doesn't wait for the algorithm thread to stop.
         /// The algorithm thread will pause when it is next convenient to do so, and will notify
@@ -278,6 +285,11 @@ namespace SharpNeat.EvolutionAlgorithms
 
                         // Wait indefinitely for a signal to wake up and continue.
                         _awaitRestartEvent.WaitOne();
+                    }
+
+                    if (_terminateRequestFlag)
+                    {
+                        break;
                     }
                 }
             }
