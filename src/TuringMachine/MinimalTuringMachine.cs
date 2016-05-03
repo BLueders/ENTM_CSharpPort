@@ -57,6 +57,9 @@ namespace ENTM.TuringMachine
         // jump to the start of the tape.
         private double _minSimilarityToJump;
 
+        private bool _initalizeWithGradient;
+        private double _initalValue;
+
         public bool ScoreNovelty { get; set; }
 
         public int NoveltyVectorLength { get; set; }
@@ -80,6 +83,8 @@ namespace ENTM.TuringMachine
 
         public double[][] DefaultRead => _initialRead;
 
+
+
         // Number of times each location was accessed during livetime of the tm
         // private List<int> _writeActivities = new List<int>();
         // private List<int> _readActivities = new List<int>();
@@ -95,6 +100,8 @@ namespace ENTM.TuringMachine
             _writeMode = props.WriteMode;
             _minSimilarityToJump = props.MinSimilarityToJump;
             _tape = new List<double[]>();
+            _initalizeWithGradient = props.InitalizeWithGradient;
+            _initalValue = props.InitalValue;
 
             Reset();
             _initialRead = new double[_heads][];
@@ -111,7 +118,26 @@ namespace ENTM.TuringMachine
             _currentTimeStep = 0;
 
             _tape.Clear();
+
             _tape.Add(new double[_m]);
+
+            if (_initalizeWithGradient) {
+                InitTapeWithGradient();
+            }
+
+            if (_initalValue >= 0 && _initalValue <= 1)
+            {
+                if (_initalizeWithGradient)
+                {
+                    throw new ArgumentOutOfRangeException("Tape can not be initialized with a fixed value and gradient. Choose one.");
+                }
+                InitTapeWithFixedValue();
+            }
+            else if (_initalValue != -1)
+            {
+                throw new ArgumentOutOfRangeException("Inital Value of turing machine vectors was " + _initalValue + ". But should be -1 or bewteen 0 and 1");
+            }
+
             _headPositions = new int[_heads];
 
             if (ScoreNovelty)
@@ -132,6 +158,41 @@ namespace ENTM.TuringMachine
             _increasedSizeDown = false;
 
             Debug.DLog(PrintState(), true);
+        }
+
+        private void InitTapeWithGradient() {
+            // add missing values
+            for (int i = 1; i < _n; i++)
+            {
+                _tape.Add(new double[_m]);
+            }
+
+            // make gradient
+            for (int i = 0; i < _n; i++)
+            {
+                for (int j = 0; j < _m; j++)
+                {
+                    _tape[i][j] = ((double)i) / _tape.Count;
+                }
+            }
+        }
+
+        private void InitTapeWithFixedValue()
+        {
+            // add missing values
+            for (int i = 1; i < _n; i++)
+            {
+                _tape.Add(new double[_m]);
+            }
+
+            // make gradient
+            for (int i = 0; i < _n; i++)
+            {
+                for (int j = 0; j < _m; j++)
+                {
+                    _tape[i][j] = _initalValue;
+                }
+            }
         }
 
         /// <summary>

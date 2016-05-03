@@ -14,6 +14,8 @@ namespace ENTM.TuringMachine
         public ShiftMode ShiftMode;
         public WriteMode WriteMode;
         public double MinSimilarityToJump;
+        public double InitalValue;
+        public bool InitalizeWithGradient;
 
         public TuringMachineProperties(XmlElement xmlConfig)
         {
@@ -30,6 +32,9 @@ namespace ENTM.TuringMachine
             string writeModeStr = XmlUtils.TryGetValueAsString(xmlConfig, "WriteMode");
             WriteMode = writeModeStr == null ? WriteMode.Interpolate : (WriteMode) Enum.Parse(typeof(WriteMode), writeModeStr);
 
+            InitalizeWithGradient = XmlUtils.TryGetValueAsBool(xmlConfig, "InitalizeWithGradient") ?? false;
+
+            InitalValue = XmlUtils.TryGetValueAsDouble(xmlConfig, "InitalValue") ?? -1;
         }
 
         public TuringMachineProperties(int m, int n, int shiftLength, ShiftMode shiftMode, bool enabled, int heads)
