@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ENTM.Experiments;
+using ENTM.MultiObjective;
 using ENTM.Utility;
 using log4net;
 using SharpNeat.Core;
@@ -60,7 +61,7 @@ namespace ENTM.NoveltySearch
             _knnTotalTimeSpent = 0;
         }
 
-        public void Score(IList<Behaviour<TGenome>> behaviours)
+        public void Score(IList<Behaviour<TGenome>> behaviours, int noveltyObjective)
         {
             _generation++;
             List<Behaviour<TGenome>> combinedBehaviours = new List<Behaviour<TGenome>>(_archive);
@@ -105,7 +106,8 @@ namespace ENTM.NoveltySearch
                     _belowMinimumCriteria++;
                 }
 
-                b.Genome.EvaluationInfo.SetFitness(score);
+                // Novelty score objective
+                b.Objectives[noveltyObjective] = score;
                 
                 if (score > _pMin)
                 {

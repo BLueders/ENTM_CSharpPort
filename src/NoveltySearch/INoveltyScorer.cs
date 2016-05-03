@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using SharpNeat.Core;
+using ENTM.MultiObjective;
 
 namespace ENTM.NoveltySearch
 {
@@ -13,6 +10,6 @@ namespace ENTM.NoveltySearch
 
         bool StopConditionSatisfied { get; }
 
-        void Score(IList<Behaviour<TGenome>> behaviours);
+        void Score(IList<Behaviour<TGenome>> behaviours, int noveltyObjective);
     }
 }

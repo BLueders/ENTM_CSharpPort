@@ -3,23 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing.Text;
 using System.Threading.Tasks;
+using ENTM.MultiObjective;
 using ENTM.Utility;
 using log4net;
 using SharpNeat.Core;
 
 namespace ENTM.NoveltySearch
 {
-    public struct Behaviour<TGenome> where TGenome : class, IGenome<TGenome>
-    {
-        internal TGenome Genome { get; }
-        internal FitnessInfo Score { get; }
 
-        internal Behaviour(TGenome genome, FitnessInfo score)
-        {
-            Genome = genome;
-            Score = score;
-        }
-    }
     /// <summary>
     /// Implementation of IGenomeListEvaluator.
     /// Provides a novelty search evaluation dependant on the entire generation under evaluation
@@ -34,6 +25,11 @@ namespace ENTM.NoveltySearch
     {
         private static readonly ILog _logger = LogManager.GetLogger("List Evaluator");
 
+        private const int OBJ_COUNT = 3;
+
+        private const int OBJ_OBJECTIVE_FITNESS = 0;
+        private const int OBJ_NOVELTY_SCORE = 1;
+        private const int OBJ_GENOMIC_DIVERSITY = 2;
 
 
         readonly IGenomeDecoder<TGenome, TPhenome> _genomeDecoder;
@@ -45,6 +41,7 @@ namespace ENTM.NoveltySearch
         delegate IList<Behaviour<TGenome>> EvaluationMethod(IList<TGenome> genomeList);
 
         private bool _noveltySearchEnabled;
+        private bool _multiobjectiveEnabled;
         private bool _reevaluateOnce;
         private int _generation;
 
@@ -63,6 +60,13 @@ namespace ENTM.NoveltySearch
                 _reevaluateOnce = true;
             }
         }
+
+        public bool MultiObjectiveEnabled
+        {
+            get { return _multiobjectiveEnabled; }
+            set { _multiobjectiveEnabled = value; }
+        }
+
 
         public List<TGenome> Archive => new List<TGenome>(_noveltyScorer.Archive);
 
@@ -151,19 +155,26 @@ namespace ENTM.NoveltySearch
           
             // We save the fitness info in a dictionary, since we can't apply the scores directly, because the entire generation
             // must be evaluated to calculate novelty score
-            IList<Behaviour<TGenome>> fitness = _evalMethod(filteredList);
+            IList<Behaviour<TGenome>> behaviours = _evalMethod(filteredList);
 
-            if (NoveltySearchEnabled)
+            if (!NoveltySearchEnabled && !MultiObjectiveEnabled)
             {
-                // Apply the novelty score
-                _noveltyScorer.Score(fitness);
+                // Ignore novelty score and multiobjective, apply environmental objective fitness
+                ApplyEnvironmentScoresOnly(behaviours);
             }
             else
             {
-                // Ignore novelty score, apply environmental objective fitness
-                ApplyEnvironmentScoresOnly(fitness);
-            }
+                if (NoveltySearchEnabled)
+                {
+                    // Apply the novelty score
+                    _noveltyScorer.Score(behaviours, OBJ_NOVELTY_SCORE);
+                }
 
+                if (MultiObjectiveEnabled)
+                {
+                    
+                }
+            }
         }
 
         /// <summary>
@@ -182,7 +193,7 @@ namespace ENTM.NoveltySearch
 
         #region Evaluation methods
 
-        private FitnessInfo EvaluateGenome(TGenome genome)
+        private Behaviour<TGenome> EvaluateGenome(TGenome genome)
         {
             TPhenome phenome = (TPhenome) genome.CachedPhenome;
             if (null == phenome)
@@ -193,10 +204,18 @@ namespace ENTM.NoveltySearch
 
             if (null == phenome)
             {   // Non-viable genome.
-                return FitnessInfo.Zero;
+                return default(Behaviour<TGenome>);
             }
 
-            return _phenomeEvaluator.Evaluate(phenome);
+            // Evaluate the genome!
+            FitnessInfo score = _phenomeEvaluator.Evaluate(phenome);
+
+            Behaviour<TGenome> behaviour = new Behaviour<TGenome>(genome, score, OBJ_COUNT);
+
+            // First Objetive - Objective fitness
+            behaviour.Objectives[OBJ_OBJECTIVE_FITNESS] = score._fitness;
+
+            return behaviour;
         }
 
         /// <summary>
@@ -215,8 +234,7 @@ namespace ENTM.NoveltySearch
 
             Parallel.ForEach(genomeList, _parallelOptions, genome =>
             {
-                FitnessInfo score = EvaluateGenome(genome);
-                behaviours.Add(new Behaviour<TGenome>(genome, score));
+                behaviours.Add(EvaluateGenome(genome));
             });
 
             return behaviours.List;
@@ -230,14 +248,13 @@ namespace ENTM.NoveltySearch
         {
             if (_generation == 1) _logger.Info($"Running serial");
 
-            IList<Behaviour<TGenome>> fitness = new List<Behaviour<TGenome>>();
+            IList<Behaviour<TGenome>> behaviours = new List<Behaviour<TGenome>>();
             foreach (TGenome genome in genomeList)
             {
-                FitnessInfo score = EvaluateGenome(genome);
-                fitness.Add(new Behaviour<TGenome>(genome, score));
+                behaviours.Add(EvaluateGenome(genome));
             }
 
-            return fitness;
+            return behaviours;
         }
 
         #endregion

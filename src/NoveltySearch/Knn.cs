@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ENTM.MultiObjective;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpNeat.Core;
 
