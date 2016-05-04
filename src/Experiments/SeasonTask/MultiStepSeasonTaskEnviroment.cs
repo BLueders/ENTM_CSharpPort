@@ -75,11 +75,22 @@ namespace ENTM.Experiments.SeasonTask
             int task = step % StepNum; //when 3: 0 = food step, 1 = eat step, 2 = reward step, when more ??
             if (task == StepNum - 1)
             {
-                if (evaluation < 0.0001)
-                //if(SealedRandom.Next(0,2) > 0)
+                //// vanilla reward and punishment
+                //if (evaluation < 0.0001)
+                ////if(SealedRandom.Next(0,2) > 0)
+                //    observation[observation.Length - 1] = 1;
+                //else
+                //    observation[observation.Length - 2] = 1;
+
+                // punish only when poisonous is eaten, reward only when nutritios is eaten
+                if (evaluation < 0.0001 && currentFood.IsPoisonous)
+                {
                     observation[observation.Length - 1] = 1;
-                else
+                }
+                if (evaluation > 0.99 && !currentFood.IsPoisonous)
+                {
                     observation[observation.Length - 2] = 1;
+                }
             }
             return observation;
         }

@@ -134,6 +134,8 @@ namespace ENTM.Experiments.SeasonTask
             }
 
             // TODO make a more sophisticated score function
+            // Vanilla scoring, give reward for eating nuritions and avoiding poisonous,
+            // give punishment for avoiding nuritios and eating poisonous
             if (eatVal > (1 - tolerance) && !Sequence[step].IsPoisonous)
             {
                 return 1;
