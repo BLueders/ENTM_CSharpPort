@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ENTM.NoveltySearch;
 using ENTM.Utility;
@@ -156,7 +157,7 @@ namespace ENTM.MultiObjective
                 filteredList = new List<TGenome>(genomeList.Count);
                 foreach (TGenome genome in genomeList)
                 {
-                    // Only evalutate new genomes
+                    // Only evalutate new genomes. Elite genomes will be skipped, as they already have an assigned fitness.
                     if (!genome.EvaluationInfo.IsEvaluated)
                     {   // Add the genome to the temp list for evaluation later.
                         filteredList.Add(genome);
@@ -188,13 +189,16 @@ namespace ENTM.MultiObjective
 
                 if (MultiObjectiveEnabled)
                 {
+                    Behaviour<TGenome>[] viable = behaviours.Where(x => !x.NonViable).ToArray();
+
                     // Score genetic diversity, since speciation will not work with MO
-                    _geneticDiversityScorer.Score(behaviours, OBJ_GENETIC_DIVERSITY);
+                    _geneticDiversityScorer.Score(viable, OBJ_GENETIC_DIVERSITY);
 
                     // Apply multi objective
-                    _multiObjectiveScorer.Score(behaviours);
+                    _multiObjectiveScorer.Score(viable);
 
-                    for (int i = 0; i < behaviours.Count; i++)
+                    int vCount = viable.Length;
+                    for (int i = 0; i < vCount; i++)
                     {
                         behaviours[i].ApplyMultiObjectiveScore();
                     }

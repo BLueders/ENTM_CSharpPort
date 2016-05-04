@@ -30,6 +30,7 @@ namespace ENTM.MultiObjective
                 Behaviour<TGenome> b = behaviours[i];
 
                 GeneticPosition pos = new GeneticPosition();
+                pos._behaviour = b;
 
                 KeyValuePair<ulong, double>[] vector = b.Genome.Position.CoordArray;
 
@@ -41,7 +42,7 @@ namespace ENTM.MultiObjective
 
                 foreach (KeyValuePair<ulong, double> pair in vector)
                 {
-                    pos._vector[pair.Key] = pair.Value;
+                    pos._vector[pair.Key - 1] = pair.Value;
                 }
 
                 positions[i] = pos;

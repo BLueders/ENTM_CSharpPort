@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ENTM.NoveltySearch;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpNeat.Core;
 
 namespace ENTM.MultiObjective
@@ -15,8 +16,8 @@ namespace ENTM.MultiObjective
         public void Score(IList<Behaviour<TGenome>> behaviours)
         {
             _population = new List<Behaviour<TGenome>>(behaviours);
-            _count = behaviours.Count;
-            _objectives = behaviours[0].Objectives.Length;
+            _count = _population.Count;
+            _objectives = _population[0].Objectives.Length;
 
             UpdateDominations();
 
@@ -25,6 +26,7 @@ namespace ENTM.MultiObjective
             for (int i = 0; i < _count; i++)
             {
                 Behaviour<TGenome> b = _population[i];
+                b.MultiObjectiveScore = (b.Rank - 1d) / (_maxRank - 1d);
             }
         }
 
@@ -54,6 +56,8 @@ namespace ENTM.MultiObjective
 
         private bool Dominates(Behaviour<TGenome> one, Behaviour<TGenome> other)
         {
+            Assert.AreNotEqual(one, other);
+
             bool dominates = false;
 
             // Compare all objectives
@@ -88,21 +92,24 @@ namespace ENTM.MultiObjective
             {
                 int count = unranked.Count;
 
-                for (int i = 0; i < count; i++)
+                // Iterate in reverse to keep indices correct
+                for (int i = count - 1; i >= 0; i--)
                 {
-                    Behaviour<TGenome> b = _population[i];
+                    Behaviour<TGenome> b = unranked[i];
 
-                    // Behaviour is non-dominated, is on the current front
                     if (b.DominatedCount == 0)
                     {
-                        unranked.RemoveAt(i);
+                        // Behaviour is non-dominated, is on the current front
                         b.Rank = rank;
+                        unranked.RemoveAt(i);
 
                         int dCount = b.Dominates.Count;
                         for (int j = 0; j < dCount; j++)
                         {
                             // Decrement dominated count for all behaviours dominated by current front behaviours
                             b.Dominates[j].DominatedCount--;
+
+                            Assert.IsTrue(b.Dominates[j].DominatedCount >= 0);
                         }
                     }
                 }

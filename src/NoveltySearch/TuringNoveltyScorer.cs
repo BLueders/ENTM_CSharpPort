@@ -78,35 +78,33 @@ namespace ENTM.NoveltySearch
                     _maxObjectiveScore = objectiveScore;
                 }
 
-                double score;
-
                 double redundantTimeSteps = b.Evaluation.MinimumCriteria[0];
                 double totalTimeSteps = b.Evaluation.MinimumCriteria[1];
 
                 // Check if behaviour meets minimum criteria
                 if (redundantTimeSteps / totalTimeSteps <= _params.MinimumCriteriaReadWriteLowerThreshold)
                 {
-                    score = knn.AverageDistToKnn(b, _params.K);
+                    double score = knn.AverageDistToKnn(b, _params.K);
 
                     if (_params.ObjectiveFactorExponent > 0)
                     {
                         score *= Math.Pow(b.Evaluation.ObjectiveFitness, _params.ObjectiveFactorExponent);
                     }
+
+                    // Novelty score objective
+                    b.Objectives[noveltyObjective] = score;
+
+                    if (score > _pMin)
+                    {
+                        _archive.Enqueue(b);
+                        added++;
+                    }
                 }
                 else
                 {
                     // Minimum criteria is not met.
-                    score = 0d;
                     _belowMinimumCriteria++;
-                }
-
-                // Novelty score objective
-                b.Objectives[noveltyObjective] = score;
-                
-                if (score > _pMin)
-                {
-                    _archive.Enqueue(b);
-                    added++;
+                    b.NonViable = true;
                 }
             }
 

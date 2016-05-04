@@ -25,6 +25,17 @@ namespace ENTM.MultiObjective
             }
         }
 
+        // If this behaviour has been deemed non-viable
+        private bool _nonViable;
+        public bool NonViable {
+            get { return _nonViable; }
+            set
+            {
+                _nonViable = value;
+                Genome.EvaluationInfo.SetFitness(0d);
+            }
+        }
+
         // The final fitness calculated by the Multi Objective algorithm (if applied)
         public double MultiObjectiveScore { get; set; }
 
