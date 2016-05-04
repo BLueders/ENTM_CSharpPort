@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using System.Xml;
 using ENTM.Replay;
-using SharpNeat.Core;
+using ENTM.MultiObjective;
 
 namespace ENTM.Experiments.Xor
 {
@@ -22,9 +17,10 @@ namespace ENTM.Experiments.Xor
         public override int EnvironmentOutputCount => 2;
         public override int ControllerInputCount => 0;
         public override int ControllerOutputCount => 0;
-        public override int NoveltyVectorLength { get; }
+        public override int NoveltyVectorLength => 0;
+        public override int MinimumCriteriaLength => 0;
 
-        public override FitnessInfo Evaluate(DefaultController controller, int iterations, bool record)
+        public override EvaluationInfo Evaluate(DefaultController controller, int iterations, bool record)
         {
             double totalScore = 0;
 
@@ -61,7 +57,7 @@ namespace ENTM.Experiments.Xor
 
             double score = totalScore / iterations;
 
-            return new FitnessInfo(score, score);
+            return new EvaluationInfo(score);
         }
 
         protected override void SetupTest()

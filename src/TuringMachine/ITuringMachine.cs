@@ -17,15 +17,10 @@ namespace ENTM.TuringMachine
 
         double[][] DefaultRead { get; }
 
-        // Enable or disable novelty search
-        bool ScoreNovelty { get; set; }
-
-        int NoveltyVectorLength { get; set; }
-
-        NoveltyVector NoveltyVectorMode { get; set; }
-
-        // Get an internal state vector to determine a novelty score
-        double[] NoveltyVector { get; }
+        /// <summary>
+        /// Novelty Search data
+        /// </summary>
+        NoveltySearchInfo NoveltySearch { get; }
 
         // Get the info saved
         double[][] TapeValues { get; }

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Xml;
-using SharpNeat.Core;
 using SharpNeat.Phenomes;
 using System.Threading;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
+using ENTM.MultiObjective;
 
 namespace ENTM
 {
-    public abstract class BaseEvaluator<TEnvironment, TController> : IPhenomeEvaluator<IBlackBox>
+    public abstract class BaseEvaluator<TEnvironment, TController> : IMultiObjectiveEvaluator<IBlackBox>
         where TEnvironment : IEnvironment
         where TController : IController
     {
@@ -59,8 +59,9 @@ namespace ENTM
         public abstract int ControllerOutputCount { get; }
 
         public abstract int NoveltyVectorLength { get; }
+        public abstract int MinimumCriteriaLength { get; }
 
-        public abstract FitnessInfo Evaluate(TController controller, int iterations, bool record);
+        public abstract EvaluationInfo Evaluate(TController controller, int iterations, bool record);
 
         private static readonly object _lockEnvironment = new object();
         private static readonly object _lockController = new object();
@@ -120,20 +121,20 @@ namespace ENTM
         /// </summary>
         /// <param name="phenome"></param>
         /// <returns></returns>
-        public FitnessInfo Evaluate(IBlackBox phenome)
+        public EvaluationInfo Evaluate(IBlackBox phenome)
         {
             OnEvaluationStart();
 
-            FitnessInfo score = Evaluate(phenome, Iterations, false);
+            EvaluationInfo evaluation = Evaluate(phenome, Iterations, false);
 
             _evaluationCount++;
 
-            if (score._fitness >= MaxScore * .99f)
+            if (evaluation.ObjectiveFitness >= MaxScore * .999f)
             {
                 _stopConditionSatisfied = true;
             }
 
-            return score;
+            return evaluation;
         }
 
         /// <summary>
@@ -143,36 +144,37 @@ namespace ENTM
         /// <param name="iterations">Number of evaluations</param>
         /// <param name="record">Determines if the evaluation should be recorded</param>
         /// <returns></returns>
-        public FitnessInfo TestPhenome(IBlackBox phenome, int iterations)
+        public EvaluationInfo TestPhenome(IBlackBox phenome, int iterations)
         {
             SetupTest();
 
-            FitnessInfo score = Evaluate(phenome, iterations, true);
+            EvaluationInfo evaluation = Evaluate(phenome, iterations, true);
 
             TearDownTest();
 
-            return score;
+            return evaluation;
         }
 
-        private FitnessInfo Evaluate(IBlackBox phenome, int iterations, bool record)
+        private EvaluationInfo Evaluate(IBlackBox phenome, int iterations, bool record)
         {
             // Register the phenome
             Controller.Phenome = phenome;
 
-            Controller.ScoreNovelty = NoveltySearchEnabled;
-            Controller.NoveltyVectorLength = NoveltyVectorLength;
-            Controller.NoveltyVectorMode = NoveltySearchParameters.NoveltyVectorMode;
+            Controller.NoveltySearch.ScoreNovelty = NoveltySearchEnabled;
+            Controller.NoveltySearch.VectorMode = NoveltySearchParameters.VectorMode;
+            Controller.NoveltySearch.NoveltyVectorLength = NoveltyVectorLength;
+            Controller.NoveltySearch.MinimumCriteriaLength = MinimumCriteriaLength;
 
             Environment.ResetAll();
             Environment.Controller = Controller;
 
             // Evaluate the controller / phenome
-            FitnessInfo score = Evaluate(Controller, iterations, record);
+            EvaluationInfo evaluation = Evaluate(Controller, iterations, record);
 
             // Unregister the phenome
             Controller.Phenome = null;
 
-            return score;
+            return evaluation;
         }
 
         public void Reset()

@@ -60,15 +60,8 @@ namespace ENTM.TuringMachine
         private bool _initalizeWithGradient;
         private double _initalValue;
 
-        public bool ScoreNovelty { get; set; }
-
-        public int NoveltyVectorLength { get; set; }
-
-        public NoveltyVector NoveltyVectorMode { get; set; }
-
-        private double[] _noveltyVector;
-
-        public double[] NoveltyVector => _noveltyVector;
+        private NoveltySearchInfo _noveltySearch;
+        public NoveltySearchInfo NoveltySearch => _noveltySearch;
 
         public int ReadHeadCount => 1;
 
@@ -102,6 +95,8 @@ namespace ENTM.TuringMachine
             _tape = new List<double[]>();
             _initalizeWithGradient = props.InitalizeWithGradient;
             _initalValue = props.InitalValue;
+
+            _noveltySearch = new NoveltySearchInfo();
 
             Reset();
             _initialRead = new double[_heads][];
@@ -140,12 +135,9 @@ namespace ENTM.TuringMachine
 
             _headPositions = new int[_heads];
 
-            if (ScoreNovelty)
+            if (NoveltySearch.ScoreNovelty)
             {
-                _noveltyVector = new double[NoveltyVectorLength];
-
-                // Mimimum criteria
-                _noveltyVector[0] = 0;
+                NoveltySearch.Reset();
             }
 
             // clear debug log lists
@@ -229,7 +221,7 @@ namespace ENTM.TuringMachine
 
             // Attention! Novelty score does not currently support multiple read/write heads.
             // It will overwrite data for previous heads, if more than one.
-            if (RecordTimeSteps || ScoreNovelty)
+            if (RecordTimeSteps || NoveltySearch.ScoreNovelty)
             {
                 writePositions = new int[_heads];
 
@@ -266,7 +258,7 @@ namespace ENTM.TuringMachine
                 // 1: Write!
                 Write(i, writeKeys[i], interps[i]);
 
-                if (RecordTimeSteps || ScoreNovelty)
+                if (RecordTimeSteps || NoveltySearch.ScoreNovelty)
                 {
                     // Save write position for recording
                     writePositions[i] = _headPositions[i];
@@ -298,7 +290,7 @@ namespace ENTM.TuringMachine
                 // 4: Read!
                 result[i] = GetRead(i); // Show me what you've got! \cite{rickEtAl2014}
 
-                if (RecordTimeSteps || ScoreNovelty)
+                if (RecordTimeSteps || NoveltySearch.ScoreNovelty)
                 {
                     // Calculate corrected write position first, since the write happened before a possible downward memory increase
                     int correctedWritePosition = writePositions[i] - _zeroPosition;
@@ -310,31 +302,34 @@ namespace ENTM.TuringMachine
                         _zeroPosition++;
                     }
 
-                    if (ScoreNovelty)
+                    if (NoveltySearch.ScoreNovelty)
                     {
-                        switch (NoveltyVectorMode)
+                        // (-1 because timestep 0 is not scored)
+                        int n = _currentTimeStep - 1;
+                        switch (NoveltySearch.VectorMode)
                         {
-                            case NoveltySearch.NoveltyVector.WritePattern:
-                                // Save the write position as a behavioural trait
-                                _noveltyVector[_currentTimeStep] = correctedWritePosition;
+                            case NoveltyVectorMode.WritePattern:
+
+                                // Save the write position as a behavioural trait 
+                                NoveltySearch.NoveltyVector[n] = correctedWritePosition;
 
                                 break;
 
-                            case NoveltySearch.NoveltyVector.ReadContent:
+                            case NoveltyVectorMode.ReadContent:
 
-                                // Skip position 1, it's used for minimum criteria. Timestep 0 is not recorded here, so subtract 1
-                                int startIndex = 1 + (_currentTimeStep - 1) * _m;
-                                Array.Copy(result[i], 0, _noveltyVector, startIndex, result[i].Length);
+                                // Content of the read vector
+                                int startIndex = n * _m;
+                                Array.Copy(result[i], 0, NoveltySearch.NoveltyVector, startIndex, result[i].Length);
 
                                 break;
 
-                            case NoveltySearch.NoveltyVector.WritePatternAndInterp:
+                            case NoveltyVectorMode.WritePatternAndInterp:
 
                                 // Head position (we use corrected write position to account for downward shifts)
-                                _noveltyVector[_currentTimeStep] = correctedWritePosition;
+                                NoveltySearch.NoveltyVector[n] = correctedWritePosition;
 
                                 // Write interpolation
-                                _noveltyVector[((NoveltyVectorLength - 1) / 2) + _currentTimeStep] = interps[i];
+                                NoveltySearch.NoveltyVector[(NoveltySearch.NoveltyVectorLength / 2) + n] = interps[i];
 
                                 break;
 
@@ -357,8 +352,11 @@ namespace ENTM.TuringMachine
                         if (!_didWrite && !_didRead)
                         {
                             // Store number of redundant iterations in the novelty vector.
-                            _noveltyVector[0] += 1;
+                            NoveltySearch.MinimumCriteria[0] += 1;
                         }
+
+                        // Total timesteps to calculate redundancy factor
+                        NoveltySearch.MinimumCriteria[1] += 1;
                     }
 
                     if (RecordTimeSteps)

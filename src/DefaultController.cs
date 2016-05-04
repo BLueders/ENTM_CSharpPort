@@ -34,9 +34,6 @@ namespace ENTM
             return nnOutput;
         }
 
-        public bool ScoreNovelty { get; set; }
-        public int NoveltyVectorLength { get; set; }
-        public NoveltyVector NoveltyVectorMode { get; set; }
-        public double[] NoveltyVector { get; }
+        public NoveltySearchInfo NoveltySearch { get; set; }
     }
 }
