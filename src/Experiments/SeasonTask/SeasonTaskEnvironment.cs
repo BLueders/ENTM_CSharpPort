@@ -63,6 +63,10 @@ namespace ENTM.Experiments.SeasonTask
         protected bool ScoreThisStep(int step)
         {
             bool isFirstDay = step < _foodTypes * _days * _seasons && step % (_foodTypes * _days) < _foodTypes;
+            if (isFirstDay)
+            {
+                int a = 1;
+            }
             return !(_ignoreFirstDayOfSeasonInFirstYear && isFirstDay);
         }
 

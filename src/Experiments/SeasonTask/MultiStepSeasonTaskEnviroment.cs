@@ -28,23 +28,24 @@ namespace ENTM.Experiments.SeasonTask
             Debug.DLogHeader("SEASON TASK START", true);
             Debug.DLog($"{"Action:",-16} {Utilities.ToString(action, "f4")}", true);
             Debug.DLog($"{"Step:",-16} {_step}", true);
-            double thisScore = 0;
+            double thisEvaluation = 0;
             double[] observation;
 
-            int task = _step % StepNum; //when 3: 0 = food step, 1 = eat step, 2 = reward step, when more ??
+            int task = _step % StepNum;
             if (task == StepNum - 1)
             {
                 Debug.DLog($"Task: Reward Step", true);
                 double eatVal = action[0];
-                thisScore = Evaluate(eatVal, (_step/StepNum) - 1);
-                observation = GetOutput(_step, thisScore);
-                if (ScoreThisStep((_step/StepNum) - 1))
+                thisEvaluation = Evaluate(eatVal, (_step/StepNum));
+                observation = GetOutput(_step, thisEvaluation);
+                if (!ScoreThisStep((_step/StepNum)))
                 {
-                    _score += thisScore;
+                    thisEvaluation = 0;
                 }
+                _score += thisEvaluation;
                 Debug.DLog($"{"Eating:",-16} {eatVal}" +
                            $"\n{"Poisonous:",-16} {Sequence[(_step/3) - 1].IsPoisonous}" +
-                           $"\n{"Score:",-16} {thisScore.ToString("F4")}" +
+                           $"\n{"Score:",-16} {thisEvaluation.ToString("F4")}" +
                            $"\n{"Total Score:",-16} {_score.ToString("F4")} / {(_step/3) - 1}" +
                            $"\n{"Max Score:",-16} {Sequence.Length.ToString("F4")}", true);
             }
@@ -58,7 +59,7 @@ namespace ENTM.Experiments.SeasonTask
 
             if (RecordTimeSteps)
             {
-                _prevTimeStep = new EnvironmentTimeStep(action, observation, thisScore);
+                _prevTimeStep = new EnvironmentTimeStep(action, observation, thisEvaluation);
             }
 
             _step++;
@@ -75,11 +76,22 @@ namespace ENTM.Experiments.SeasonTask
             int task = step % StepNum; //when 3: 0 = food step, 1 = eat step, 2 = reward step, when more ??
             if (task == StepNum - 1)
             {
-                if (evaluation < 0.0001)
-                //if(SealedRandom.Next(0,2) > 0)
+                //// vanilla reward and punishment
+                //if (evaluation < 0.0001)
+                ////if(SealedRandom.Next(0,2) > 0)
+                //    observation[observation.Length - 1] = 1;
+                //else
+                //    observation[observation.Length - 2] = 1;
+
+                // punish only when poisonous is eaten, reward only when nutritios is eaten
+                if (evaluation < 0.0001 && currentFood.IsPoisonous)
+                {
                     observation[observation.Length - 1] = 1;
-                else
+                }
+                if (evaluation > 0.99 && !currentFood.IsPoisonous)
+                {
                     observation[observation.Length - 2] = 1;
+                }
             }
             return observation;
         }

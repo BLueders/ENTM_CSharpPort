@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-5Steps</Name>
+  <Name>SeasonTask-5Steps-3food</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
@@ -18,13 +18,13 @@
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>5000</MaxGenerations>
+  <MaxGenerations>10000</MaxGenerations>
 
   <!-- NEAT -->
-  <PopulationSize>300</PopulationSize>
+  <PopulationSize>200</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>100</LogInterval>
+  <LogInterval>50</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -39,11 +39,17 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>8</M>
+    <M>5</M>
 
     <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
-    <MinSimilarityToJump>0</MinSimilarityToJump>
+    <MinSimilarityToJump>0.5</MinSimilarityToJump>
     
+	<!-- If M > 1 this will initialize the values of the turing machine with a gradient from 0 to 1. -->
+    <InitalizeWithGradient>false</InitalizeWithGradient>
+	
+	<!-- the turing machine vectors can have a initial values instead of a gradient. -1 means no inital value. -->
+    <InitalValue>-1</InitalValue>
+	
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>
 
@@ -59,7 +65,7 @@
   <SeasonTaskParams>
 
     <!-- Evaluation iterations -->
-    <Iterations>10</Iterations>
+    <Iterations>50</Iterations>
 
     <!-- The seed used for random environment generations -->
     <RandomSeed>0</RandomSeed>
@@ -68,45 +74,55 @@
     <Years>1</Years>
     <Seasons>1</Seasons>
     <Days>8</Days>
-    <FoodTypes>4</FoodTypes>
-    <PoisonFoods>2</PoisonFoods>
+    <FoodTypes>3</FoodTypes>
+    <PoisonFoods>1</PoisonFoods>
     <PoisonousTypeChanges>0</PoisonousTypeChanges>
     <IgnoreFirstDayOfSeasonInFirstYear>true</IgnoreFirstDayOfSeasonInFirstYear>
     <StepsPerFood>5</StepsPerFood>
 
   </SeasonTaskParams>
 
-  <!-- Novelty Search Parameters -->
+<!-- Novelty Search Parameters -->
   <NoveltySearch>
 
     <!-- If false, only environmental objective fitness will be used. -->
     <Enabled>false</Enabled>
 
+    <!-- What behaviour we want to score
+      WritePattern:           Use the write position over time as the novelty vector.
+      ReadContent:            Use the read vector over time as the novelty vector.
+      WritePatternAndInterp:  Use write position and interp as novelty vector.
+      -->
+    <NoveltyVector>WritePatternAndInterp</NoveltyVector>
+
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
     <PMin>50</PMin>
 
+    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
+    <PMinLowerThreshold>5</PMinLowerThreshold>
+
+    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
+    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
+
+    <!-- Switch to Objective search if the Objective score has reached this value. -->
+    <ObjectiveScoreThreshold>.9</ObjectiveScoreThreshold>
+    
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
-    <ArchiveLimit>300</ArchiveLimit>
+    <ArchiveLimit>500</ArchiveLimit>
 
     <!-- PMin up adjustment factor-->
     <PMinAdjustUp>1.05</PMinAdjustUp>
 
     <!-- PMin down adjustment factor -->
     <PMinAdjustDown>0.95</PMinAdjustDown>
-    
-    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
-    <PMinLowerThreshold>10</PMinLowerThreshold>
-    
+
     <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
     <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
 
     <!-- How many generations without archihve additions before PMin is adjusted down -->
     <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
 
-    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
-    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
-    
-    
+
     <!-- K nearest neighbors -->
     <K>10</K>
 
@@ -117,6 +133,9 @@
       0-1 relative to total timesteps during lifetime. -->
     <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
     
+    <!-- Multiply the Novely Score with the Objective fitness to the power of x. 0 to use only Novelty Score. -->
+    <ObjectiveFactorExponent>2</ObjectiveFactorExponent>
+
   </NoveltySearch>
   
   
@@ -149,7 +168,7 @@
     <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
 
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
-    <ComplexityThreshold>450</ComplexityThreshold>
+    <ComplexityThreshold>400</ComplexityThreshold>
 
   </ComplexityRegulation>
 
