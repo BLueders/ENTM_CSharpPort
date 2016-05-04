@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ENTM.Experiments;
+using ENTM.Distance;
 using ENTM.MultiObjective;
-using ENTM.Utility;
 using log4net;
 using SharpNeat.Core;
 using SharpNeat.Utility;
-using Utilities = ENTM.Utility.Utilities;
 
 namespace ENTM.NoveltySearch
 {
@@ -67,10 +61,9 @@ namespace ENTM.NoveltySearch
             List<Behaviour<TGenome>> combinedBehaviours = new List<Behaviour<TGenome>>(_archive);
             combinedBehaviours.AddRange(behaviours);
 
-            Knn<TGenome> knn = new Knn<TGenome>(_params.K);
+            Knn knn = new Knn();
 
-            // Start index 1, since we use the 1 position in the array to store the minimum criteria.
-            knn.Initialize(combinedBehaviours, 1);
+            knn.Initialize(combinedBehaviours.ToArray());
 
             _knnTotalTimeSpent += knn.TimeSpent;
 
@@ -78,25 +71,26 @@ namespace ENTM.NoveltySearch
 
             foreach (Behaviour<TGenome> b in behaviours)
             {
-                FitnessInfo behaviour = b.Score;
+                double objectiveScore = b.Evaluation.ObjectiveFitness;
 
-                if (behaviour._fitness >= _maxObjectiveScore)
+                if (objectiveScore >= _maxObjectiveScore)
                 {
-                    _maxObjectiveScore = behaviour._fitness;
+                    _maxObjectiveScore = objectiveScore;
                 }
 
                 double score;
 
-                double redundantTimeSteps = behaviour._auxFitnessArr[0]._value;
+                double redundantTimeSteps = b.Evaluation.MinimumCriteria[0];
+                double totalTimeSteps = b.Evaluation.MinimumCriteria[1];
 
                 // Check if behaviour meets minimum criteria
-                if (redundantTimeSteps / (behaviour._auxFitnessArr.Length - 1) <= _params.MinimumCriteriaReadWriteLowerThreshold)
+                if (redundantTimeSteps / totalTimeSteps <= _params.MinimumCriteriaReadWriteLowerThreshold)
                 {
-                    score = knn.AverageDistToKnn(b);
+                    score = knn.AverageDistToKnn(b, _params.K);
 
                     if (_params.ObjectiveFactorExponent > 0)
                     {
-                        score *= Math.Pow(behaviour._fitness, _params.ObjectiveFactorExponent);
+                        score *= Math.Pow(b.Evaluation.ObjectiveFitness, _params.ObjectiveFactorExponent);
                     }
                 }
                 else
@@ -155,6 +149,5 @@ namespace ENTM.NoveltySearch
                 _belowMinimumCriteria = 0;
             }
         }
-
     }
 }

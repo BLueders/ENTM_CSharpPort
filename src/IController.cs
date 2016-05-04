@@ -24,23 +24,8 @@ namespace ENTM
         double[] ActivateNeuralNetwork(double[] environmentOutput);
 
         /// <summary>
-        /// Whether or not the controller should enable novelty search scoring
+        /// Novelty Search data
         /// </summary>
-        bool ScoreNovelty { get; set; }
-
-        /// <summary>
-        /// Length of the novelty vector
-        /// </summary>
-        int NoveltyVectorLength { get; set; }
-
-        /// <summary>
-        /// Novely vector mode - what type of data to use as novelty vector
-        /// </summary>
-        NoveltyVector NoveltyVectorMode { get; set; }
-
-        /// <summary>
-        /// Return the novelty score vector for a given evaluation
-        /// </summary>
-        double[] NoveltyVector { get; }
+        NoveltySearchInfo NoveltySearch { get; }
     }
 }

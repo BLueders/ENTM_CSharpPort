@@ -9,19 +9,14 @@ namespace ENTM.TuringMachine
 {
     public class TuringController : IController
     {
-        private static readonly ILog _logger = LogManager.GetLogger(typeof(TuringController));
-
         public IBlackBox Phenome { get; set; }
 
         public ITuringMachine TuringMachine { get; }
 
-        public bool ScoreNovelty { get; set; }
-
-        public int NoveltyVectorLength { get; set; }
-
-        public NoveltyVector NoveltyVectorMode { get; set; }
-
-        public double[] NoveltyVector => TuringMachine.NoveltyVector;
+        public NoveltySearchInfo NoveltySearch
+        {
+            get { return TuringMachine.NoveltySearch; }
+        }
 
         public TuringController(TuringMachineProperties props)
         {
@@ -64,9 +59,6 @@ namespace ENTM.TuringMachine
 
         public void Reset()
         {
-            TuringMachine.ScoreNovelty = ScoreNovelty;
-            TuringMachine.NoveltyVectorLength = NoveltyVectorLength;
-            TuringMachine.NoveltyVectorMode = NoveltyVectorMode;
             TuringMachine.Reset();
 
             _turingMachineOutput = ProcessTuringMachineOutput(TuringMachine.DefaultRead); 

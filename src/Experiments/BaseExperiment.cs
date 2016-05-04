@@ -31,6 +31,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
 using ENTM.Utility;
@@ -71,10 +72,11 @@ namespace ENTM.Experiments
         private NeatEvolutionAlgorithmParameters _eaParams;
         private NeatGenomeParameters _neatGenomeParams;
         private NoveltySearchParameters _noveltySearchParams;
+        private MultiObjectiveParameters _multiObjectiveParams;
 
         private NeatEvolutionAlgorithm<NeatGenome> _ea;
         protected TEvaluator _evaluator;
-        protected NoveltySearchListEvaluator<NeatGenome, IBlackBox> _listEvaluator;
+        protected MultiObjectiveListEvaluator<NeatGenome, IBlackBox> _listEvaluator;
 
         private string _name;
         private int _populationSize, _maxGenerations;
@@ -148,6 +150,19 @@ namespace ENTM.Experiments
                 }
 
                 _logger.Info($"Novelty search {(_noveltySearchEnabled ? "enabled" : "disabled")}");
+            }
+        }
+
+        private bool _multiObjectiveEnabled;
+        public bool MultiObjectiveEnabled
+        {
+            get { return _multiObjectiveEnabled; }
+            set
+            {
+                _multiObjectiveEnabled = value;
+                _listEvaluator.MultiObjectiveEnabled = _multiObjectiveEnabled;
+
+                _logger.Info($"Multi Objective {(_multiObjectiveEnabled ? "enabled" : "disabled")}");
             }
         }
 
@@ -256,7 +271,7 @@ namespace ENTM.Experiments
             double maxFitness = double.MinValue;
             for (int i = 0; i < runs; i++)
             {
-                fitnessInfos[i] = _evaluator.TestPhenome(phenome, iterations)._fitness;
+                fitnessInfos[i] = _evaluator.TestPhenome(phenome, iterations).ObjectiveFitness;
                 if (fitnessInfos[i] < minFitness) {
                     minFitness = fitnessInfos[i];
                 }
@@ -591,7 +606,8 @@ namespace ENTM.Experiments
             // Create evolution algorithm and attach events.
             _ea = CreateEvolutionAlgorithm();
 
-            NoveltySearchEnabled = _noveltySearchParams.Enabled;
+            NoveltySearchEnabled = _noveltySearchParams?.Enabled ?? false;
+            MultiObjectiveEnabled = _multiObjectiveParams?.Enabled ?? false;
 
             _ea.UpdateEvent += EAUpdateEvent;
             _ea.PausedEvent += EAPauseEvent;
@@ -742,7 +758,6 @@ namespace ENTM.Experiments
             }
 
             XmlElement xmlNoveltySearchParams = xmlConfig.SelectSingleNode("NoveltySearch") as XmlElement;
-
             if (xmlNoveltySearchParams != null)
             {
                 _noveltySearchParams = NoveltySearchParameters.ReadXmlProperties(xmlNoveltySearchParams);
@@ -750,6 +765,16 @@ namespace ENTM.Experiments
             else
             {
                 _logger.Info("Novelty search parameters not found");
+            }
+
+            XmlElement xmlMultiObjectiveParams = xmlConfig.SelectSingleNode("MultiObjective") as XmlElement;
+            if (xmlMultiObjectiveParams != null)
+            {
+                _multiObjectiveParams = MultiObjectiveParameters.ReadXmlProperties(xmlMultiObjectiveParams);
+            }
+            else
+            {
+                _logger.Info("Multi objective parameters not found");
             }
 
             // Create IBlackBox evaluator.
@@ -856,8 +881,19 @@ namespace ENTM.Experiments
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = CreateGenomeDecoder();
 
             INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
-            
-            _listEvaluator = new NoveltySearchListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, _evaluator, noveltyScorer, _multiThreading, _parallelOptions);
+            IGeneticDiversityScorer<NeatGenome> geneticDiversityScorer = new GeneticDiversityKnn<NeatGenome>();
+            IMultiObjectiveScorer<NeatGenome> multiObjectiveScorer = new NSGAII<NeatGenome>();
+
+             _listEvaluator = new MultiObjectiveListEvaluator<NeatGenome, IBlackBox>(
+                 genomeDecoder, 
+                 _evaluator, 
+                 noveltyScorer, 
+                 geneticDiversityScorer, 
+                 multiObjectiveScorer, 
+                 _multiThreading, 
+                 _parallelOptions);
+
+            _listEvaluator.MultiObjectiveParams = _multiObjectiveParams;
 
             // Initialize the evolution algorithm.
             ea.Initialize(_listEvaluator, genomeFactory, genomeList);

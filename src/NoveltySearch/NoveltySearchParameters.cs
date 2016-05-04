@@ -11,7 +11,7 @@ namespace ENTM.NoveltySearch
     public class NoveltySearchParameters
     {
         public bool Enabled;
-        public NoveltyVector NoveltyVectorMode;
+        public NoveltyVectorMode VectorMode;
         public double PMin;
         public int ArchiveLimit;
         public int MaxNoveltySearchGenerations;
@@ -43,14 +43,14 @@ namespace ENTM.NoveltySearch
             props.K = XmlUtils.GetValueAsInt(xmlConfig, "K");
             props.ReportInterval = XmlUtils.GetValueAsInt(xmlConfig, "ReportInterval");
             props.MinimumCriteriaReadWriteLowerThreshold = XmlUtils.GetValueAsDouble(xmlConfig, "MinimumCriteriaReadWriteLowerThreshold");
-            props.NoveltyVectorMode = (NoveltyVector) Enum.Parse(typeof(NoveltyVector), XmlUtils.TryGetValueAsString(xmlConfig, "NoveltyVector") ?? "WritePattern");
+            props.VectorMode = (NoveltyVectorMode) Enum.Parse(typeof(NoveltyVectorMode), XmlUtils.TryGetValueAsString(xmlConfig, "NoveltyVector") ?? "WritePattern");
             props.ObjectiveFactorExponent = XmlUtils.TryGetValueAsDouble(xmlConfig, "ObjectiveFactorExponent") ?? 0d;
 
             return props;
         }
     }
 
-    public enum NoveltyVector
+    public enum NoveltyVectorMode
     {
         WritePattern,
         ReadContent,

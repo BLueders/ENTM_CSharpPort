@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing.Text;
 using System.Threading.Tasks;
-using ENTM.MultiObjective;
+using ENTM.NoveltySearch;
 using ENTM.Utility;
 using log4net;
 using SharpNeat.Core;
 
-namespace ENTM.NoveltySearch
+namespace ENTM.MultiObjective
 {
 
     /// <summary>
@@ -19,7 +17,7 @@ namespace ENTM.NoveltySearch
     /// </summary>
     /// <typeparam name="TGenome"></typeparam>
     /// <typeparam name="TPhenome"></typeparam>
-    public class NoveltySearchListEvaluator<TGenome, TPhenome> : IGenomeListEvaluator<TGenome>
+    public class MultiObjectiveListEvaluator<TGenome, TPhenome> : IGenomeListEvaluator<TGenome>
         where TGenome : class, IGenome<TGenome> 
         where TPhenome : class
     {
@@ -29,21 +27,35 @@ namespace ENTM.NoveltySearch
 
         private const int OBJ_OBJECTIVE_FITNESS = 0;
         private const int OBJ_NOVELTY_SCORE = 1;
-        private const int OBJ_GENOMIC_DIVERSITY = 2;
+        private const int OBJ_GENETIC_DIVERSITY = 2;
 
+        private MultiObjectiveParameters _multiObjectiveParameters;
+        public MultiObjectiveParameters MultiObjectiveParams
+        {
+            get { return _multiObjectiveParameters; }
+            set
+            {
+                _multiObjectiveParameters = value;
+                _geneticDiversityScorer.Params = value;
+            }
+        }
 
-        readonly IGenomeDecoder<TGenome, TPhenome> _genomeDecoder;
-        readonly IPhenomeEvaluator<TPhenome> _phenomeEvaluator;
-        readonly INoveltyScorer<TGenome> _noveltyScorer; 
-        readonly ParallelOptions _parallelOptions;
-        readonly EvaluationMethod _evalMethod;
-        
         delegate IList<Behaviour<TGenome>> EvaluationMethod(IList<TGenome> genomeList);
 
-        private bool _noveltySearchEnabled;
+        private readonly IGenomeDecoder<TGenome, TPhenome> _genomeDecoder;
+        private readonly IMultiObjectiveEvaluator<TPhenome> _phenomeEvaluator;
+        private readonly INoveltyScorer<TGenome> _noveltyScorer;
+        private readonly IGeneticDiversityScorer<TGenome> _geneticDiversityScorer;
+        private readonly IMultiObjectiveScorer<TGenome> _multiObjectiveScorer;
+        private readonly ParallelOptions _parallelOptions;
+        private readonly EvaluationMethod _evalMethod;
+
+
         private bool _multiobjectiveEnabled;
-        private bool _reevaluateOnce;
+        private bool _noveltySearchEnabled;
+
         private int _generation;
+        private bool _reevaluateOnce;
 
         /// <summary>
         /// Determines if the population is scored by novelty search or regular environmental fitness.
@@ -76,18 +88,19 @@ namespace ENTM.NoveltySearch
         public bool NoveltySearchComplete => _noveltyScorer.StopConditionSatisfied;
 
         #region Constructors
-        /// <summary>
-        /// Construct with the provided IGenomeDecoder, IPhenomeEvaluator, enableMultiThreading flag, ParalleOptions and enablePhenomeCaching flag.
-        /// </summary>
-        public NoveltySearchListEvaluator(IGenomeDecoder<TGenome, TPhenome> genomeDecoder,
-                                           IPhenomeEvaluator<TPhenome> phenomeEvaluator,
+        public MultiObjectiveListEvaluator(IGenomeDecoder<TGenome, TPhenome> genomeDecoder,
+                                           IMultiObjectiveEvaluator<TPhenome> phenomeEvaluator,
                                            INoveltyScorer<TGenome> noveltyScorer,
+                                           IGeneticDiversityScorer<TGenome> geneticDiversityScorer,
+                                           IMultiObjectiveScorer<TGenome> multiObjectiveScorer,
                                            bool enableMultiThreading,
                                            ParallelOptions options)
         {
             _genomeDecoder = genomeDecoder;
             _phenomeEvaluator = phenomeEvaluator;
             _noveltyScorer = noveltyScorer;
+            _geneticDiversityScorer = geneticDiversityScorer;
+            _multiObjectiveScorer = multiObjectiveScorer;
             _parallelOptions = options;
             _generation = 0;
 
@@ -98,6 +111,8 @@ namespace ENTM.NoveltySearch
         }
 
         #endregion
+
+
         #region IGenomeListEvaluator<TGenome> Members
 
         /// <summary>
@@ -153,43 +168,50 @@ namespace ENTM.NoveltySearch
                 }
             }
           
-            // We save the fitness info in a dictionary, since we can't apply the scores directly, because the entire generation
-            // must be evaluated to calculate novelty score
             IList<Behaviour<TGenome>> behaviours = _evalMethod(filteredList);
 
             if (!NoveltySearchEnabled && !MultiObjectiveEnabled)
             {
                 // Ignore novelty score and multiobjective, apply environmental objective fitness
-                ApplyEnvironmentScoresOnly(behaviours);
+                for (int i = 0; i < behaviours.Count; i++)
+                {
+                    behaviours[i].ApplyObjectiveFitnessOnly();
+                }
             }
             else
             {
                 if (NoveltySearchEnabled)
                 {
-                    // Apply the novelty score
+                    // Calculate novelty scores
                     _noveltyScorer.Score(behaviours, OBJ_NOVELTY_SCORE);
                 }
 
                 if (MultiObjectiveEnabled)
                 {
-                    
+                    // Score genetic diversity, since speciation will not work with MO
+                    _geneticDiversityScorer.Score(behaviours, OBJ_GENETIC_DIVERSITY);
+
+                    // Apply multi objective
+                    _multiObjectiveScorer.Score(behaviours);
+
+                    for (int i = 0; i < behaviours.Count; i++)
+                    {
+                        behaviours[i].ApplyMultiObjectiveScore();
+                    }
+                }
+                else
+                {
+                    // Only novelty score
+                    for (int i = 0; i < behaviours.Count; i++)
+                    {
+                        behaviours[i].ApplyNoveltyScoreOnly();
+                    }
                 }
             }
         }
 
-        /// <summary>
-        /// Apply the environment objective scores to the genomes, ignoring novelty search.
-        /// </summary>
-        /// <param name="fitness"></param>
-        private void ApplyEnvironmentScoresOnly(IList<Behaviour<TGenome>> fitness)
-        {
-            foreach (Behaviour<TGenome> b in fitness)
-            {
-                b.Genome.EvaluationInfo.SetFitness(b.Score._fitness);
-            }
-        }
-
         #endregion
+
 
         #region Evaluation methods
 
@@ -208,12 +230,8 @@ namespace ENTM.NoveltySearch
             }
 
             // Evaluate the genome!
-            FitnessInfo score = _phenomeEvaluator.Evaluate(phenome);
-
-            Behaviour<TGenome> behaviour = new Behaviour<TGenome>(genome, score, OBJ_COUNT);
-
-            // First Objetive - Objective fitness
-            behaviour.Objectives[OBJ_OBJECTIVE_FITNESS] = score._fitness;
+            Behaviour<TGenome> behaviour = new Behaviour<TGenome>(genome, OBJ_COUNT);
+            behaviour.Evaluation = _phenomeEvaluator.Evaluate(phenome);
 
             return behaviour;
         }
