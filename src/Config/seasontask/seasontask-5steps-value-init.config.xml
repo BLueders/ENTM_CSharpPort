@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-5Steps-GradientInit</Name>
+  <Name>SeasonTask-5Steps-ValueInit</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
