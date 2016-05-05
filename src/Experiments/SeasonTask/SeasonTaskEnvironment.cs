@@ -39,6 +39,9 @@ namespace ENTM.Experiments.SeasonTask
         // will not score the first day of each season in the first year
         protected bool _ignoreFirstDayOfSeasonInFirstYear;
 
+        // do we give reinforcment learning punishment and reward on food items that are not eaten?
+        protected bool _feedbackOnIgnoredFood;
+
         protected readonly double _fitnessFactor;
 
         public Food[] Sequence { get; protected set; }
@@ -96,7 +99,7 @@ namespace ENTM.Experiments.SeasonTask
             _ignoreFirstDayOfSeasonInFirstYear = props.IgnoreFirstDayOfSeasonInFirstYear;
             _poisonousTypeChanges = props.PoisonousTypeChanges;
             RandomSeed = props.RandomSeed;
-
+            _feedbackOnIgnoredFood = props.FeedbackOnIgnoredFood;
         }
 
         public override void ResetAll()
@@ -240,6 +243,7 @@ namespace ENTM.Experiments.SeasonTask
         #region RecordTimesteps
         public override bool RecordTimeSteps { get; set; }
         protected EnvironmentTimeStep _prevTimeStep;
+
         public override EnvironmentTimeStep InitialTimeStep
         {
             get

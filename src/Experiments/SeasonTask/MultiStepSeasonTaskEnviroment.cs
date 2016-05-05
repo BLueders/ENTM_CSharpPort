@@ -11,8 +11,8 @@ namespace ENTM.Experiments.SeasonTask
 {
     class MultiStepSeasonTaskEnviroment : SeasonTaskEnvironment
     {
-       
-        public MultiStepSeasonTaskEnviroment(SeasonTaskProperties props, int stepsPerFood) : base (props)
+
+        public MultiStepSeasonTaskEnviroment(SeasonTaskProperties props, int stepsPerFood) : base(props)
         {
             StepNum = stepsPerFood;
         }
@@ -36,17 +36,17 @@ namespace ENTM.Experiments.SeasonTask
             {
                 Debug.DLog($"Task: Reward Step", true);
                 double eatVal = action[0];
-                thisEvaluation = Evaluate(eatVal, (_step/StepNum));
+                thisEvaluation = Evaluate(eatVal, (_step / StepNum));
                 observation = GetOutput(_step, thisEvaluation);
-                if (!ScoreThisStep((_step/StepNum)))
+                if (!ScoreThisStep((_step / StepNum)))
                 {
                     thisEvaluation = 0;
                 }
                 _score += thisEvaluation;
                 Debug.DLog($"{"Eating:",-16} {eatVal}" +
-                           $"\n{"Poisonous:",-16} {Sequence[(_step/3) - 1].IsPoisonous}" +
+                           $"\n{"Poisonous:",-16} {Sequence[(_step / 3) - 1].IsPoisonous}" +
                            $"\n{"Score:",-16} {thisEvaluation.ToString("F4")}" +
-                           $"\n{"Total Score:",-16} {_score.ToString("F4")} / {(_step/3) - 1}" +
+                           $"\n{"Total Score:",-16} {_score.ToString("F4")} / {(_step / 3) - 1}" +
                            $"\n{"Max Score:",-16} {Sequence.Length.ToString("F4")}", true);
             }
             else
@@ -77,20 +77,24 @@ namespace ENTM.Experiments.SeasonTask
             if (task == StepNum - 1)
             {
                 //// vanilla reward and punishment
-                //if (evaluation < 0.0001)
-                ////if(SealedRandom.Next(0,2) > 0)
-                //    observation[observation.Length - 1] = 1;
-                //else
-                //    observation[observation.Length - 2] = 1;
-
-                // punish only when poisonous is eaten, reward only when nutritios is eaten
-                if (evaluation < 0.0001 && currentFood.IsPoisonous)
+                if (_feedbackOnIgnoredFood)
                 {
-                    observation[observation.Length - 1] = 1;
+                    if (evaluation < 0.0001)
+                        //if(SealedRandom.Next(0,2) > 0)
+                        observation[observation.Length - 1] = 1;
+                    else
+                        observation[observation.Length - 2] = 1;
                 }
-                if (evaluation > 0.99 && !currentFood.IsPoisonous)
-                {
-                    observation[observation.Length - 2] = 1;
+                // punish only when poisonous is eaten, reward only when nutritios is eaten
+                else {
+                    if (evaluation < 0.0001 && currentFood.IsPoisonous)
+                    {
+                        observation[observation.Length - 1] = 1;
+                    }
+                    if (evaluation > 0.99 && !currentFood.IsPoisonous)
+                    {
+                        observation[observation.Length - 2] = 1;
+                    }
                 }
             }
             return observation;
