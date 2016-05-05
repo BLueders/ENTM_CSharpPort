@@ -152,9 +152,9 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Config\seasontask.config.xml" />
-    <Content Include="Genomes\anji2sharpneat.py" />
+    <Content Include="Scripts\anji2sharpneat.py" />
     <Content Include="Genomes\chromosome11943.xml" />
-    <Content Include="results_analysis.py" />
+    <Content Include="Scripts\results_analysis.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Config\CopyTask\" />

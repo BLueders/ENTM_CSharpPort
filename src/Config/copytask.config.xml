@@ -13,6 +13,9 @@
     The controller must record a bit-vector sequence to memory, and read it back.
   </Description>
 
+  <!-- Comment about the specific experiment setup. NO LINE BREAKS! -->
+  <Comment>Default setup</Comment>
+  
   <!-- How many experiments will be performed (serially) -->
   <ExperimentCount>20</ExperimentCount>
 
@@ -219,14 +222,6 @@
     <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
     <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
 
-    <!-- The history buffer length used for calculating the best fitness moving average. Default: 100 -->
-    <BestFitnessMovingAverageHistoryLength>100</BestFitnessMovingAverageHistoryLength>
-
-    <!-- The history buffer length used for calculating the mean specie champ fitness. Default: 100 -->
-    <MeanSpecieChampFitnessMovingAverageHistoryLength>100</MeanSpecieChampFitnessMovingAverageHistoryLength>
-
-    <!-- The history buffer length used for calculating the mean genome complexity moving. Default: 100 -->
-    <ComplexityMovingAverageHistoryLength>100</ComplexityMovingAverageHistoryLength>
   </EAParams>
 
 
@@ -252,9 +247,6 @@
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
     <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
-
-    <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
-    <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
     <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>

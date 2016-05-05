@@ -206,6 +206,7 @@ namespace ENTM
 
         private static bool InitializeExperiment(XmlElement config)
         {
+            // Termine any ongoing experiment, or the algorithm thread will block indefinitely and leak
             _experiment?.Terminate();
 
             if (config == null)
@@ -222,12 +223,6 @@ namespace ENTM
             _experiment = (ITuringExperiment) Activator.CreateInstance(_experimentType);
 
             string name = XmlUtils.GetValueAsString(config, "Name");
-
-            // Initialize logging
-            GlobalContext.Properties["name"] = name;
-            GlobalContext.Properties["id"] = _identifier;
-            GlobalContext.Properties["count"] = _currentConfig;
-            XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
 
             _logger.Info($"Initializing experiment: {name}...");
 
@@ -276,19 +271,19 @@ namespace ENTM
             {
                 if (writeHeader)
                 {
-                    sw.WriteLine("Experiment,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation");
+                    sw.WriteLine("Experiment,Comment,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation");
                 }
 
                 sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0},{1},{2},{3},{4:F4},{5:F0},{6},{7}",
-                    e.Experiment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen));
+                    "{0},{1},{2},{3},{4},{5:F4},{6:F0},{7},{8}",
+                    e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen));
             }
 
             NextExperiment();
         }
 
-        private static void NextExperiment() {
-
+        private static void NextExperiment()
+        {
             if (_currentConfig < 0 || _currentExperiment >= _experiementCount)
             {
                 NextConfig();
@@ -303,7 +298,6 @@ namespace ENTM
 
                 if (InitializeExperiment(_configs[_currentConfig]))
                 {
-                    ConfigPrinter.Print(_configs[_currentConfig]);
                     if (!_inputEnabled || _didStartExperiment)
                     {
                         _experiment.StartStopEA();
@@ -326,6 +320,17 @@ namespace ENTM
             {
                 _currentConfig++;
                 _currentExperiment = 1;
+
+                string name = XmlUtils.GetValueAsString(_configs[_currentConfig], "Name");
+
+                // Initialize logging
+                GlobalContext.Properties["name"] = name;
+                GlobalContext.Properties["id"] = _identifier;
+                GlobalContext.Properties["count"] = _currentConfig;
+                XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
+
+                // Print config
+                ConfigPrinter.Print(_configs[_currentConfig]);
             }
             else
             {

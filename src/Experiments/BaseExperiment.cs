@@ -78,13 +78,12 @@ namespace ENTM.Experiments
         protected TEvaluator _evaluator;
         protected MultiObjectiveListEvaluator<NeatGenome, IBlackBox> _listEvaluator;
 
-        private string _name;
+        private string _name, _description, _comment;
         private int _populationSize, _maxGenerations;
         private NetworkActivationScheme _activationScheme;
         private IComplexityRegulationStrategy _complexityRegulationStrategy;
         private string _complexityRegulationStr;
         private int? _complexityThreshold;
-        private string _description;
         private ParallelOptions _parallelOptions;
         private bool _multiThreading;
         private int _logInterval;
@@ -512,7 +511,7 @@ namespace ENTM.Experiments
                         args.Experiment = _number;
                         args.Directory = CurrentDirectory;
                         args.TimeSpent = _timer.Elapsed;
-            
+                        args.Comment = _comment;
                         args.Solved = _evaluator.StopConditionSatisfied;
                         args.Generations = _ea.CurrentGeneration;
                         args.ChampFitness = _ea.Statistics._maxFitness;
@@ -702,11 +701,12 @@ namespace ENTM.Experiments
         public void Initialize(string name, XmlElement xmlConfig)
         {
             _name = name;
+            _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description") ?? "";
+            _comment = XmlUtils.TryGetValueAsString(xmlConfig, "Comment") ?? "";
             _populationSize = XmlUtils.GetValueAsInt(xmlConfig, "PopulationSize");
             _maxGenerations = XmlUtils.GetValueAsInt(xmlConfig, "MaxGenerations");
             _activationScheme = ExperimentUtils.CreateActivationScheme(xmlConfig, "Activation");
             _complexityRegulationStrategy = ExperimentUtils.CreateComplexityRegulationStrategy(xmlConfig, "ComplexityRegulation");
-            _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description");
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
             _multiThreading = XmlUtils.TryGetValueAsBool(xmlConfig, "MultiThreading") ?? true;
             _logInterval = XmlUtils.TryGetValueAsInt(xmlConfig, "LogInterval") ?? 10;
@@ -724,9 +724,6 @@ namespace ENTM.Experiments
                 _eaParams.OffspringAsexualProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "OffspringAsexualProportion");
                 _eaParams.OffspringSexualProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "OffspringSexualProportion");
                 _eaParams.InterspeciesMatingProportion = XmlUtils.GetValueAsDouble(xmlEAParams, "InterspeciesMatingProportion");
-                _eaParams.BestFitnessMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "BestFitnessMovingAverageHistoryLength");
-                _eaParams.MeanSpecieChampFitnessMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "MeanSpecieChampFitnessMovingAverageHistoryLength");
-                _eaParams.ComplexityMovingAverageHistoryLength = XmlUtils.GetValueAsInt(xmlEAParams, "ComplexityMovingAverageHistoryLength");
             }
             else
             {
@@ -749,7 +746,6 @@ namespace ENTM.Experiments
                 _neatGenomeParams.ConnectionWeightMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "ConnectionWeightMutationProbability");
                 _neatGenomeParams.AddNodeMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddNodeMutationProbability");
                 _neatGenomeParams.AddConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "AddConnectionMutationProbability");
-                _neatGenomeParams.NodeAuxStateMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "NodeAuxStateMutationProbability");
                 _neatGenomeParams.DeleteConnectionMutationProbability = XmlUtils.GetValueAsDouble(xmlGenomeParams, "DeleteConnectionMutationProbability");
             }
             else
@@ -910,6 +906,7 @@ namespace ENTM.Experiments
         public int Experiment { get; internal set; }
         public string Directory { get; internal set; }
         public TimeSpan TimeSpent { get; internal set; }
+        public string Comment { get; internal set; }
 
         public bool Solved { get; internal set; }
         public uint Generations { get; internal set; }
