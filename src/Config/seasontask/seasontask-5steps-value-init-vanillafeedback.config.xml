@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-5Steps-ValueInit</Name>
+  <Name>SeasonTask-5Steps-ValueInit-VanillaFeedback</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
@@ -15,7 +15,7 @@
   </Description>
 
     <!-- Comment about the specific experiment setup. NO LINE BREAKS!!!!!!!!!!!! -->
-  <Comment>4 foods, 2 of them poisonous, no seasons, initialize tape with a value, give reward and punishment only for eaten foods</Comment>
+  <Comment>4 foods, 2 of them poisonous, no seasons, initialize tape with a value, vanilla feedback</Comment>
   
   <!-- How many experiments will be performed (serially) -->
   <ExperimentCount>10</ExperimentCount>
@@ -86,7 +86,7 @@
     <!-- How many steps to we spend at each food before giving the feedback -->
 	<StepsPerFood>5</StepsPerFood>
 	<!-- User reinforcment learning punishment and reward on food that is not eaten but ignored? -->
-	<FeedbackOnIgnoredFood>false</FeedbackOnIgnoredFood>
+	<FeedbackOnIgnoredFood>true</FeedbackOnIgnoredFood>
 
   </SeasonTaskParams>
 
