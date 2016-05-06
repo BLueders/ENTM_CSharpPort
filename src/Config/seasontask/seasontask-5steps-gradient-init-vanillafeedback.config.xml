@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-5Steps-3food</Name>
+  <Name>SeasonTask-5Steps-GradientInit-VanillaFeedback</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
@@ -14,17 +14,20 @@
     Then recall the information when it encounters that season again to decide wich to eat.
   </Description>
 
+  <!-- Comment about the specific experiment setup. NO LINE BREAKS!!!!!!!!!!!! -->
+  <Comment>4 foods, 2 of them poisonous, no seasons, initialize tape with a gradient, vanilla feedback</Comment>
+  
   <!-- How many experiments will be performed (serially) -->
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>10000</MaxGenerations>
+  <MaxGenerations>5000</MaxGenerations>
 
   <!-- NEAT -->
-  <PopulationSize>200</PopulationSize>
+  <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>50</LogInterval>
+  <LogInterval>100</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -36,16 +39,16 @@
   <TuringMachineParams>
     <Enabled>true</Enabled>
     <!-- Maximum memory size (-1 for unlimited) -->
-    <N>-1</N>
+    <N>25</N>
 
     <!-- Write vector size -->
-    <M>5</M>
+    <M>8</M>
 
     <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
-    <MinSimilarityToJump>0.5</MinSimilarityToJump>
+    <MinSimilarityToJump>0</MinSimilarityToJump>
     
 	<!-- If M > 1 this will initialize the values of the turing machine with a gradient from 0 to 1. -->
-    <InitalizeWithGradient>false</InitalizeWithGradient>
+    <InitalizeWithGradient>true</InitalizeWithGradient>
 	
 	<!-- the turing machine vectors can have a initial values instead of a gradient. -1 means no inital value. -->
     <InitalValue>-1</InitalValue>
@@ -74,11 +77,16 @@
     <Years>1</Years>
     <Seasons>1</Seasons>
     <Days>8</Days>
-    <FoodTypes>3</FoodTypes>
-    <PoisonFoods>1</PoisonFoods>
+    <FoodTypes>4</FoodTypes>
+    <PoisonFoods>2</PoisonFoods>
+	<!-- Randomly shuffle wich foods are poisonous at a random position in the sequence -->
     <PoisonousTypeChanges>0</PoisonousTypeChanges>
+	<!-- The first time a food is encountered, the system cant know the answer, so maybe we dont want to score them -->
     <IgnoreFirstDayOfSeasonInFirstYear>true</IgnoreFirstDayOfSeasonInFirstYear>
-    <StepsPerFood>5</StepsPerFood>
+    <!-- How many steps to we spend at each food before giving the feedback -->
+	<StepsPerFood>5</StepsPerFood>
+	<!-- User reinforcment learning punishment and reward on food that is not eaten but ignored? -->
+	<FeedbackOnIgnoredFood>true</FeedbackOnIgnoredFood>
 
   </SeasonTaskParams>
 
@@ -172,8 +180,6 @@
 
   </ComplexityRegulation>
 
- 
-
   
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
@@ -196,14 +202,6 @@
     <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
     <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
 
-    <!-- The history buffer length used for calculating the best fitness moving average. Default: 100 -->
-    <BestFitnessMovingAverageHistoryLength>100</BestFitnessMovingAverageHistoryLength>
-
-    <!-- The history buffer length used for calculating the mean specie champ fitness. Default: 100 -->
-    <MeanSpecieChampFitnessMovingAverageHistoryLength>100</MeanSpecieChampFitnessMovingAverageHistoryLength>
-
-    <!-- The history buffer length used for calculating the mean genome complexity moving. Default: 100 -->
-    <ComplexityMovingAverageHistoryLength>100</ComplexityMovingAverageHistoryLength>
   </EAParams>
 
   <!-- Genome Parameters -->
@@ -214,7 +212,7 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>0.3</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>0.2</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
@@ -228,9 +226,6 @@
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
     <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
-
-    <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
-    <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
     <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>

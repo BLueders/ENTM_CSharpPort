@@ -70,9 +70,14 @@
     <Days>8</Days>
     <FoodTypes>4</FoodTypes>
     <PoisonFoods>2</PoisonFoods>
+	<!-- Randomly shuffle wich foods are poisonous at a random position in the sequence -->
     <PoisonousTypeChanges>0</PoisonousTypeChanges>
+	<!-- The first time a food is encountered, the system cant know the answer, so maybe we dont want to score them -->
     <IgnoreFirstDayOfSeasonInFirstYear>true</IgnoreFirstDayOfSeasonInFirstYear>
-    <StepsPerFood>5</StepsPerFood>
+    <!-- How many steps to we spend at each food before giving the feedback -->
+	<StepsPerFood>5</StepsPerFood>
+	<!-- User reinforcment learning punishment and reward on food that is not eaten but ignored? -->
+	<FeedbackOnIgnoredFood>false</FeedbackOnIgnoredFood>
 
   </SeasonTaskParams>
 
