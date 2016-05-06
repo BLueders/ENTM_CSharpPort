@@ -17,6 +17,13 @@ namespace ENTM.Distance
 
         private Dictionary<INeighbour, double[]> _neighbourhoods;
 
+        private readonly IDistanceMeasure _distanceMeasure;
+
+        public Knn(IDistanceMeasure distanceMeasure)
+        {
+            _distanceMeasure = distanceMeasure;
+        }
+
         /// <summary>
         /// Initialize KNN with a list of fitness info structs. The supplied start index determines where the algorithm will start comparing values in
         /// the auxFitnessArr array. Use this if not all values of the vector should be considered.
@@ -43,23 +50,10 @@ namespace ENTM.Distance
                     double[] vector2 = neighbour2.KnnVector;
                     int vectorLength2 = vector2.Length;
 
+                    double distance = _distanceMeasure.Distance(vector1, vector2, vectorLength1, vectorLength2);
 
-                    // Longest vector
-                    int vectorLength = vectorLength1 > vectorLength2 ? vectorLength1 : vectorLength2;
-
-                    // Euclidian distance squared
-                    double total = 0;
-                    for (int k = 0; k < vectorLength; k++)
-                    {
-                        // Fill with zeroes if vector lenghts are not equal
-                        double v1 = k < vectorLength1 ? vector1[k] : 0d;
-                        double v2 = k < vectorLength2 ? vector2[k] : 0d;
-
-                        double d = v2 - v1;
-                        total += d * d;
-                    }
-                    neighbourhood1[j - 1] = total;
-                    neighbourhood2[i] = total;
+                    neighbourhood1[j - 1] = distance;
+                    neighbourhood2[i] = distance;
                 }
 
                 Array.Sort(neighbourhood1);

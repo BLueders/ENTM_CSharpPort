@@ -1,12 +1,11 @@
-﻿using System;
+﻿using System.Threading;
 using System.Xml;
-using SharpNeat.Phenomes;
-using System.Threading;
+using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
-using ENTM.MultiObjective;
+using SharpNeat.Phenomes;
 
-namespace ENTM
+namespace ENTM.Base
 {
     public abstract class BaseEvaluator<TEnvironment, TController> : IMultiObjectiveEvaluator<IBlackBox>
         where TEnvironment : IEnvironment

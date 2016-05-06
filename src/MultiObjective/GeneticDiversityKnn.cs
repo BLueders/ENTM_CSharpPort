@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ENTM.Base;
 using ENTM.Distance;
 using ENTM.NoveltySearch;
 using SharpNeat.Core;
@@ -19,6 +20,8 @@ namespace ENTM.MultiObjective
         }
 
         public MultiObjectiveParameters Params { get; set; }
+
+        private readonly IDistanceMeasure _distanceMeasure = new EuclideanDistanceSquared();
 
         public void Score(IList<Behaviour<TGenome>> behaviours, int objective)
         {
@@ -48,7 +51,7 @@ namespace ENTM.MultiObjective
                 positions[i] = pos;
             }
 
-            Knn knn = new Knn();
+            Knn knn = new Knn(_distanceMeasure);
 
             knn.Initialize(positions);
 

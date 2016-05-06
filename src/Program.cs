@@ -12,6 +12,7 @@ using log4net.Config;
 using SharpNeat.Domains;
 using ENTM.Experiments;
 using System.Threading;
+using ENTM.Base;
 using log4net;
 
 namespace ENTM

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Xml;
+using ENTM.Base;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
 using ENTM.MultiObjective;

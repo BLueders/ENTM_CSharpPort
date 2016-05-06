@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ENTM.Base;
 using ENTM.NoveltySearch;
 using ENTM.Utility;
 using log4net;
@@ -47,7 +48,7 @@ namespace ENTM.MultiObjective
         private readonly IMultiObjectiveEvaluator<TPhenome> _phenomeEvaluator;
         private readonly INoveltyScorer<TGenome> _noveltyScorer;
         private readonly IGeneticDiversityScorer<TGenome> _geneticDiversityScorer;
-        private readonly IMultiObjectiveScorer<TGenome> _multiObjectiveScorer;
+        private readonly IMultiObjectiveScorer _multiObjectiveScorer;
         private readonly ParallelOptions _parallelOptions;
         private readonly EvaluationMethod _evalMethod;
 
@@ -93,7 +94,7 @@ namespace ENTM.MultiObjective
                                            IMultiObjectiveEvaluator<TPhenome> phenomeEvaluator,
                                            INoveltyScorer<TGenome> noveltyScorer,
                                            IGeneticDiversityScorer<TGenome> geneticDiversityScorer,
-                                           IMultiObjectiveScorer<TGenome> multiObjectiveScorer,
+                                           IMultiObjectiveScorer multiObjectiveScorer,
                                            bool enableMultiThreading,
                                            ParallelOptions options)
         {

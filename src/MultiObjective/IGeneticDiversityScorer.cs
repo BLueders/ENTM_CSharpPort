@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ENTM.Base;
 using ENTM.NoveltySearch;
 using SharpNeat.Core;
 

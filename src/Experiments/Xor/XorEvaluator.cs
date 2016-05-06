@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using ENTM.Base;
 using ENTM.Replay;
 using ENTM.MultiObjective;
 

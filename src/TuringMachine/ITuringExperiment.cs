@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
+using ENTM.Base;
 using ENTM.Replay;
 using SharpNeat.Core;
 using SharpNeat.EvolutionAlgorithms;

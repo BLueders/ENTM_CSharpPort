@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ENTM.Experiments.SeasonTask;
+﻿using ENTM.Base;
 using ENTM.TuringMachine;
 
 namespace ENTM.Experiments.SeasonTask

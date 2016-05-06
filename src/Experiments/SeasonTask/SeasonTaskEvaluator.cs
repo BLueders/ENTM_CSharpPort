@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using ENTM.Experiments.CopyTask;
-using ENTM.Experiments.SeasonTask;
-using ENTM.Replay;
+﻿using System.Xml;
 using ENTM.TuringMachine;
-using ENTM.Utility;
-using SharpNeat.Core;
-using SharpNeat.Phenomes;
 
 namespace ENTM.Experiments.SeasonTask
 {

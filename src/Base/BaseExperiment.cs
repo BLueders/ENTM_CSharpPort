@@ -31,6 +31,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using ENTM.Experiments;
 using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
@@ -48,7 +49,7 @@ using SharpNeat.Phenomes;
 using SharpNeat.SpeciationStrategies;
 using Debug = ENTM.Utility.Debug;
 
-namespace ENTM.Experiments
+namespace ENTM.Base
 {
     /// <summary>
     /// Helper class that hides most of the details of setting up an experiment.
@@ -878,7 +879,7 @@ namespace ENTM.Experiments
 
             INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
             IGeneticDiversityScorer<NeatGenome> geneticDiversityScorer = new GeneticDiversityKnn<NeatGenome>();
-            IMultiObjectiveScorer<NeatGenome> multiObjectiveScorer = new NSGAII<NeatGenome>();
+            IMultiObjectiveScorer multiObjectiveScorer = new NSGAII();
 
              _listEvaluator = new MultiObjectiveListEvaluator<NeatGenome, IBlackBox>(
                  genomeDecoder, 

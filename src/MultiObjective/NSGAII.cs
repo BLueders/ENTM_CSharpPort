@@ -1,32 +1,66 @@
 ﻿using System.Collections.Generic;
-using ENTM.NoveltySearch;
+using System.Text;
+using log4net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpNeat.Core;
 
 namespace ENTM.MultiObjective
 {
 
-    public class NSGAII<TGenome> : IMultiObjectiveScorer<TGenome> where TGenome : class, IGenome<TGenome>
+    public class NSGAII : IMultiObjectiveScorer
     {
-        private List<Behaviour<TGenome>> _population;
+        private readonly ILog _logger = LogManager.GetLogger("NSGAII");
+
+        private List<IMultiObjectiveBehaviour> _population;
         private int _count;
         private int _objectives;
         private int _maxRank;
 
-        public void Score(IList<Behaviour<TGenome>> behaviours)
+        private Dictionary<int, double> _maxObjectiveScores; 
+
+        public void Score(IList<IMultiObjectiveBehaviour> behaviours)
         {
-            _population = new List<Behaviour<TGenome>>(behaviours);
+            _population = new List<IMultiObjectiveBehaviour>(behaviours);
             _count = _population.Count;
             _objectives = _population[0].Objectives.Length;
 
+            _maxObjectiveScores = new Dictionary<int, double>(_objectives);
+
             UpdateDominations();
+
+            StringBuilder sb = new StringBuilder("Max Objectives:");
+            for (int i = 0; i < _objectives; i++)
+            {
+                sb.Append($" {i}: {_maxObjectiveScores[i]:F4}");
+            }
+            _logger.Info(sb.ToString());
 
             RankPopulation();
 
             for (int i = 0; i < _count; i++)
             {
-                Behaviour<TGenome> b = _population[i];
+                IMultiObjectiveBehaviour b = _population[i];
                 b.MultiObjectiveScore = (b.Rank - 1d) / (_maxRank - 1d);
+            }
+        }
+
+        private void UpdateMaxObjectiveScores(double[] objectives)
+        {
+            for (int i = 0; i < _objectives; i++)
+            {
+                double score = objectives[i];
+                double max;
+                if (!_maxObjectiveScores.TryGetValue(i, out max))
+                {
+                    _maxObjectiveScores.Add(i, score);
+                }
+                else
+                {
+                    if (score > _maxObjectiveScores[i])
+                    {
+                        _maxObjectiveScores[i] = score;
+                    }
+                }
             }
         }
 
@@ -35,10 +69,13 @@ namespace ENTM.MultiObjective
             // Compare all bahaviours to each other
             for (int i = 0; i < _count; i++)
             {
-                Behaviour<TGenome> one = _population[i];
+                IMultiObjectiveBehaviour one = _population[i];
+
+                UpdateMaxObjectiveScores(one.Objectives);
+
                 for (int j = i + 1; j < _count; j++)
                 {
-                    Behaviour<TGenome> other = _population[j];
+                    IMultiObjectiveBehaviour other = _population[j];
 
                     if (Dominates(one, other))
                     {
@@ -54,7 +91,7 @@ namespace ENTM.MultiObjective
             }
         }
 
-        private bool Dominates(Behaviour<TGenome> one, Behaviour<TGenome> other)
+        private bool Dominates(IMultiObjectiveBehaviour one, IMultiObjectiveBehaviour other)
         {
             Assert.AreNotEqual(one, other);
 
@@ -83,7 +120,7 @@ namespace ENTM.MultiObjective
 
         private void RankPopulation()
         {
-            List<Behaviour<TGenome>> unranked = new List<Behaviour<TGenome>>(_population);
+            List<IMultiObjectiveBehaviour> unranked = new List<IMultiObjectiveBehaviour>(_population);
 
             int rank = 1;
 
@@ -95,7 +132,7 @@ namespace ENTM.MultiObjective
                 // Iterate in reverse to keep indices correct
                 for (int i = count - 1; i >= 0; i--)
                 {
-                    Behaviour<TGenome> b = unranked[i];
+                    IMultiObjectiveBehaviour b = unranked[i];
 
                     if (b.DominatedCount == 0)
                     {
@@ -114,6 +151,7 @@ namespace ENTM.MultiObjective
                     }
                 }
 
+                // Increment rank
                 rank++;
             }
 

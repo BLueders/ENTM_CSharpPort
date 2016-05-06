@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ENTM.Base;
 using ENTM.Distance;
 using ENTM.MultiObjective;
 using log4net;
@@ -14,6 +15,8 @@ namespace ENTM.NoveltySearch
 
         private readonly NoveltySearchParameters _params;
         private readonly LimitedQueue<Behaviour<TGenome>> _archive;
+
+        private readonly IDistanceMeasure _distanceMeasure = new EuclideanDistanceSquared();
 
         public IList<TGenome> Archive
         {
@@ -61,7 +64,7 @@ namespace ENTM.NoveltySearch
             List<Behaviour<TGenome>> combinedBehaviours = new List<Behaviour<TGenome>>(_archive);
             combinedBehaviours.AddRange(behaviours);
 
-            Knn knn = new Knn();
+            Knn knn = new Knn(_distanceMeasure);
 
             knn.Initialize(combinedBehaviours.ToArray());
 
@@ -88,7 +91,7 @@ namespace ENTM.NoveltySearch
 
                     if (_params.ObjectiveFactorExponent > 0)
                     {
-                        score *= Math.Pow(b.Evaluation.ObjectiveFitness, _params.ObjectiveFactorExponent);
+                        score *= Math.Pow(objectiveScore, _params.ObjectiveFactorExponent);
                     }
 
                     // Novelty score objective
@@ -142,7 +145,7 @@ namespace ENTM.NoveltySearch
 
             if (_generation % _reportInterval == 0)
             {
-                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin:F2}. Avg knn time spent/gen: {_knnTotalTimeSpent / _reportInterval} ms. " + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria / (float) _reportInterval}, Max Objective Score: {_maxObjectiveScore:F4}");
+                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin:F2}. Avg knn time spent/gen: {_knnTotalTimeSpent / _reportInterval} ms. " + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria / (float) _reportInterval}");
                 _knnTotalTimeSpent = 0;
                 _belowMinimumCriteria = 0;
             }

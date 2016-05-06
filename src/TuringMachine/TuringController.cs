@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ENTM.Base;
 using ENTM.NoveltySearch;
 using SharpNeat.Phenomes;
 using ENTM.Utility;

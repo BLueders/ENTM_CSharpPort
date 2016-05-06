@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ENTM.Replay;
-using ENTM.TuringMachine;
 using log4net;
 
-namespace ENTM
+namespace ENTM.Base
 {
     public abstract class BaseEnvironment : IEnvironment
     {
