@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using ENTM.Distance;
 using ENTM.MultiObjective;
 using SharpNeat.Core;
-using EvaluationInfo = ENTM.MultiObjective.EvaluationInfo;
+using EvaluationInfo = ENTM.Base.EvaluationInfo;
 
 namespace ENTM.Base
 {
@@ -23,21 +24,6 @@ namespace ENTM.Base
             }
         }
 
-        // The final fitness calculated by the Multi Objective algorithm (if applied)
-        public double MultiObjectiveScore { get; set; }
-
-        // The objective scores to be considered
-        public double[] Objectives { get; set; }
-
-        // The rank of this behaviour, i.e. which Pareto front is it on
-        public int Rank { get; set; }
-
-        // List of behaviours dominated by this behaviour
-        public IList<IMultiObjectiveBehaviour> Dominates { get; }
-
-        // How many behaviours dominate this behaviour
-        public int DominatedCount { get; set; }
-
         public Behaviour(TGenome genome, int objectives)
         {
             Genome = genome;
@@ -45,17 +31,8 @@ namespace ENTM.Base
             Objectives = new double[objectives];
 
             Dominates = new List<IMultiObjectiveBehaviour>();
-
-            Reset();
         }
 
-        public void Reset()
-        {
-            Rank = 0;
-            DominatedCount = 0;
-            Dominates.Clear();
-        }
-        
         // If this behaviour has been deemed non-viable
         private bool _nonViable;
         public bool NonViable
@@ -83,6 +60,33 @@ namespace ENTM.Base
             Genome.EvaluationInfo.SetFitness(MultiObjectiveScore);
         }
 
+        #region Knn.INeighbour
+
         public double[] KnnVector => Evaluation.NoveltyVector;
+
+        #endregion
+
+
+        #region IMultiObjectiveBehaviour
+
+        public double MultiObjectiveScore { get; set; }
+        public double[] Objectives { get; set; }
+        public int Rank { get; set; }
+        public double CrowdingDistance { get; set; }
+        public IList<IMultiObjectiveBehaviour> Dominates { get; }
+        public int DominatedCount { get; set; }
+
+        #endregion
+
+        public override string ToString()
+        {
+            StringBuilder s = new StringBuilder($"ID: {Genome.Id} Rnk: {Rank} Scr: {MultiObjectiveScore:F04} Doms: {Dominates.Count} Domd: {DominatedCount} CrwDist: {CrowdingDistance:F04} Obj:");
+
+            for (int i = 0; i < Objectives.Length; i++)
+            {
+                s.Append($" [{i}]: {Objectives[i]:F04}");
+            }
+            return s.ToString();
+        }
     }
 }

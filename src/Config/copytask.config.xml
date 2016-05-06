@@ -20,7 +20,7 @@
   <ExperimentCount>20</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>1000</MaxGenerations>
+  <MaxGenerations>2000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -117,7 +117,7 @@
     <NoveltyVector>WritePatternAndInterp</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>25</PMin>
+    <PMin>50</PMin>
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
     <PMinLowerThreshold>5</PMinLowerThreshold>

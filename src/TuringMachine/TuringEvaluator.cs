@@ -48,6 +48,8 @@ namespace ENTM.TuringMachine
         {
             if (controller == null) throw new ArgumentNullException("Controller was null");
 
+
+
             Utility.Debug.DLogHeader("STARTING EVAULATION", true);
 
             double totalScore = 0;

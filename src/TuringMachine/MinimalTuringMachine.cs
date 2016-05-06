@@ -1,7 +1,4 @@
-﻿
-// #define DEBUG
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using ENTM.NoveltySearch;
@@ -9,15 +6,22 @@ using ENTM.Utility;
 
 namespace ENTM.TuringMachine
 {
-    /**
-    * Our simplified version of a Turing Machine for
-    * use with a neural network. It uses the general
-    * TuringMachine interface so can be used in the
-    * same contexts as the GravesTuringMachine.
-    * 
-    * @author Emil
-    *
-    */
+    /// <summary>
+    /// Turing machine modified for Novelty Search and other optimizations.
+    /// Builds on original java version by Emil Juul Jacobsen and Rasmus Boll Greve.
+    /// 
+    /// Created by Benno Lüders and Mikkel Schläger.
+    /// 
+    /// 
+    /// Original doc:
+    /// 
+    /// * Our simplified version of a Turing Machine for
+    /// * use with a neural network.It uses the general
+    /// * TuringMachine interface so can be used in the
+    /// * same contexts as the GravesTuringMachine.
+    /// * 
+    /// * @author Emil
+    /// </summary>
     public class MinimalTuringMachine : ITuringMachine
     {
         private readonly List<double[]> _tape;

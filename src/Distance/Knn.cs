@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using ENTM.Utility;
 
 namespace ENTM.Distance
 {
@@ -11,7 +12,7 @@ namespace ENTM.Distance
             double[] KnnVector { get; }
         }
 
-        private Stopwatch _timer;
+        private readonly Stopwatch _timer = new Stopwatch();
 
         public long TimeSpent => _timer.ElapsedMilliseconds;
 
@@ -30,8 +31,7 @@ namespace ENTM.Distance
         /// </summary>
         public void Initialize(INeighbour[] population)
         {
-            _timer = new Stopwatch();
-            _timer.Start();
+            _timer.Restart();
 
             int count = population.Length;
             _neighbourhoods = new Dictionary<INeighbour, double[]>(count);

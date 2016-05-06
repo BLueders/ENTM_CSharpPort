@@ -447,9 +447,10 @@ namespace ENTM.Base
 
             if (_ea.CurrentGeneration > 0) WriteData();
 
-            // Novelty search 
-            if (_noveltySearchParams.Enabled)
+
+            if (!_multiObjectiveParams.Enabled && _noveltySearchParams.Enabled)
             {
+                // Novelty search 
                 if (NoveltySearchEnabled)
                 {
                     // Novelty search has been completed, so we switch to objective search using the archive as seeded generation.
@@ -891,6 +892,7 @@ namespace ENTM.Base
                  _parallelOptions);
 
             _listEvaluator.MultiObjectiveParams = _multiObjectiveParams;
+            _listEvaluator.ReportInterval = _logInterval;
 
             // Initialize the evolution algorithm.
             ea.Initialize(_listEvaluator, genomeFactory, genomeList);

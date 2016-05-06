@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using ENTM.Base;
 using ENTM.Distance;
 using ENTM.NoveltySearch;
@@ -12,6 +9,9 @@ namespace ENTM.MultiObjective
 {
     public class GeneticDiversityKnn<TGenome> : IGeneticDiversityScorer<TGenome> where TGenome : class, IGenome<TGenome>
     {
+        private readonly Stopwatch _timer = new Stopwatch();
+        public long TimeSpent => _timer.ElapsedMilliseconds;
+
         internal class GeneticPosition : Knn.INeighbour
         {
             internal Behaviour<TGenome> _behaviour;
@@ -25,6 +25,8 @@ namespace ENTM.MultiObjective
 
         public void Score(IList<Behaviour<TGenome>> behaviours, int objective)
         {
+            _timer.Restart();
+
             int count = behaviours.Count;
             GeneticPosition[] positions = new GeneticPosition[count];
 
@@ -63,6 +65,8 @@ namespace ENTM.MultiObjective
 
                 pos._behaviour.Objectives[objective] = score;
             }
+
+            _timer.Stop();
         }
     }
 }

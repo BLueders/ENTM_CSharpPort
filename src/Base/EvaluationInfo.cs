@@ -1,4 +1,4 @@
-﻿namespace ENTM.MultiObjective
+﻿namespace ENTM.Base
 {
     public struct EvaluationInfo
     {

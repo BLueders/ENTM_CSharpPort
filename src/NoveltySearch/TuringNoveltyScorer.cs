@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using ENTM.Base;
 using ENTM.Distance;
 using ENTM.MultiObjective;
@@ -17,6 +18,9 @@ namespace ENTM.NoveltySearch
         private readonly LimitedQueue<Behaviour<TGenome>> _archive;
 
         private readonly IDistanceMeasure _distanceMeasure = new EuclideanDistanceSquared();
+
+        private readonly Stopwatch _timer = new Stopwatch();
+        public long TimeSpent => _timer.ElapsedMilliseconds;
 
         public IList<TGenome> Archive
         {
@@ -60,6 +64,8 @@ namespace ENTM.NoveltySearch
 
         public void Score(IList<Behaviour<TGenome>> behaviours, int noveltyObjective)
         {
+            _timer.Restart();
+
             _generation++;
             List<Behaviour<TGenome>> combinedBehaviours = new List<Behaviour<TGenome>>(_archive);
             combinedBehaviours.AddRange(behaviours);
@@ -149,6 +155,8 @@ namespace ENTM.NoveltySearch
                 _knnTotalTimeSpent = 0;
                 _belowMinimumCriteria = 0;
             }
+
+            _timer.Stop();
         }
     }
 }

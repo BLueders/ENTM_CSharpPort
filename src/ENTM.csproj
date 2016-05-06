@@ -63,7 +63,7 @@
     <Compile Include="Experiments\Xor\XorEvaluator.cs" />
     <Compile Include="Experiments\Xor\XorExperiment.cs" />
     <Compile Include="Base\Behaviour.cs" />
-    <Compile Include="MultiObjective\EvaluationInfo.cs" />
+    <Compile Include="Base\EvaluationInfo.cs" />
     <Compile Include="MultiObjective\GeneticDiversityKnn.cs" />
     <Compile Include="MultiObjective\IGeneticDiversityScorer.cs" />
     <Compile Include="MultiObjective\IMultiObjectiveEvaluator.cs" />
@@ -108,6 +108,7 @@
     <Compile Include="Base\BaseExperiment.cs" />
     <Compile Include="Experiments\Sine\SineEvaluator.cs" />
     <Compile Include="Utility\ExperimentUtils.cs" />
+    <Compile Include="Utility\ITimeable.cs" />
     <Compile Include="Utility\ThreadSafeRandom.cs" />
     <Compile Include="TuringMachine\TuringController.cs" />
     <Compile Include="TuringMachine\MinimalTuringMachine.cs" />

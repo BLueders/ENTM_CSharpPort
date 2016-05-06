@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using ENTM.Base;
 using ENTM.NoveltySearch;
@@ -31,6 +33,13 @@ namespace ENTM.MultiObjective
         private const int OBJ_NOVELTY_SCORE = 1;
         private const int OBJ_GENETIC_DIVERSITY = 2;
 
+        public int ReportInterval { get; set; } = 0;
+
+        private readonly Stopwatch _timer = new Stopwatch();
+
+        private double[] _maxObjectiveScores;
+        private long _timeSpentEvaluation, _timeSpentNoveltySearch, _timeSpentGeneticDiversity, _timeSpentMultiObjective;
+
         private MultiObjectiveParameters _multiObjectiveParameters;
         public MultiObjectiveParameters MultiObjectiveParams
         {
@@ -53,7 +62,8 @@ namespace ENTM.MultiObjective
         private readonly EvaluationMethod _evalMethod;
 
 
-        private bool _multiobjectiveEnabled;
+        private bool _multiObjectiveEnabled;
+        private bool _multiObjectiveComplete;
         private bool _noveltySearchEnabled;
 
         private int _generation;
@@ -77,8 +87,8 @@ namespace ENTM.MultiObjective
 
         public bool MultiObjectiveEnabled
         {
-            get { return _multiobjectiveEnabled; }
-            set { _multiobjectiveEnabled = value; }
+            get { return _multiObjectiveEnabled; }
+            set { _multiObjectiveEnabled = value; }
         }
 
 
@@ -169,8 +179,13 @@ namespace ENTM.MultiObjective
                     }
                 }
             }
-          
+
+            _timer.Restart();
+
             IList<Behaviour<TGenome>> behaviours = _evalMethod(filteredList);
+
+            _timer.Stop();
+            _timeSpentEvaluation += _timer.ElapsedMilliseconds;
 
             if (!NoveltySearchEnabled && !MultiObjectiveEnabled)
             {
@@ -186,6 +201,7 @@ namespace ENTM.MultiObjective
                 {
                     // Calculate novelty scores
                     _noveltyScorer.Score(behaviours, OBJ_NOVELTY_SCORE);
+                    _timeSpentNoveltySearch += _noveltyScorer.TimeSpent;
                 }
 
                 if (MultiObjectiveEnabled)
@@ -194,14 +210,29 @@ namespace ENTM.MultiObjective
 
                     // Score genetic diversity, since speciation will not work with MO
                     _geneticDiversityScorer.Score(viable, OBJ_GENETIC_DIVERSITY);
+                    _timeSpentGeneticDiversity += _geneticDiversityScorer.TimeSpent;
 
                     // Apply multi objective
                     _multiObjectiveScorer.Score(viable);
+                    _timeSpentMultiObjective += _multiObjectiveScorer.TimeSpent;
+
+                    _maxObjectiveScores = new double[OBJ_COUNT];
 
                     int vCount = viable.Length;
                     for (int i = 0; i < vCount; i++)
                     {
-                        behaviours[i].ApplyMultiObjectiveScore();
+                        Behaviour<TGenome> b = behaviours[i];
+                        for (int j = 0; j < OBJ_COUNT; j++)
+                        {
+                            // Debug max objective scores
+                            if (b.Objectives[j] > _maxObjectiveScores[j])
+                            {
+                                _maxObjectiveScores[j] = b.Objectives[j];
+                            }
+                        }
+
+                        // Apply final fitness as multi objective score
+                        b.ApplyMultiObjectiveScore();
                     }
                 }
                 else
@@ -212,6 +243,39 @@ namespace ENTM.MultiObjective
                         behaviours[i].ApplyNoveltyScoreOnly();
                     }
                 }
+            }
+
+            if (ReportInterval > 0 && _generation % ReportInterval == 0)
+            {
+                StringBuilder sb = new StringBuilder();
+
+                if (MultiObjectiveEnabled)
+                {
+                    sb.Append($"Max Objective scores:");
+                    for (int i = 0; i < OBJ_COUNT; i++)
+                    {
+                        sb.Append($" [{i}]: {_maxObjectiveScores[i]:F04}");
+                    }
+                }
+
+                sb.Append($" Avg time spent: [Evaluation: {_timeSpentEvaluation / ReportInterval} ms]");
+
+                if (NoveltySearchEnabled)
+                {
+                    sb.Append($" [Novelty Search: {_timeSpentNoveltySearch / ReportInterval} ms]");
+                }
+                if (MultiObjectiveEnabled)
+                {
+                    sb.Append($" [Genetic Diversity: {_timeSpentGeneticDiversity / ReportInterval} ms]");
+                    sb.Append($" [Multi Objective: {_timeSpentMultiObjective / ReportInterval} ms]");
+                }
+
+                _logger.Info(sb.ToString());
+
+                _timeSpentEvaluation = 0;
+                _timeSpentNoveltySearch = 0;
+                _timeSpentGeneticDiversity = 0;
+                _timeSpentMultiObjective = 0;
             }
         }
 

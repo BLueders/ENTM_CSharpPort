@@ -118,8 +118,6 @@ namespace ENTM.Base
         /// <summary>
         /// Main evaluation loop. Called from EA. Runs on separate / multiple threads.
         /// </summary>
-        /// <param name="phenome"></param>
-        /// <returns></returns>
         public EvaluationInfo Evaluate(IBlackBox phenome)
         {
             OnEvaluationStart();

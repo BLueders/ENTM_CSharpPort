@@ -17,7 +17,7 @@
  * along with SharpNEAT.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using SharpNeat.Phenomes;
+using ENTM.Base;
 
 namespace ENTM.MultiObjective
 {
