@@ -19,7 +19,12 @@ namespace ENTM.NoveltySearch
         public NoveltyVectorMode VectorMode { get; set; }
 
         /// <summary>
-        /// Length of the novelty vector
+        /// The dimensionality of the novelty vector
+        /// </summary>
+        public int NoveltyVectorDimensions { get; set; }
+
+        /// <summary>
+        /// Length of the novelty vector (usually timesteps)
         /// </summary>
         public int NoveltyVectorLength { get; set; }
 
@@ -31,7 +36,7 @@ namespace ENTM.NoveltySearch
         /// <summary>
         /// The novelty score vector for a given evaluation
         /// </summary>
-        public double[] NoveltyVector { get; private set; }
+        public double[][] NoveltyVectors { get; private set; }
 
         /// <summary>
         /// The minimum criteria info for a given evaluation
@@ -40,7 +45,11 @@ namespace ENTM.NoveltySearch
 
         public void Reset()
         {
-            NoveltyVector = new double[NoveltyVectorLength];
+            NoveltyVectors = new double[NoveltyVectorLength][];
+            for (int i = 0; i < NoveltyVectorLength; i++)
+            {
+                NoveltyVectors[i] = new double[NoveltyVectorDimensions];
+            }
             MinimumCriteria = new double[MinimumCriteriaLength];
         }
     }

@@ -607,8 +607,6 @@ namespace ENTM.Base
             // Create evolution algorithm and attach events.
             _ea = CreateEvolutionAlgorithm();
 
-            NoveltySearchEnabled = _noveltySearchParams?.Enabled ?? false;
-            MultiObjectiveEnabled = _multiObjectiveParams?.Enabled ?? false;
 
             _ea.UpdateEvent += EAUpdateEvent;
             _ea.PausedEvent += EAPauseEvent;
@@ -705,10 +703,19 @@ namespace ENTM.Base
             _name = name;
             _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description") ?? "";
             _comment = XmlUtils.TryGetValueAsString(xmlConfig, "Comment") ?? "";
-            _populationSize = XmlUtils.GetValueAsInt(xmlConfig, "PopulationSize");
-            _maxGenerations = XmlUtils.GetValueAsInt(xmlConfig, "MaxGenerations");
+            _populationSize = XmlUtils.TryGetValueAsInt(xmlConfig, "PopulationSize") ?? 100;
+            _maxGenerations = XmlUtils.TryGetValueAsInt(xmlConfig, "MaxGenerations") ?? 1000;
             _activationScheme = ExperimentUtils.CreateActivationScheme(xmlConfig, "Activation");
-            _complexityRegulationStrategy = ExperimentUtils.CreateComplexityRegulationStrategy(xmlConfig, "ComplexityRegulation");
+
+            try
+            {
+                _complexityRegulationStrategy = ExperimentUtils.CreateComplexityRegulationStrategy(xmlConfig, "ComplexityRegulation");
+            }
+            catch (ArgumentException e)
+            {
+                _logger.Warn(e.Message);
+            }
+
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
             _multiThreading = XmlUtils.TryGetValueAsBool(xmlConfig, "MultiThreading") ?? true;
             _logInterval = XmlUtils.TryGetValueAsInt(xmlConfig, "LogInterval") ?? 10;
@@ -879,7 +886,7 @@ namespace ENTM.Base
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = CreateGenomeDecoder();
 
             INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
-            IGeneticDiversityScorer<NeatGenome> geneticDiversityScorer = new GeneticDiversityKnn<NeatGenome>();
+            IGeneticDiversityScorer<NeatGenome> geneticDiversityScorer = new GeneticDiversityKnn<NeatGenome>(_neatGenomeParams.ConnectionWeightRange);
             IMultiObjectiveScorer multiObjectiveScorer = new NSGAII();
 
              _listEvaluator = new MultiObjectiveListEvaluator<NeatGenome, IBlackBox>(
@@ -893,6 +900,9 @@ namespace ENTM.Base
 
             _listEvaluator.MultiObjectiveParams = _multiObjectiveParams;
             _listEvaluator.ReportInterval = _logInterval;
+
+            NoveltySearchEnabled = _noveltySearchParams?.Enabled ?? false;
+            MultiObjectiveEnabled = _multiObjectiveParams?.Enabled ?? false;
 
             // Initialize the evolution algorithm.
             ea.Initialize(_listEvaluator, genomeFactory, genomeList);

@@ -53,8 +53,8 @@
   <ItemGroup>
     <Compile Include="Base\BaseEvaluator.cs" />
     <Compile Include="Base\DefaultController.cs" />
-    <Compile Include="Distance\EuclideanDistanceSquared.cs" />
-    <Compile Include="Distance\IDistanceMeasure.cs" />
+    <Compile Include="Distance\Knn.cs" />
+    <Compile Include="Distance\KnnSingleDimension.cs" />
     <Compile Include="TuringMachine\ITuringExperiment.cs" />
     <Compile Include="Experiments\SeasonTask\TwoStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\OneStepSeasonTaskEnviroment.cs" />
@@ -71,7 +71,7 @@
     <Compile Include="MultiObjective\MultiObjectiveParameters.cs" />
     <Compile Include="MultiObjective\NSGAII.cs" />
     <Compile Include="NoveltySearch\INoveltyScorer.cs" />
-    <Compile Include="Distance\Knn.cs" />
+    <Compile Include="Distance\KnnMultiDimensional.cs" />
     <Compile Include="MultiObjective\MultiObjectiveListEvaluator.cs" />
     <Compile Include="Base\BaseEnvironment.cs" />
     <Compile Include="Experiments\SeasonTask\Container.cs" />
@@ -143,6 +143,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\copytask-generalization\copytask.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\copytask1.txt" />
     <Content Include="Config\SeasonTask\seasontask-5steps-noveltysearch.config.xml">
       <SubType>Designer</SubType>

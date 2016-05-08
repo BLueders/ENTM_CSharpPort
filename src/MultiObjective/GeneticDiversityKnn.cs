@@ -15,13 +15,19 @@ namespace ENTM.MultiObjective
         internal class GeneticPosition : Knn.INeighbour
         {
             internal Behaviour<TGenome> _behaviour;
-            internal double[] _vector; 
+            internal double[] _vector;
             public double[] KnnVector => _vector;
+            public double[][] KnnVectors => null;
         }
+
+        public GeneticDiversityKnn(double weightRange)
+        {
+            _weightRange = weightRange;
+        } 
 
         public MultiObjectiveParameters Params { get; set; }
 
-        private readonly IDistanceMeasure _distanceMeasure = new EuclideanDistanceSquared();
+        private double _weightRange;
 
         public void Score(IList<Behaviour<TGenome>> behaviours, int objective)
         {
@@ -37,6 +43,8 @@ namespace ENTM.MultiObjective
                 GeneticPosition pos = new GeneticPosition();
                 pos._behaviour = b;
 
+                // Genomic position is a list of connection weights by innovation number (ID)
+                // This is also what NEAT uses for speciation.
                 KeyValuePair<ulong, double>[] vector = b.Genome.Position.CoordArray;
 
                 // Maximum position (ID) is length, unoccupied positions will be 0, which is fine for distance,
@@ -44,7 +52,6 @@ namespace ENTM.MultiObjective
                 int length = (int) vector[vector.Length - 1].Key;
 
                 pos._vector = new double[length];
-
                 foreach (KeyValuePair<ulong, double> pair in vector)
                 {
                     pos._vector[pair.Key - 1] = pair.Value;
@@ -53,9 +60,9 @@ namespace ENTM.MultiObjective
                 positions[i] = pos;
             }
 
-            Knn knn = new Knn(_distanceMeasure);
-
-            knn.Initialize(positions);
+            KnnSingleDimension knn = KnnSingleDimension.Create(positions);
+            knn.SetVectorBoundaries(-_weightRange, _weightRange);
+            knn.Initialize();
 
             for (int i = 0; i < count; i++)
             {

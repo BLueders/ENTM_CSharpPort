@@ -3,7 +3,6 @@ using System.Text;
 using ENTM.Distance;
 using ENTM.MultiObjective;
 using SharpNeat.Core;
-using EvaluationInfo = ENTM.Base.EvaluationInfo;
 
 namespace ENTM.Base
 {
@@ -62,7 +61,9 @@ namespace ENTM.Base
 
         #region Knn.INeighbour
 
-        public double[] KnnVector => Evaluation.NoveltyVector;
+        public double[][] KnnVectors => Evaluation.NoveltyVectors;
+
+        public double[] KnnVector => null;
 
         #endregion
 

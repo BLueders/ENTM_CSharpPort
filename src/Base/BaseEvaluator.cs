@@ -57,6 +57,7 @@ namespace ENTM.Base
         public abstract int ControllerInputCount { get; }
         public abstract int ControllerOutputCount { get; }
 
+        public abstract int NoveltyVectorDimensions { get; }
         public abstract int NoveltyVectorLength { get; }
         public abstract int MinimumCriteriaLength { get; }
 
@@ -157,10 +158,14 @@ namespace ENTM.Base
             // Register the phenome
             Controller.Phenome = phenome;
 
-            Controller.NoveltySearch.ScoreNovelty = NoveltySearchEnabled;
-            Controller.NoveltySearch.VectorMode = NoveltySearchParameters.VectorMode;
-            Controller.NoveltySearch.NoveltyVectorLength = NoveltyVectorLength;
-            Controller.NoveltySearch.MinimumCriteriaLength = MinimumCriteriaLength;
+            if (NoveltySearchParameters != null)
+            {
+                Controller.NoveltySearch.ScoreNovelty = NoveltySearchEnabled;
+                Controller.NoveltySearch.VectorMode = NoveltySearchParameters.VectorMode;
+                Controller.NoveltySearch.NoveltyVectorDimensions = NoveltyVectorDimensions;
+                Controller.NoveltySearch.NoveltyVectorLength = NoveltyVectorLength;
+                Controller.NoveltySearch.MinimumCriteriaLength = MinimumCriteriaLength;
+            }
 
             Environment.ResetAll();
             Environment.Controller = Controller;

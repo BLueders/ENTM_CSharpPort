@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using ENTM.Utility;
 
 namespace ENTM.Distance
 {
-    public class Knn
+    public abstract class Knn
     {
         public interface INeighbour
         {
+            double[][] KnnVectors { get; }
             double[] KnnVector { get; }
         }
 
@@ -16,48 +15,31 @@ namespace ENTM.Distance
 
         public long TimeSpent => _timer.ElapsedMilliseconds;
 
-        private Dictionary<INeighbour, double[]> _neighbourhoods;
+        protected readonly INeighbour[] _population;
+        protected readonly Dictionary<INeighbour, double[]> _neighbourhoods;
+        protected readonly int _count;
 
-        private readonly IDistanceMeasure _distanceMeasure;
-
-        public Knn(IDistanceMeasure distanceMeasure)
+        protected Knn(INeighbour[] population)
         {
-            _distanceMeasure = distanceMeasure;
+            _population = population;
+            _count = _population.Length;
+            _neighbourhoods = new Dictionary<INeighbour, double[]>(_count);
         }
+
+        protected abstract void Normalize();
+        protected abstract void Train();
 
         /// <summary>
         /// Initialize KNN with a list of fitness info structs. The supplied start index determines where the algorithm will start comparing values in
         /// the auxFitnessArr array. Use this if not all values of the vector should be considered.
         /// </summary>
-        public void Initialize(INeighbour[] population)
+        public void Initialize()
         {
             _timer.Restart();
 
-            int count = population.Length;
-            _neighbourhoods = new Dictionary<INeighbour, double[]>(count);
+            Normalize();
 
-            for (int i = 0; i < count; i++)
-            {
-                INeighbour neighbour1 = population[i];
-                double[] neighbourhood1 = GetNeighbourhood(neighbour1, count);
-                double[] vector1 = neighbour1.KnnVector;
-                int vectorLength1 = vector1.Length;
-
-                for (int j = i + 1; j < count; j++)
-                {
-                    INeighbour neighbour2 = population[j];
-                    double[] neighbourhood2 = GetNeighbourhood(neighbour2, count);
-                    double[] vector2 = neighbour2.KnnVector;
-                    int vectorLength2 = vector2.Length;
-
-                    double distance = _distanceMeasure.Distance(vector1, vector2, vectorLength1, vectorLength2);
-
-                    neighbourhood1[j - 1] = distance;
-                    neighbourhood2[i] = distance;
-                }
-
-                Array.Sort(neighbourhood1);
-            }
+            Train();
 
             _timer.Stop();
         }
@@ -74,12 +56,12 @@ namespace ENTM.Distance
             return total / k;
         }
 
-        private double[] GetNeighbourhood(INeighbour neighbour, int count)
+        protected double[] GetNeighbourhood(INeighbour neighbour, int count)
         {
             double[] neighbourhood;
             if (!_neighbourhoods.TryGetValue(neighbour, out neighbourhood))
             {
-                _neighbourhoods.Add(neighbour, neighbourhood = new double[count-1]);
+                _neighbourhoods.Add(neighbour, neighbourhood = new double[count - 1]);
             }
 
             return neighbourhood;

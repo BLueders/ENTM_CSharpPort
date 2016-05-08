@@ -2,8 +2,11 @@
 import csv
 import time
 import datetime
+import math
 
 results = []
+
+
 
 for root, dirs, files in os.walk(os.getcwd()):
     for file in files:
@@ -13,7 +16,7 @@ for root, dirs, files in os.walk(os.getcwd()):
 print "Found %s results files" % len(results)
 
 with open("analysis.csv", 'w') as output:
-    fields = ["Run", "Comment", "Average time spent", "Experiments", "Solves", "Solve Percentage", "Average Generations", "Average Generations Solved", "Average Champion Fitness", "Average Solved Hidden Nodes", "Average Solved Birth Generation"]
+    fields = ["Run", "Comment", "Average time spent", "Experiments", "Solves", "Solve Percentage", "Mean Generations Solved", "Generations Solved Standard Deviation", "Mean Solved Hidden Nodes", "Mean Solved Birth Generation", "Mean Champion Fitness", "Mean Champion Complexity"]
     writer = csv.DictWriter(output, lineterminator='\n', fieldnames=fields)
     writer.writeheader()
 
@@ -23,21 +26,21 @@ with open("analysis.csv", 'w') as output:
         run += 1
         times = []
         fitness = []
-        gens = []
+        complexity = []
         solvedGens = []
         solvedHiddens = []
         solvedBirthGens = []
 
-        rows = 0
+        count = 0
         comment = ""
 
         with open(r) as input:
             reader = csv.DictReader(input)
         
             for row in reader:
-                rows += 1
+                count += 1
                 
-                if rows == 1 and row.has_key("Comment"):
+                if count == 1 and row.has_key("Comment"):
                     comment = row["Comment"]
                 
                 tstruct = time.strptime(row["Time"], "%Hh:%Mm:%Ss:%fms")
@@ -45,30 +48,40 @@ with open("analysis.csv", 'w') as output:
                 times.append(t)
 
                 fitness.append(float(row["Champion Fitness"]))
-                gens.append(float(row["Generations"]))
+                complexity.append(float(row["Champion Complexity"]))
     
                 if row["Solved"] == "True":
                     solvedGens.append(float(row["Generations"]))
                     solvedHiddens.append(int(row["Champion Hidden Nodes"]))
                     solvedBirthGens.append(int(row["Champion Birth Generation"]))
 
+        avgTime = sum(times, datetime.timedelta(0)) / count
 
-        avgTime = sum(times, datetime.timedelta(0)) / len(times)
-        solvePct = len(solvedGens) / float(rows) * 100
+        solvedCount = len(solvedGens)
+        gensSolvedMean = sum(solvedGens) / solvedCount
 
+        # Standard deviation            
+        gSum = 0
+        for g in solvedGens:
+            v = g - gensSolvedMean
+            gSum += v * v
+       
+        gensSolvedStdDev = math.sqrt(gSum / solvedCount)
+        
         row = {}
         
         row["Run"] = run
         row["Comment"] = comment
         row["Average time spent"] = avgTime
-        row["Experiments"] = rows
+        row["Experiments"] = count
         row["Solves"] = len(solvedGens)
-        row["Solve Percentage"] = "%s%%" % round(solvePct, 2)
-        row["Average Generations"] = round(sum(gens) / len(gens), 2)
-        row["Average Generations Solved"] = round(sum(solvedGens) / len(solvedGens), 2)
-        row["Average Champion Fitness"] = round(sum(fitness) / len(fitness), 2)
-        row["Average Solved Hidden Nodes"] = round(sum(solvedHiddens) / len(solvedHiddens), 2)
-        row["Average Solved Birth Generation"] = round(sum(solvedBirthGens) / len(solvedBirthGens), 2)
+        row["Solve Percentage"] = "%s%%" % round(float(len(solvedGens)) / count * 100, 2)
+        row["Mean Generations Solved"] = round(gensSolvedMean, 2)
+        row["Generations Solved Standard Deviation"] = round(gensSolvedStdDev, 2)
+        row["Mean Solved Hidden Nodes"] = round(float(sum(solvedHiddens)) / solvedCount, 2)
+        row["Mean Solved Birth Generation"] = round(float(sum(solvedBirthGens)) / solvedCount, 2)
+        row["Mean Champion Fitness"] = round(sum(fitness) / count, 2)
+        row["Mean Champion Complexity"] = round(sum(complexity) / count, 2)
 
         writer.writerow(row)
 

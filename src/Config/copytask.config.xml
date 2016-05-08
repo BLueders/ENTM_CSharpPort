@@ -34,7 +34,7 @@
   <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
   <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
 
-
+  
   <!-- Turing Machine Parameters-->
   <TuringMachineParams>
 
@@ -117,10 +117,10 @@
     <NoveltyVector>WritePatternAndInterp</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>50</PMin>
+    <PMin>5</PMin>
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
-    <PMinLowerThreshold>5</PMinLowerThreshold>
+    <PMinLowerThreshold>1</PMinLowerThreshold>
 
     <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
     <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
@@ -207,7 +207,7 @@
     <SpecieCount>300</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.02</ElitismProportion>
+    <ElitismProportion>0.1</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
