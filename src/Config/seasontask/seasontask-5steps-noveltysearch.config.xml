@@ -124,6 +124,13 @@
     
   </NoveltySearch>
   
+  <MultiObjective>
+    <!-- Enable multiobjective -->
+    <Enabled>false</Enabled>
+
+    <!-- K value for KNN for genetic diversity -->
+    <GeneticDiversityK>10</GeneticDiversityK>
+  </MultiObjective>
   
   <!-- The network activation scheme to use -->
   <Activation>
