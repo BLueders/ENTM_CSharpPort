@@ -95,6 +95,11 @@ namespace ENTM.TuringMachine
                     }
                 }
 
+                if (record)
+                {
+                    Recorder.FinalTuringTape = Controller.TuringMachine.TapeValues;
+                }
+
                 totalScore += Environment.NormalizedScore;
 
                 if (NoveltySearchEnabled)

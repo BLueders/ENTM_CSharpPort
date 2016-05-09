@@ -35,13 +35,14 @@ namespace ENTM
         private static Type _experimentType;
         private static  XmlElement[] _configs;
         private static ITuringExperiment _experiment;
-        private static readonly string _identifier = String.Format($"{DateTime.Now.ToString("MMddyyyy-HHmmss")}_{Guid.NewGuid().ToString().Substring(0, 8)}");
+        private static readonly string _identifier = string.Format($"{DateTime.Now.ToString("yyyyMMdd-HHmmss")}_{Guid.NewGuid().ToString().Substring(0, 8)}");
 
         private static bool _didStartExperiment = false;
         private static bool _inputEnabled;
         private static int _currentConfig = -1;
         private static int _currentExperiment;
         private static int _experiementCount;
+        private static DateTime _experimentStartedTime;
 
         public static readonly int MainThreadId = Thread.CurrentThread.ManagedThreadId;
 
@@ -233,7 +234,7 @@ namespace ENTM
             _experiment.ExperimentResumedEvent += ExperimentResumedEvent;
             _experiment.ExperimentCompleteEvent += ExperimentCompleteEvent;
 
- 
+            _experimentStartedTime = DateTime.Now;
             _experiment.Initialize(name, config, _identifier, _currentConfig, _currentExperiment);
             
             return true;
@@ -272,12 +273,12 @@ namespace ENTM
             {
                 if (writeHeader)
                 {
-                    sw.WriteLine("Experiment,Comment,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation");
+                    sw.WriteLine("Experiment,Comment,Start Time,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation");
                 }
 
                 sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0},{1},{2},{3},{4},{5:F4},{6:F0},{7},{8}",
-                    e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen));
+                    "{0},\"{1}\",{9},{2},{3},{4},{5:F4},{6:F0},{7},{8}",
+                    e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen, _experimentStartedTime.ToString("ddMMyyyy-HHmmss")));
             }
 
             NextExperiment();

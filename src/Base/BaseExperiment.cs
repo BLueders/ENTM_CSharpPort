@@ -68,6 +68,7 @@ namespace ENTM.Base
 
         const string CHAMPION_FILE = "champion{0:D4}.xml";
         const string RECORDING_FILE = "recording{0:D4}_{1}.png";
+        const string TAPE_FILE = "tape{0:D4}_{1}.png";
         const string DATA_FILE = "data{0:D4}.csv";
 
         private NeatEvolutionAlgorithmParameters _eaParams;
@@ -100,14 +101,14 @@ namespace ENTM.Base
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
 
-        private string RecordingFile(uint id)
+        private string RecordingFile(string id)
         {
             return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
         }
 
-        private string RecordingFile(string id)
+        private string TapeFile(string id)
         {
-            return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
+            return $"{CurrentDirectory}{string.Format(TAPE_FILE, _number, id)}";
         }
 
         public bool ExperimentCompleted { get; private set; } = false;
@@ -283,9 +284,14 @@ namespace ENTM.Base
                 {
                     if (Recorder != null)
                     {
-                        using (Bitmap bmp = Recorder.ToBitmap())
+                        using (Bitmap bmp = Recorder.LifetimeToBitmap())
                         {
                             bmp.Save($"{RecordingFile($"{genome.Id}_{i}")}", ImageFormat.Png);
+                        }
+
+                        using (Bitmap bmp = Recorder.TapeToBitmap())
+                        {
+                            bmp.Save($"{TapeFile($"{genome.Id}_{i}")}", ImageFormat.Png);
                         }
                     }
                     else

@@ -114,7 +114,7 @@
       ReadContent:            Use the read vector over time as the novelty vector.
       WritePatternAndInterp:  Use write position and interp as novelty vector.
       -->
-    <NoveltyVector>WritePatternAndInterp</NoveltyVector>
+    <NoveltyVector>ReadContent</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
     <PMin>5</PMin>
