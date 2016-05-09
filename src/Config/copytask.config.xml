@@ -59,9 +59,9 @@
     <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
     <ShiftMode>Multiple</ShiftMode>
 
-    <!-- "Interpolate" or "Absolute". 
+    <!-- "Interpolate" or "Overwrite". 
         Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
-        Absolute: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
+        Overwrite: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
     -->
     <WriteMode>Interpolate</WriteMode>
 
@@ -113,11 +113,12 @@
       WritePattern:           Use the write position over time as the novelty vector.
       ReadContent:            Use the read vector over time as the novelty vector.
       WritePatternAndInterp:  Use write position and interp as novelty vector.
+      ShiftJumpInterp:        Shift, jump and interp for novelty vector
       -->
-    <NoveltyVector>ReadContent</NoveltyVector>
+    <NoveltyVector>ShiftJumpInterp</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>5</PMin>
+    <PMin>15</PMin>
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
     <PMinLowerThreshold>1</PMinLowerThreshold>

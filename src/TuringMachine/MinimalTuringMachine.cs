@@ -289,7 +289,7 @@ namespace ENTM.TuringMachine
                 _increasedSizeDown = false;
 
                 // 3: Shift!
-                MoveHead(i, shifts[i]);
+                int shift = MoveHead(i, shifts[i]);
 
                 // 4: Read!
                 result[i] = GetRead(i); // Show me what you've got! \cite{rickEtAl2014}
@@ -333,6 +333,14 @@ namespace ENTM.TuringMachine
 
                                 // Write interpolation
                                 NoveltySearch.NoveltyVectors[n][1] = interps[i];
+
+                                break;
+
+                            case NoveltyVectorMode.ShiftJumpInterp:
+
+                                NoveltySearch.NoveltyVectors[n][0] = shift;
+                                NoveltySearch.NoveltyVectors[n][1] = jumps[i];
+                                NoveltySearch.NoveltyVectors[n][2] = interps[i];
 
                                 break;
 
@@ -409,7 +417,7 @@ namespace ENTM.TuringMachine
                 case ShiftMode.Multiple:
                     return _shiftLength;
                 default:
-                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
+                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode);
             }
         }
 
@@ -445,8 +453,8 @@ namespace ENTM.TuringMachine
                     _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
                     break;
 
-                case WriteMode.Absolute:
-                    // Absolute mode will overwrite completely
+                case WriteMode.Overwrite:
+                    // Overwrite mode will overwrite existing data completely
                     if (interp >= .5f)
                     {
                         _tape[_headPositions[head]] = content;
@@ -528,7 +536,7 @@ namespace ENTM.TuringMachine
             }
         }
 
-        private void MoveHead(int head, double[] shift)
+        private int MoveHead(int head, double[] shift)
         {
             // SHIFTING
             int highest;
@@ -537,14 +545,18 @@ namespace ENTM.TuringMachine
                 case ShiftMode.Single:
                     highest = (int) (shift[0]*_shiftLength);
                     break;
+
                 case ShiftMode.Multiple:
                     highest = Utilities.MaxPos(shift);
                     break;
+
                 default:
-                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
+                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode);
             }
 
             int offset = highest - (_shiftLength/2);
+
+            int result = offset;
 
             //Debug.Log("Highest=" + highest, true);
             //Debug.Log("Offset=" + offset, true);
@@ -610,6 +622,8 @@ namespace ENTM.TuringMachine
 
                 offset = offset > 0 ? offset - 1 : offset + 1; // Go closer to 0
             }
+
+            return result;
         }
 
         private double[] GetRead(int head)

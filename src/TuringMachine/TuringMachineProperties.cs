@@ -62,6 +62,6 @@ namespace ENTM.TuringMachine
     public enum WriteMode
     {
         Interpolate,
-        Absolute
+        Overwrite
     }
 }

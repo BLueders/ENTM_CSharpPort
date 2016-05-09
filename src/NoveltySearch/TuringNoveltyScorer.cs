@@ -91,8 +91,18 @@ namespace ENTM.NoveltySearch
                     knnMultiDimensional.SetVectorBoundaries(1, 0d, 1d);
 
                     break;
+
+                case NoveltyVectorMode.ShiftJumpInterp:
+                    // Shift is -1, 0 or 1
+                    knnMultiDimensional.SetVectorBoundaries(1, -1d, 1d);
+                    knnMultiDimensional.SetVectorBoundaries(1, 0d, 1d);
+                    knnMultiDimensional.SetVectorBoundaries(1, 0d, 1d);
+
+                    break;
+
                 default:
-                    throw new ArgumentOutOfRangeException($"Unimplemented NoveltyVectorMode {_params.VectorMode}");
+                    _logger.Warn($"Unimplemented NoveltyVectorMode {_params.VectorMode}");
+                    break;
             }
 
             knnMultiDimensional.Initialize();

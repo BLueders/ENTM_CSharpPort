@@ -184,6 +184,9 @@ namespace ENTM.TuringMachine
                     case NoveltyVectorMode.WritePatternAndInterp:
                         return 2;
 
+                    case NoveltyVectorMode.ShiftJumpInterp:
+                        return 3;
+
                     default:
                         throw new ArgumentOutOfRangeException("Unknown novelty vector mode" + NoveltySearchParameters.VectorMode);
                 }

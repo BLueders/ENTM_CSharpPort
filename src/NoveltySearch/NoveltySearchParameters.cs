@@ -54,6 +54,7 @@ namespace ENTM.NoveltySearch
     {
         WritePattern,
         ReadContent,
-        WritePatternAndInterp
+        WritePatternAndInterp,
+        ShiftJumpInterp
     }
 }
