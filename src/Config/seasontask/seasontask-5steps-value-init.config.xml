@@ -52,6 +52,13 @@
 	
 	<!-- the turing machine vectors can have a initial values instead of a gradient. -1 means no inital value. -->
     <InitalValue>0.5</InitalValue>
+
+	<!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
+	This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
+	<UseMemoryExpandLocation>false</UseMemoryExpandLocation>
+
+	<!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
+	<DidWriteThreshold>0.9</DidWriteThreshold>	
 	
     <!-- Number of shift inputs -->
     <ShiftLength>3</ShiftLength>

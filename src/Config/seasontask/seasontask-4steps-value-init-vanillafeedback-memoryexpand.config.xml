@@ -81,7 +81,7 @@
     <RandomSeed>0</RandomSeed>
 
     <FitnessFactor>1</FitnessFactor>
-    <Years>2</Years>
+    <Years>3</Years>
     <Seasons>2</Seasons>
     <DaysMin>1</DaysMin>
 	<DaysMax>5</DaysMax>
