@@ -57,8 +57,14 @@ namespace ENTM.TuringMachine
         // jump to the start of the tape.
         private double _minSimilarityToJump;
 
+        // (Fixed length tape) Do we initialize the tape with a gradient from 0-1?
         private bool _initalizeWithGradient;
+
+        // If we do not use a gradient to initialize, what is the initial value of the tape locations?
         private double _initalValue;
+
+        // If we do not use a gradient to initialize, what is the initial value of the tape locations?
+        private bool _useMemoryExpandLocation;
 
         private NoveltySearchInfo _noveltySearch;
         public NoveltySearchInfo NoveltySearch => _noveltySearch;
