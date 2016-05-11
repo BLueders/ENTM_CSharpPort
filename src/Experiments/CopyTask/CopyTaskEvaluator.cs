@@ -1,12 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using System.Xml;
-using ENTM.NoveltySearch;
-using ENTM.Replay;
+﻿using System.Xml;
 using ENTM.TuringMachine;
-using ENTM.Utility;
-using SharpNeat.Core;
-using SharpNeat.Phenomes;
 
 namespace ENTM.Experiments.CopyTask
 {

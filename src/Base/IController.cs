@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using ENTM.NoveltySearch;
+﻿using ENTM.NoveltySearch;
 using SharpNeat.Phenomes;
 
-namespace ENTM
+namespace ENTM.Base
 {
     public interface IController
     {

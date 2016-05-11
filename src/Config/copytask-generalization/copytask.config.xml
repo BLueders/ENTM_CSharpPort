@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Config>
+
+  <!-- The name of the experiment -->
+  <Name>CopyTask</Name>
+
+  <!-- The fully qualified name of the experiment class -->
+  <ExperimentClass>ENTM.Experiments.CopyTask.CopyTaskExperiment</ExperimentClass>
+
+  <!-- Experiment description -->
+  <Description>
+    Copy task experiment with turing controller.
+    The controller must record a bit-vector sequence to memory, and read it back.
+  </Description>
+
+  <!-- Comment about the specific experiment setup. NO LINE BREAKS! -->
+  <Comment>Generalization</Comment>
+  
+  <!-- Turing Machine Parameters-->
+  <TuringMachineParams>
+
+    <!-- If set to false, the Turing machine will always return a 0 vector -->
+    <Enabled>true</Enabled>
+
+    <!-- Maximum memory size (-1 for unlimited) -->
+    <N>-1</N>
+
+    <!-- Write vector size -->
+    <M>5</M>
+
+    <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
+    <MinSimilarityToJump>0.5</MinSimilarityToJump>
+
+    <!-- Number of Read/Write heads-->
+    <Heads>1</Heads>
+
+    <!-- Number of shift inputs -->
+    <ShiftLength>3</ShiftLength>
+
+    <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
+    <ShiftMode>Multiple</ShiftMode>
+
+    <!-- "Interpolate" or "Absolute". 
+        Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
+        Absolute: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
+    -->
+    <WriteMode>Interpolate</WriteMode>
+
+  </TuringMachineParams>
+
+
+  <!-- Copy Task Parameters -->
+  <CopyTaskParams>
+
+    <!-- Evaluation iterations -->
+    <Iterations>50</Iterations>
+
+    <!-- The seed used for random environment generations -->
+    <RandomSeed>0</RandomSeed>
+
+    <!-- The size of the bit vectors to be copied. -->
+    <VectorSize>2</VectorSize>
+
+    <!-- Maximum length of the sequence of bit vectors. 
+         If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
+         If LengthRule is Fixed, sequence will always be MaxLength. -->
+    <MaxLength>100</MaxLength>
+
+    <!-- "Random" or "Fixed" sequence lengths -->
+    <LengthRule>Fixed</LengthRule>
+
+    <!-- What fitness function to evalutate with.
+        StrictCloseToTarget
+        PartialScore
+        Emilarity
+        ClosestBinary
+        CompleteBinary
+    -->
+    <FitnessFunction>StrictCloseToTarget</FitnessFunction>
+
+    <!-- Set to true to eliminate zero vectors in the sequence, as the algorithm can have problems with them. -->
+    <EliminateZeroVectors>false</EliminateZeroVectors>
+
+  </CopyTaskParams>
+
+  <!-- The network activation scheme to use -->
+  <Activation>
+
+    <!-- "Acyclic", "CyclicFixedIters" or "CyclicRelax"
+         Acyclic:           Does not support recurrent connections. Network is fully activated each activation.
+         CyclicFixedIters:  Each iteration will iterate signals one step from input -> output.
+         CyclicRelax:       Activate the network until all node output has remained unchanged between iterations within the threshold, 
+                            or until the maximum iteration count is reached. -->
+    <Scheme>Acyclic</Scheme>
+
+    <!-- CyclicFixedIters only -->
+    <Iters>3</Iters>
+
+    <!-- CyclicRelax only -->
+    <Threshold>0.1</Threshold>
+
+    <!-- CyclicRelax only -->
+    <MaxIters>5</MaxIters>
+
+  </Activation>
+</Config>

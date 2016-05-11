@@ -1,7 +1,4 @@
-﻿
-// #define DEBUG
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using ENTM.NoveltySearch;
@@ -9,15 +6,22 @@ using ENTM.Utility;
 
 namespace ENTM.TuringMachine
 {
-    /**
-    * Our simplified version of a Turing Machine for
-    * use with a neural network. It uses the general
-    * TuringMachine interface so can be used in the
-    * same contexts as the GravesTuringMachine.
-    * 
-    * @author Emil
-    *
-    */
+    /// <summary>
+    /// Turing machine modified for Novelty Search and other optimizations.
+    /// Builds on original java version by Emil Juul Jacobsen and Rasmus Boll Greve.
+    /// 
+    /// Created by Benno Lüders and Mikkel Schläger.
+    /// 
+    /// 
+    /// Original doc:
+    /// 
+    /// * Our simplified version of a Turing Machine for
+    /// * use with a neural network.It uses the general
+    /// * TuringMachine interface so can be used in the
+    /// * same contexts as the GravesTuringMachine.
+    /// * 
+    /// * @author Emil
+    /// </summary>
     public class MinimalTuringMachine : ITuringMachine
     {
         private readonly List<double[]> _tape;
@@ -291,7 +295,7 @@ namespace ENTM.TuringMachine
                 _increasedSizeDown = false;
 
                 // 3: Shift!
-                MoveHead(i, shifts[i]);
+                int shift = MoveHead(i, shifts[i]);
 
                 // 4: Read!
                 result[i] = GetRead(i); // Show me what you've got! \cite{rickEtAl2014}
@@ -317,25 +321,32 @@ namespace ENTM.TuringMachine
                             case NoveltyVectorMode.WritePattern:
 
                                 // Save the write position as a behavioural trait 
-                                NoveltySearch.NoveltyVector[n] = correctedWritePosition;
+                                NoveltySearch.NoveltyVectors[n][0] = correctedWritePosition;
 
                                 break;
 
                             case NoveltyVectorMode.ReadContent:
 
                                 // Content of the read vector
-                                int startIndex = n * _m;
-                                Array.Copy(result[i], 0, NoveltySearch.NoveltyVector, startIndex, result[i].Length);
+                                Array.Copy(result[i], NoveltySearch.NoveltyVectors[n], result[i].Length);
 
                                 break;
 
                             case NoveltyVectorMode.WritePatternAndInterp:
 
                                 // Head position (we use corrected write position to account for downward shifts)
-                                NoveltySearch.NoveltyVector[n] = correctedWritePosition;
+                                NoveltySearch.NoveltyVectors[n][0] = correctedWritePosition;
 
                                 // Write interpolation
-                                NoveltySearch.NoveltyVector[(NoveltySearch.NoveltyVectorLength / 2) + n] = interps[i];
+                                NoveltySearch.NoveltyVectors[n][1] = interps[i];
+
+                                break;
+
+                            case NoveltyVectorMode.ShiftJumpInterp:
+
+                                NoveltySearch.NoveltyVectors[n][0] = shift;
+                                NoveltySearch.NoveltyVectors[n][1] = jumps[i];
+                                NoveltySearch.NoveltyVectors[n][2] = interps[i];
 
                                 break;
 
@@ -412,7 +423,7 @@ namespace ENTM.TuringMachine
                 case ShiftMode.Multiple:
                     return _shiftLength;
                 default:
-                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
+                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode);
             }
         }
 
@@ -435,26 +446,37 @@ namespace ENTM.TuringMachine
 
         private void Write(int head, double[] content, double interp)
         {
+            double[] preWrite = null;
+            if (NoveltySearch.ScoreNovelty)
+            {
+                // Store the tape data before the write
+                preWrite = _tape[_headPositions[head]];
+            }
+
             switch (_writeMode)
             {
                 case WriteMode.Interpolate:
                     _tape[_headPositions[head]] = Interpolate(content, _tape[_headPositions[head]], interp);
-
-                    // We set a minimum threshold for write interpolation required to reach the novelty search minimum criteria
-                    if (interp > .1f)
-                    {
-                        _didWrite = true;
-                    }
                     break;
 
-                case WriteMode.Absolute:
-                    // Absolute mode will overwrite completely
+                case WriteMode.Overwrite:
+                    // Overwrite mode will overwrite existing data completely
                     if (interp >= .5f)
                     {
                         _tape[_headPositions[head]] = content;
-                        _didWrite = true;
                     }
                     break;
+            }
+
+            if (NoveltySearch.ScoreNovelty)
+            {
+                // Compare the tape position before and after write
+                double similarity = Utilities.Emilarity(preWrite, _tape[_headPositions[head]]);
+                if (similarity < .9d)
+                {
+                    // If the vectors are not similar, it means we wrote to the tape.
+                    _didWrite = true;
+                }
             }
 
             //Log write activities
@@ -520,7 +542,7 @@ namespace ENTM.TuringMachine
             }
         }
 
-        private void MoveHead(int head, double[] shift)
+        private int MoveHead(int head, double[] shift)
         {
             // SHIFTING
             int highest;
@@ -529,14 +551,18 @@ namespace ENTM.TuringMachine
                 case ShiftMode.Single:
                     highest = (int) (shift[0]*_shiftLength);
                     break;
+
                 case ShiftMode.Multiple:
                     highest = Utilities.MaxPos(shift);
                     break;
+
                 default:
-                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode.ToString());
+                    throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode);
             }
 
             int offset = highest - (_shiftLength/2);
+
+            int result = offset;
 
             //Debug.Log("Highest=" + highest, true);
             //Debug.Log("Offset=" + offset, true);
@@ -602,6 +628,8 @@ namespace ENTM.TuringMachine
 
                 offset = offset > 0 ? offset - 1 : offset + 1; // Go closer to 0
             }
+
+            return result;
         }
 
         private double[] GetRead(int head)

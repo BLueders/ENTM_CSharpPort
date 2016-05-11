@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using ENTM.Replay;
+﻿using ENTM.Replay;
 
-namespace ENTM
+namespace ENTM.Base
 {
     public interface IEnvironment : IReplayable<EnvironmentTimeStep>
     {

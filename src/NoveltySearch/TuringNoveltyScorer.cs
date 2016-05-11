@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using ENTM.Base;
 using ENTM.Distance;
 using ENTM.MultiObjective;
 using log4net;
@@ -14,6 +16,9 @@ namespace ENTM.NoveltySearch
 
         private readonly NoveltySearchParameters _params;
         private readonly LimitedQueue<Behaviour<TGenome>> _archive;
+
+        private readonly Stopwatch _timer = new Stopwatch();
+        public long TimeSpent => _timer.ElapsedMilliseconds;
 
         public IList<TGenome> Archive
         {
@@ -41,7 +46,7 @@ namespace ENTM.NoveltySearch
         private int _generation;
         private long _knnTotalTimeSpent;
         private int _belowMinimumCriteria;
-        private bool _pMinLowerThresholdReached = false;
+        private bool _pMinLowerThresholdReached;
         private double _maxObjectiveScore = 0d;
 
         public TuringNoveltyScorer(NoveltySearchParameters parameters)
@@ -57,15 +62,52 @@ namespace ENTM.NoveltySearch
 
         public void Score(IList<Behaviour<TGenome>> behaviours, int noveltyObjective)
         {
+            _timer.Restart();
+
             _generation++;
             List<Behaviour<TGenome>> combinedBehaviours = new List<Behaviour<TGenome>>(_archive);
             combinedBehaviours.AddRange(behaviours);
 
-            Knn knn = new Knn();
+            KnnMultiDimensional knnMultiDimensional = KnnMultiDimensional.Create(combinedBehaviours.ToArray());
 
-            knn.Initialize(combinedBehaviours.ToArray());
+            switch (_params.VectorMode)
+            {
+                case NoveltyVectorMode.WritePattern:
+                    // Unknown boundaries
+                    break;
 
-            _knnTotalTimeSpent += knn.TimeSpent;
+                case NoveltyVectorMode.ReadContent:
+                    int dims = combinedBehaviours[0].Evaluation.NoveltyVectors[0].Length;
+                    for (int i = 0; i < dims; i++)
+                    {
+                        // Content is between 0 and 1
+                        knnMultiDimensional.SetVectorBoundaries(i, 0d, 1d);
+                    }
+
+                    break;
+                case NoveltyVectorMode.WritePatternAndInterp:
+
+                    // Interp is 0-1, write pattern unknown
+                    knnMultiDimensional.SetVectorBoundaries(1, 0d, 1d);
+
+                    break;
+
+                case NoveltyVectorMode.ShiftJumpInterp:
+                    // Shift is -1, 0 or 1
+                    knnMultiDimensional.SetVectorBoundaries(1, -1d, 1d);
+                    knnMultiDimensional.SetVectorBoundaries(1, 0d, 1d);
+                    knnMultiDimensional.SetVectorBoundaries(1, 0d, 1d);
+
+                    break;
+
+                default:
+                    _logger.Warn($"Unimplemented NoveltyVectorMode {_params.VectorMode}");
+                    break;
+            }
+
+            knnMultiDimensional.Initialize();
+
+            _knnTotalTimeSpent += knnMultiDimensional.TimeSpent;
 
             int added = 0;
 
@@ -82,13 +124,13 @@ namespace ENTM.NoveltySearch
                 double totalTimeSteps = b.Evaluation.MinimumCriteria[1];
 
                 // Check if behaviour meets minimum criteria
-                if (redundantTimeSteps / totalTimeSteps <= _params.MinimumCriteriaReadWriteLowerThreshold)
+                if (redundantTimeSteps/totalTimeSteps <= _params.MinimumCriteriaReadWriteLowerThreshold)
                 {
-                    double score = knn.AverageDistToKnn(b, _params.K);
+                    double score = knnMultiDimensional.AverageDistToKnn(b, _params.K);
 
                     if (_params.ObjectiveFactorExponent > 0)
                     {
-                        score *= Math.Pow(b.Evaluation.ObjectiveFitness, _params.ObjectiveFactorExponent);
+                        score *= Math.Pow(objectiveScore, _params.ObjectiveFactorExponent);
                     }
 
                     // Novelty score objective
@@ -111,7 +153,7 @@ namespace ENTM.NoveltySearch
             if (added > 0)
             {
                 _generationsSinceArchiveAddition = 0;
-                
+
                 // If more than the specified amount of behaviours are added to the archive, adjust PMin up
                 if (added > _params.AdditionsPMinAdjustUp)
                 {
@@ -140,12 +182,14 @@ namespace ENTM.NoveltySearch
                 }
             }
 
-            if (_generation % _reportInterval == 0)
+            if (_generation%_reportInterval == 0)
             {
-                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin:F2}. Avg knn time spent/gen: {_knnTotalTimeSpent / _reportInterval} ms. " + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria / (float) _reportInterval}, Max Objective Score: {_maxObjectiveScore:F4}");
+                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin:F2}. Avg knn time spent/gen: {_knnTotalTimeSpent/_reportInterval} ms. " + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria/(float) _reportInterval}");
                 _knnTotalTimeSpent = 0;
                 _belowMinimumCriteria = 0;
             }
+
+            _timer.Stop();
         }
     }
 }

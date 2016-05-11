@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using ENTM.Base;
 using ENTM.Replay;
 using ENTM.MultiObjective;
 
@@ -17,6 +18,7 @@ namespace ENTM.Experiments.Xor
         public override int EnvironmentOutputCount => 2;
         public override int ControllerInputCount => 0;
         public override int ControllerOutputCount => 0;
+        public override int NoveltyVectorDimensions => 0;
         public override int NoveltyVectorLength => 0;
         public override int MinimumCriteriaLength => 0;
 

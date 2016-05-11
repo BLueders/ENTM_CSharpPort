@@ -1,12 +1,11 @@
-﻿using System;
+﻿using System.Threading;
 using System.Xml;
-using SharpNeat.Phenomes;
-using System.Threading;
+using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
-using ENTM.MultiObjective;
+using SharpNeat.Phenomes;
 
-namespace ENTM
+namespace ENTM.Base
 {
     public abstract class BaseEvaluator<TEnvironment, TController> : IMultiObjectiveEvaluator<IBlackBox>
         where TEnvironment : IEnvironment
@@ -58,6 +57,7 @@ namespace ENTM
         public abstract int ControllerInputCount { get; }
         public abstract int ControllerOutputCount { get; }
 
+        public abstract int NoveltyVectorDimensions { get; }
         public abstract int NoveltyVectorLength { get; }
         public abstract int MinimumCriteriaLength { get; }
 
@@ -119,8 +119,6 @@ namespace ENTM
         /// <summary>
         /// Main evaluation loop. Called from EA. Runs on separate / multiple threads.
         /// </summary>
-        /// <param name="phenome"></param>
-        /// <returns></returns>
         public EvaluationInfo Evaluate(IBlackBox phenome)
         {
             OnEvaluationStart();
@@ -160,10 +158,14 @@ namespace ENTM
             // Register the phenome
             Controller.Phenome = phenome;
 
-            Controller.NoveltySearch.ScoreNovelty = NoveltySearchEnabled;
-            Controller.NoveltySearch.VectorMode = NoveltySearchParameters.VectorMode;
-            Controller.NoveltySearch.NoveltyVectorLength = NoveltyVectorLength;
-            Controller.NoveltySearch.MinimumCriteriaLength = MinimumCriteriaLength;
+            if (NoveltySearchParameters != null)
+            {
+                Controller.NoveltySearch.ScoreNovelty = NoveltySearchEnabled;
+                Controller.NoveltySearch.VectorMode = NoveltySearchParameters.VectorMode;
+                Controller.NoveltySearch.NoveltyVectorDimensions = NoveltyVectorDimensions;
+                Controller.NoveltySearch.NoveltyVectorLength = NoveltyVectorLength;
+                Controller.NoveltySearch.MinimumCriteriaLength = MinimumCriteriaLength;
+            }
 
             Environment.ResetAll();
             Environment.Controller = Controller;

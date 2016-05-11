@@ -31,6 +31,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using ENTM.Experiments;
 using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
@@ -48,7 +49,7 @@ using SharpNeat.Phenomes;
 using SharpNeat.SpeciationStrategies;
 using Debug = ENTM.Utility.Debug;
 
-namespace ENTM.Experiments
+namespace ENTM.Base
 {
     /// <summary>
     /// Helper class that hides most of the details of setting up an experiment.
@@ -67,6 +68,7 @@ namespace ENTM.Experiments
 
         const string CHAMPION_FILE = "champion{0:D4}.xml";
         const string RECORDING_FILE = "recording{0:D4}_{1}.png";
+        const string TAPE_FILE = "tape{0:D4}_{1}.png";
         const string DATA_FILE = "data{0:D4}.csv";
 
         private NeatEvolutionAlgorithmParameters _eaParams;
@@ -99,14 +101,14 @@ namespace ENTM.Experiments
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
 
-        private string RecordingFile(uint id)
+        private string RecordingFile(string id)
         {
             return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
         }
 
-        private string RecordingFile(string id)
+        private string TapeFile(string id)
         {
-            return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
+            return $"{CurrentDirectory}{string.Format(TAPE_FILE, _number, id)}";
         }
 
         public bool ExperimentCompleted { get; private set; } = false;
@@ -282,9 +284,14 @@ namespace ENTM.Experiments
                 {
                     if (Recorder != null)
                     {
-                        using (Bitmap bmp = Recorder.ToBitmap())
+                        using (Bitmap bmp = Recorder.LifetimeToBitmap())
                         {
                             bmp.Save($"{RecordingFile($"{genome.Id}_{i}")}", ImageFormat.Png);
+                        }
+
+                        using (Bitmap bmp = Recorder.TapeToBitmap())
+                        {
+                            bmp.Save($"{TapeFile($"{genome.Id}_{i}")}", ImageFormat.Png);
                         }
                     }
                     else
@@ -446,9 +453,10 @@ namespace ENTM.Experiments
 
             if (_ea.CurrentGeneration > 0) WriteData();
 
-            // Novelty search 
-            if (_noveltySearchParams.Enabled)
+
+            if (!_multiObjectiveParams.Enabled && _noveltySearchParams.Enabled)
             {
+                // Novelty search 
                 if (NoveltySearchEnabled)
                 {
                     // Novelty search has been completed, so we switch to objective search using the archive as seeded generation.
@@ -605,8 +613,6 @@ namespace ENTM.Experiments
             // Create evolution algorithm and attach events.
             _ea = CreateEvolutionAlgorithm();
 
-            NoveltySearchEnabled = _noveltySearchParams?.Enabled ?? false;
-            MultiObjectiveEnabled = _multiObjectiveParams?.Enabled ?? false;
 
             _ea.UpdateEvent += EAUpdateEvent;
             _ea.PausedEvent += EAPauseEvent;
@@ -703,10 +709,19 @@ namespace ENTM.Experiments
             _name = name;
             _description = XmlUtils.TryGetValueAsString(xmlConfig, "Description") ?? "";
             _comment = XmlUtils.TryGetValueAsString(xmlConfig, "Comment") ?? "";
-            _populationSize = XmlUtils.GetValueAsInt(xmlConfig, "PopulationSize");
-            _maxGenerations = XmlUtils.GetValueAsInt(xmlConfig, "MaxGenerations");
+            _populationSize = XmlUtils.TryGetValueAsInt(xmlConfig, "PopulationSize") ?? 100;
+            _maxGenerations = XmlUtils.TryGetValueAsInt(xmlConfig, "MaxGenerations") ?? 1000;
             _activationScheme = ExperimentUtils.CreateActivationScheme(xmlConfig, "Activation");
-            _complexityRegulationStrategy = ExperimentUtils.CreateComplexityRegulationStrategy(xmlConfig, "ComplexityRegulation");
+
+            try
+            {
+                _complexityRegulationStrategy = ExperimentUtils.CreateComplexityRegulationStrategy(xmlConfig, "ComplexityRegulation");
+            }
+            catch (ArgumentException e)
+            {
+                _logger.Warn(e.Message);
+            }
+
             _parallelOptions = ExperimentUtils.ReadParallelOptions(xmlConfig);
             _multiThreading = XmlUtils.TryGetValueAsBool(xmlConfig, "MultiThreading") ?? true;
             _logInterval = XmlUtils.TryGetValueAsInt(xmlConfig, "LogInterval") ?? 10;
@@ -877,8 +892,8 @@ namespace ENTM.Experiments
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = CreateGenomeDecoder();
 
             INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
-            IGeneticDiversityScorer<NeatGenome> geneticDiversityScorer = new GeneticDiversityKnn<NeatGenome>();
-            IMultiObjectiveScorer<NeatGenome> multiObjectiveScorer = new NSGAII<NeatGenome>();
+            IGeneticDiversityScorer<NeatGenome> geneticDiversityScorer = new GeneticDiversityKnn<NeatGenome>(_neatGenomeParams.ConnectionWeightRange);
+            IMultiObjectiveScorer multiObjectiveScorer = new NSGAII();
 
              _listEvaluator = new MultiObjectiveListEvaluator<NeatGenome, IBlackBox>(
                  genomeDecoder, 
@@ -890,6 +905,10 @@ namespace ENTM.Experiments
                  _parallelOptions);
 
             _listEvaluator.MultiObjectiveParams = _multiObjectiveParams;
+            _listEvaluator.ReportInterval = _logInterval;
+
+            NoveltySearchEnabled = _noveltySearchParams?.Enabled ?? false;
+            MultiObjectiveEnabled = _multiObjectiveParams?.Enabled ?? false;
 
             // Initialize the evolution algorithm.
             ea.Initialize(_listEvaluator, genomeFactory, genomeList);

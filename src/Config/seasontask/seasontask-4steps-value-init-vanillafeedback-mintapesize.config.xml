@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-5Steps-ValueInit</Name>
+  <Name>SeasonTask-4Steps-ValueInit-VanillaFeedback-MiniTapeSize</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
@@ -15,7 +15,7 @@
   </Description>
 
     <!-- Comment about the specific experiment setup. NO LINE BREAKS!!!!!!!!!!!! -->
-  <Comment>4 foods, 2 of them poisonous, no seasons, initialize tape with a value, give reward and punishment only for eaten foods</Comment>
+  <Comment>2 foods, 1 of them poisonous per season, 2 seasons, initialize tape with a value, vanilla feedback, reduced tape size</Comment>
   
   <!-- How many experiments will be performed (serially) -->
   <ExperimentCount>10</ExperimentCount>
@@ -24,7 +24,7 @@
   <MaxGenerations>5000</MaxGenerations>
 
   <!-- NEAT -->
-  <PopulationSize>300</PopulationSize>
+  <PopulationSize>250</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
   <LogInterval>50</LogInterval>
@@ -39,10 +39,10 @@
   <TuringMachineParams>
     <Enabled>true</Enabled>
     <!-- Maximum memory size (-1 for unlimited) -->
-    <N>25</N>
+    <N>8</N>
 
     <!-- Write vector size -->
-    <M>8</M>
+    <M>7</M>
 
     <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
     <MinSimilarityToJump>0</MinSimilarityToJump>
@@ -74,19 +74,19 @@
     <RandomSeed>0</RandomSeed>
 
     <FitnessFactor>1</FitnessFactor>
-    <Years>1</Years>
-    <Seasons>1</Seasons>
-    <Days>8</Days>
-    <FoodTypes>4</FoodTypes>
-    <PoisonFoods>2</PoisonFoods>
+    <Years>2</Years>
+    <Seasons>2</Seasons>
+    <Days>3</Days>
+    <FoodTypes>2</FoodTypes>
+    <PoisonFoods>1</PoisonFoods>
 	<!-- Randomly shuffle wich foods are poisonous at a random position in the sequence -->
     <PoisonousTypeChanges>0</PoisonousTypeChanges>
 	<!-- The first time a food is encountered, the system cant know the answer, so maybe we dont want to score them -->
     <IgnoreFirstDayOfSeasonInFirstYear>true</IgnoreFirstDayOfSeasonInFirstYear>
     <!-- How many steps to we spend at each food before giving the feedback -->
-	<StepsPerFood>5</StepsPerFood>
+	<StepsPerFood>4</StepsPerFood>
 	<!-- User reinforcment learning punishment and reward on food that is not eaten but ignored? -->
-	<FeedbackOnIgnoredFood>false</FeedbackOnIgnoredFood>
+	<FeedbackOnIgnoredFood>true</FeedbackOnIgnoredFood>
 
   </SeasonTaskParams>
 
@@ -146,7 +146,7 @@
 
   </NoveltySearch>
   
-  <MultiObjective>
+ <MultiObjective>
     <!-- Enable multiobjective -->
     <Enabled>false</Enabled>
 

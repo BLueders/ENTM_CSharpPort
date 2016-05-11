@@ -13,6 +13,8 @@ namespace ENTM.Replay
     {
         private List<TimeStep> _recordedTimeSteps;
 
+        public double[][] FinalTuringTape { get; set; }
+
         public void Start()
         {
             _recordedTimeSteps = new List<TimeStep>();
@@ -28,7 +30,27 @@ namespace ENTM.Replay
             _recordedTimeSteps.Add(new TimeStep(environmentTimeStep));
         }
 
-        public Bitmap ToBitmap()
+        public Bitmap TapeToBitmap()
+        {
+            int length = FinalTuringTape.Length;
+            int count = FinalTuringTape[0].Length;
+
+            Bitmap bmp = new Bitmap(length, count);
+            for (int x = 0; x < length; x++)
+            {
+                double[] vector = FinalTuringTape[x];
+                for (int y = 0; y < count; y++)
+                {
+                    double v = vector[y];
+
+                    bmp.SetPixel(x, y, DoubleToPixelColorScale(v));
+                }
+            }
+
+            return bmp;
+        }
+
+        public Bitmap LifetimeToBitmap()
         {
             int w = _recordedTimeSteps.Count;
 
@@ -120,33 +142,33 @@ namespace ENTM.Replay
                     }
                     else if (y < startIndex[4])
                     {
-                        pixel = doubleToPixelColorScale(t.EnvironmentTimeStep.Score);
+                        pixel = DoubleToPixelColorScale(t.EnvironmentTimeStep.Score);
                     }
                     else if (turing)
                     {
                         if (y < startIndex[5])
                         {
-                            pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Key[i]);
+                            pixel = DoubleToPixelColorScale(t.TuringMachineTimeStep.Key[i]);
                         }
                         else if (y < startIndex[6])
                         {
-                            pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.WriteInterpolation);
+                            pixel = DoubleToPixelColorScale(t.TuringMachineTimeStep.WriteInterpolation);
                         }
                         else if (y < startIndex[7])
                         {
-                            pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Written[i]);
+                            pixel = DoubleToPixelColorScale(t.TuringMachineTimeStep.Written[i]);
                         }
                         else if (y < startIndex[8])
                         {
-                            pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.ContentJump);
+                            pixel = DoubleToPixelColorScale(t.TuringMachineTimeStep.ContentJump);
                         }
                         else if (y < startIndex[9])
                         {
-                            pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Shift[i]);
+                            pixel = DoubleToPixelColorScale(t.TuringMachineTimeStep.Shift[i]);
                         }
                         else if (y < startIndex[10])
                         {
-                            pixel = doubleToPixelColorScale(t.TuringMachineTimeStep.Read[i]);
+                            pixel = DoubleToPixelColorScale(t.TuringMachineTimeStep.Read[i]);
                         }
                         else if (y < startIndex[11])
                         {
@@ -169,7 +191,7 @@ namespace ENTM.Replay
             return bmp;
         }
 
-        private Color doubleToPixelColorScale(double v)
+        private Color DoubleToPixelColorScale(double v)
         {
             return ColorUtils.ColorFromHSV((1d - v) * 240, 1, 1);
         }

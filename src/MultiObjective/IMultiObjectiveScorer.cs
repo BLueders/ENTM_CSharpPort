@@ -1,14 +1,75 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharpNeat.Core;
+﻿using System.Collections.Generic;
+using ENTM.Utility;
 
 namespace ENTM.MultiObjective
 {
-    public interface IMultiObjectiveScorer<TGenome> where TGenome : class, IGenome<TGenome>
+    public interface IMultiObjectiveScorer : ITimeable
     {
-        void Score(IList<Behaviour<TGenome>> behaviours);
+        void Score(IList<IMultiObjectiveBehaviour> behaviours);
+    }
+
+    public interface IMultiObjectiveBehaviour
+    {
+        /// <summary>
+        /// The final fitness calculated by the Multi Objective algorithm (if applied)
+        /// </summary>
+        double MultiObjectiveScore { get; set; }
+
+        /// <summary>
+        /// The objective scores to be considered
+        /// </summary>
+        double[] Objectives { get; set; }
+
+        /// <summary>
+        /// The rank of this behaviour, i.e. which Pareto front is it on
+        /// </summary>
+        int Rank { get; set; }
+
+        /// <summary>
+        /// The distance to the nearest behaviours in objective space
+        /// </summary>
+        double CrowdingDistance { get; set; }
+
+        /// <summary>
+        /// List of behaviours dominated by this behaviour
+        /// </summary>
+        IList<IMultiObjectiveBehaviour> Dominates { get; }
+
+        /// <summary>
+        /// How many behaviours dominate this behaviour
+        /// </summary>
+        int DominatedCount { get; set; }
+    }
+
+    public class ObjectiveComparer : IComparer<IMultiObjectiveBehaviour>
+    {
+        public int Objective { get; set; }
+
+        public int Compare(IMultiObjectiveBehaviour x, IMultiObjectiveBehaviour y)
+        {
+            double ox = x.Objectives[Objective];
+            double oy = y.Objectives[Objective];
+
+            if (ox > oy) return 1;
+            if (ox < oy) return -1;
+            return 0;
+        }
+    }
+
+    public class PopulationComparer : IComparer<IMultiObjectiveBehaviour>
+    {
+        public int Compare(IMultiObjectiveBehaviour x, IMultiObjectiveBehaviour y)
+        {
+            // Minimize rank
+            if (x.Rank < y.Rank) return 1;
+            if (x.Rank > y.Rank) return -1;
+
+            // Equal ranks, sort by crowding distance
+            // Maximize crowding distance
+            if (x.CrowdingDistance > y.CrowdingDistance) return 1;
+            if (x.CrowdingDistance < y.CrowdingDistance) return -1;
+
+            return 0;
+        }
     }
 }

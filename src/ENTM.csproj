@@ -51,17 +51,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseEvaluator.cs" />
-    <Compile Include="DefaultController.cs" />
-    <Compile Include="Experiments\ITuringExperiment.cs" />
+    <Compile Include="Base\BaseEvaluator.cs" />
+    <Compile Include="Base\DefaultController.cs" />
+    <Compile Include="Distance\Knn.cs" />
+    <Compile Include="Distance\KnnSingleDimension.cs" />
+    <Compile Include="TuringMachine\ITuringExperiment.cs" />
     <Compile Include="Experiments\SeasonTask\TwoStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\OneStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\MultiStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\Xor\XorEnvironment.cs" />
     <Compile Include="Experiments\Xor\XorEvaluator.cs" />
     <Compile Include="Experiments\Xor\XorExperiment.cs" />
-    <Compile Include="MultiObjective\Behaviour.cs" />
-    <Compile Include="MultiObjective\EvaluationInfo.cs" />
+    <Compile Include="Base\Behaviour.cs" />
+    <Compile Include="Base\EvaluationInfo.cs" />
     <Compile Include="MultiObjective\GeneticDiversityKnn.cs" />
     <Compile Include="MultiObjective\IGeneticDiversityScorer.cs" />
     <Compile Include="MultiObjective\IMultiObjectiveEvaluator.cs" />
@@ -69,9 +71,9 @@
     <Compile Include="MultiObjective\MultiObjectiveParameters.cs" />
     <Compile Include="MultiObjective\NSGAII.cs" />
     <Compile Include="NoveltySearch\INoveltyScorer.cs" />
-    <Compile Include="Distance\Knn.cs" />
+    <Compile Include="Distance\KnnMultiDimensional.cs" />
     <Compile Include="MultiObjective\MultiObjectiveListEvaluator.cs" />
-    <Compile Include="BaseEnvironment.cs" />
+    <Compile Include="Base\BaseEnvironment.cs" />
     <Compile Include="Experiments\SeasonTask\Container.cs" />
     <Compile Include="Experiments\SeasonTask\SeasonTaskEnvironment.cs" />
     <Compile Include="Experiments\SeasonTask\SeasonTaskEvaluator.cs" />
@@ -92,8 +94,8 @@
     <Compile Include="Experiments\CopyTask\CopyTaskEnvironment.cs" />
     <Compile Include="Experiments\CopyTask\CopyTaskEvaluator.cs" />
     <Compile Include="Experiments\CopyTask\CopyTaskExperiment.cs" />
-    <Compile Include="IController.cs" />
-    <Compile Include="IEnvironment.cs" />
+    <Compile Include="Base\IController.cs" />
+    <Compile Include="Base\IEnvironment.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -103,9 +105,10 @@
     <Compile Include="Program.cs" />
     <Compile Include="Experiments\CopyTask\CopyTaskProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Experiments\BaseExperiment.cs" />
-    <Compile Include="SineEvaluator.cs" />
+    <Compile Include="Base\BaseExperiment.cs" />
+    <Compile Include="Experiments\Sine\SineEvaluator.cs" />
     <Compile Include="Utility\ExperimentUtils.cs" />
+    <Compile Include="Utility\ITimeable.cs" />
     <Compile Include="Utility\ThreadSafeRandom.cs" />
     <Compile Include="TuringMachine\TuringController.cs" />
     <Compile Include="TuringMachine\MinimalTuringMachine.cs" />
@@ -140,6 +143,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\copytask-generalization\copytask.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\copytask1.txt" />
     <Content Include="Config\SeasonTask\seasontask-5steps-noveltysearch.config.xml">
       <SubType>Designer</SubType>

@@ -1,24 +1,24 @@
-﻿namespace ENTM.MultiObjective
+﻿namespace ENTM.Base
 {
     public struct EvaluationInfo
     {
         public double ObjectiveFitness { get; }
 
-        public double[] NoveltyVector { get; }
+        public double[][] NoveltyVectors { get; }
 
         public double[] MinimumCriteria { get; }
 
-        public EvaluationInfo(double objectiveFitness, double[] noveltyVector, double[] minimumCriteria)
+        public EvaluationInfo(double objectiveFitness, double[][] noveltyVectors, double[] minimumCriteria)
         {
             ObjectiveFitness = objectiveFitness;
-            NoveltyVector = noveltyVector;
+            NoveltyVectors = noveltyVectors;
             MinimumCriteria = minimumCriteria;
         }
 
         public EvaluationInfo(double fitness)
         {
             ObjectiveFitness = fitness;
-            NoveltyVector = new double[0];
+            NoveltyVectors = new double[0][];
             MinimumCriteria = new double[0];
         }
     }

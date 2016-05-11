@@ -1,4 +1,5 @@
 ﻿using System;
+using ENTM.Base;
 using ENTM.Replay;
 using ENTM.TuringMachine;
 using ENTM.Utility;

@@ -1,79 +1,108 @@
-﻿using System.Collections.Generic;
-using ENTM.NoveltySearch;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+using log4net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpNeat.Core;
 
 namespace ENTM.MultiObjective
 {
 
-    public class NSGAII<TGenome> : IMultiObjectiveScorer<TGenome> where TGenome : class, IGenome<TGenome>
+    public class NSGAII : IMultiObjectiveScorer
     {
-        private List<Behaviour<TGenome>> _population;
+        private readonly ILog _logger = LogManager.GetLogger("NSGAII");
+
+        private readonly Stopwatch _timer = new Stopwatch();
+        public long TimeSpent => _timer.ElapsedMilliseconds;
+
+        private readonly ObjectiveComparer _objectiveComparer = new ObjectiveComparer();
+        private readonly PopulationComparer _populationComparer = new PopulationComparer();
+
+        private List<IMultiObjectiveBehaviour> _population;
         private int _count;
         private int _objectives;
         private int _maxRank;
 
-        public void Score(IList<Behaviour<TGenome>> behaviours)
+        public void Score(IList<IMultiObjectiveBehaviour> behaviours)
         {
-            _population = new List<Behaviour<TGenome>>(behaviours);
+            _timer.Restart();
+
+            _population = new List<IMultiObjectiveBehaviour>(behaviours);
             _count = _population.Count;
             _objectives = _population[0].Objectives.Length;
 
             UpdateDominations();
-
             RankPopulation();
+
+            // Sort population based on rank and crowding distance
+            _population.Sort(_populationComparer);
 
             for (int i = 0; i < _count; i++)
             {
-                Behaviour<TGenome> b = _population[i];
-                b.MultiObjectiveScore = (b.Rank - 1d) / (_maxRank - 1d);
+                IMultiObjectiveBehaviour b = _population[i];
+
+                // Score the individuals
+                b.MultiObjectiveScore = (double) i / (_count - 1);
             }
+
+            _timer.Stop();
         }
 
+
+        /// <summary>
+        /// Compares all behaviours in the population to each other, to determine who dominates who
+        /// </summary>
         private void UpdateDominations()
         {
             // Compare all bahaviours to each other
-            for (int i = 0; i < _count; i++)
+            for (int x = 0; x < _count; x++)
             {
-                Behaviour<TGenome> one = _population[i];
-                for (int j = i + 1; j < _count; j++)
-                {
-                    Behaviour<TGenome> other = _population[j];
+                IMultiObjectiveBehaviour bx = _population[x];
 
-                    if (Dominates(one, other))
+                for (int y = x + 1; y < _count; y++)
+                {
+                    IMultiObjectiveBehaviour by = _population[y];
+
+                    if (Dominates(bx, by))
                     {
-                        one.Dominates.Add(other);
-                        other.DominatedCount++;
+                        bx.Dominates.Add(by);
+                        by.DominatedCount++;
                     }
-                    else if (Dominates(other, one))
+                    else if (Dominates(by, bx))
                     {
-                        other.Dominates.Add(one);
-                        one.DominatedCount++;
+                        by.Dominates.Add(bx);
+                        bx.DominatedCount++;
                     }
                 }
             }
         }
 
-        private bool Dominates(Behaviour<TGenome> one, Behaviour<TGenome> other)
+        /// <summary>
+        /// Check if behaviour x dominates behaviour y
+        /// </summary>
+        /// <param name="bx"></param>
+        /// <param name="by"></param>
+        /// <returns></returns>
+        private bool Dominates(IMultiObjectiveBehaviour bx, IMultiObjectiveBehaviour by)
         {
-            Assert.AreNotEqual(one, other);
-
             bool dominates = false;
 
             // Compare all objectives
             for (int i = 0; i < _objectives; i++)
             {
-                double oOne = one.Objectives[i];
-                double oOther = other.Objectives[i];
+                double ox = bx.Objectives[i];
+                double oy = by.Objectives[i];
 
-                if (oOne < oOther)
+                if (ox < oy)
                 {
-                    // Objective i is worse, one does not dominate other
+                    // Objective i is worse, bx does not dominate by. 
+                    // No need to check remaining objectives, so bail out here
                     return false;
                 }
-                if (oOne > oOther)
+                if (ox > oy)
                 {
-                    // Objective i is better, potential domination
+                    // Objective i is better, potential domination, but we need to check remaining objectives
                     dominates = true;
                 }
             }
@@ -81,43 +110,97 @@ namespace ENTM.MultiObjective
             return dominates;
         }
 
+        /// <summary>
+        /// Distributes all behaviours into their respective ranks.
+        /// Calculates Crowding distances.
+        /// </summary>
         private void RankPopulation()
         {
-            List<Behaviour<TGenome>> unranked = new List<Behaviour<TGenome>>(_population);
+            List<IMultiObjectiveBehaviour> unranked = new List<IMultiObjectiveBehaviour>(_population);
 
-            int rank = 1;
+            int currentRank = 1;
 
             // All behaviours must be ranked
             while (unranked.Count > 0)
             {
+                List<IMultiObjectiveBehaviour> front = new List<IMultiObjectiveBehaviour>();
+
                 int count = unranked.Count;
 
-                // Iterate in reverse to keep indices correct
+                // Iterate in reverse to keep indices correct for removal
                 for (int i = count - 1; i >= 0; i--)
                 {
-                    Behaviour<TGenome> b = unranked[i];
+                    IMultiObjectiveBehaviour b = unranked[i];
 
                     if (b.DominatedCount == 0)
                     {
                         // Behaviour is non-dominated, is on the current front
-                        b.Rank = rank;
+                        front.Add(b);
                         unranked.RemoveAt(i);
-
-                        int dCount = b.Dominates.Count;
-                        for (int j = 0; j < dCount; j++)
-                        {
-                            // Decrement dominated count for all behaviours dominated by current front behaviours
-                            b.Dominates[j].DominatedCount--;
-
-                            Assert.IsTrue(b.Dominates[j].DominatedCount >= 0);
-                        }
                     }
                 }
 
-                rank++;
+                int fCount = front.Count;
+                for (int i = 0; i < fCount; i++)
+                {
+                    IMultiObjectiveBehaviour b = front[i];
+
+                    // Individual is on the current front, rank it accordingly
+                    b.Rank = currentRank;
+
+                    int dCount = b.Dominates.Count;
+                    for (int j = 0; j < dCount; j++)
+                    {
+                        // Decrement dominated count for all behaviours dominated by current front behaviours
+                        b.Dominates[j].DominatedCount--;
+                    }
+                }
+
+                // Calculate crowding distances for front behaviours
+                CrowdingDistance(front.ToArray());
+
+                // Increment rank
+                currentRank++;
             }
 
-            _maxRank = rank - 1;
+            _maxRank = currentRank - 1;
+        }
+
+        /// <summary>
+        /// Calculate the crowding distance for each behaviour in a non-dominated set (front)
+        /// </summary>
+        /// <param name="front"></param>
+        public void CrowdingDistance(IMultiObjectiveBehaviour[] front)
+        {
+            int fCount = front.Length;
+
+            if (fCount == 1) front[0].CrowdingDistance = 1d;
+
+            for (int i = 0; i < _objectives; i++)
+            {
+                // Sort the population based on each objective
+                _objectiveComparer.Objective = i;
+                Array.Sort(front, _objectiveComparer);
+
+                IMultiObjectiveBehaviour bMin = front[0];
+                IMultiObjectiveBehaviour bMax = front[fCount - 1];
+
+                // Max - min = span of objective
+                double oSpan = bMax.Objectives[i] - bMin.Objectives[i];
+
+                bMin.CrowdingDistance = 1d;
+                bMax.CrowdingDistance = 1d;
+
+                for (int j = 1; j < fCount - 1; j++)
+                {
+                    IMultiObjectiveBehaviour b = front[j];
+
+
+                    if (b.CrowdingDistance == 1d || oSpan == 0d) continue;
+
+                    b.CrowdingDistance += (front[j + 1].Objectives[i] - front[j - 1].Objectives[i]) / oSpan;
+                }
+            }
         }
     }
 }

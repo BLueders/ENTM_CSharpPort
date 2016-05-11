@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SharpNeat.Core;
+﻿using SharpNeat.Core;
 using SharpNeat.Phenomes;
 
-namespace ENTM
+namespace ENTM.Experiments.Sine
 {
     /// <summary>
     /// Class used to evaluate neural networks that emulate a sine function
