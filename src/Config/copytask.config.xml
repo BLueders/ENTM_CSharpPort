@@ -115,10 +115,10 @@
       WritePatternAndInterp:  Use write position and interp as novelty vector.
       ShiftJumpInterp:        Shift, jump and interp for novelty vector
       -->
-    <NoveltyVector>ShiftJumpInterp</NoveltyVector>
+    <NoveltyVector>WritePatternAndInterp</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>15</PMin>
+    <PMin>30</PMin>
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
     <PMinLowerThreshold>1</PMinLowerThreshold>
@@ -234,7 +234,7 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>.85</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>1</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->

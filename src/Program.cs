@@ -328,7 +328,7 @@ namespace ENTM
                 // Initialize logging
                 GlobalContext.Properties["name"] = name;
                 GlobalContext.Properties["id"] = _identifier;
-                GlobalContext.Properties["count"] = _currentConfig;
+                GlobalContext.Properties["count"] = $"{_currentConfig + 1:D4}";
                 XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
 
                 // Print config
