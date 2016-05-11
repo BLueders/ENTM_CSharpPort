@@ -21,6 +21,7 @@ namespace ENTM.Experiments.SeasonTask
         // How many different days are there each season
         protected readonly int _daysMin;
         protected readonly int _daysMax;
+        protected int _days; 
 
         // How many different foods there are to select from each season
         protected readonly int _foodTypes;
@@ -48,7 +49,7 @@ namespace ENTM.Experiments.SeasonTask
 
         public Food[] Sequence { get; protected set; }
 
-        public int SequenceLength => _years * _seasons * _daysMin * _foodTypes;
+        public int SequenceLength => _years * _seasons * _days * _foodTypes;
 
         public override double CurrentScore => _score * _fitnessFactor;
 
@@ -58,16 +59,16 @@ namespace ENTM.Experiments.SeasonTask
                 if (_ignoreFirstDayOfSeasonInFirstYear)
                 {
                     // do not score first day of each season of the first year, this is where the food is encountered the first time and for learning
-                    return _fitnessFactor * _foodTypes * _daysMin * _seasons * _years - (_fitnessFactor * _seasons * _foodTypes);
+                    return _fitnessFactor * _foodTypes * _days * _seasons * _years - (_fitnessFactor * _seasons * _foodTypes);
                 }
-                return _fitnessFactor*_foodTypes*_daysMin*_seasons*_years;
+                return _fitnessFactor*_foodTypes* _days * _seasons*_years;
             }
         } 
 
         // jk. do not score first day of each season of the first year. There we encounter each food the first time and cant know if its poisonous.
         protected bool ScoreThisStep(int step)
         {
-            bool isFirstDay = step < _foodTypes * _daysMin * _seasons && step % (_foodTypes * _daysMin) < _foodTypes;
+            bool isFirstDay = step < _foodTypes * _days * _seasons && step % (_foodTypes * _days) < _foodTypes;
             if (isFirstDay)
             {
                 int a = 1;
@@ -117,11 +118,13 @@ namespace ENTM.Experiments.SeasonTask
 
             Debug.DLogHeader("SEASON TASK NEW ITERATION", true);
 
+            _days = SealedRandom.Next(_daysMin, _daysMax + 1);
             CreateSequence();
 
             Debug.DLog($"{"Years:",-16} {_years}" +
             $"\n{"Seasons:",-16} {_seasons}" +
-            $"\n{"Days:",-16} {_daysMin}" +
+            $"\n{"DaysMin:",-16} {_daysMin}" +
+            $"\n{"DaysMax:",-16} {_daysMax}" +
             $"\n{"Foods:",-16} {_foodTypes}" +
             $"\n{"Max score:",-16} {MaxScore}", true);
 
@@ -169,9 +172,9 @@ namespace ENTM.Experiments.SeasonTask
             {
                 for (int j = 0; j < _seasons; j++)
                 {
-                    for (int k = 0; k < _daysMin; k++)
+                    for (int k = 0; k < _days; k++)
                     {
-                        int currentDayIndex = i*_seasons*_daysMin*_foodTypes + j*_daysMin*_foodTypes + k*_foodTypes;
+                        int currentDayIndex = i*_seasons* _days * _foodTypes + j* _days * _foodTypes + k*_foodTypes;
                         // shuffle dem poisons
                         if (poisonFoodShufflePositions.Count != 0 && currentDayIndex >= poisonFoodShufflePositions.First.Value)
                         {

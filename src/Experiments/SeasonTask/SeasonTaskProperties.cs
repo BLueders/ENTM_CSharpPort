@@ -17,8 +17,8 @@ namespace ENTM.Experiments.SeasonTask
             RandomSeed = XmlUtils.TryGetValueAsInt(xmlConfig, "RandomSeed") ?? 0;
             Years = XmlUtils.TryGetValueAsInt(xmlConfig, "Years") ?? 0;
             Seasons = XmlUtils.TryGetValueAsInt(xmlConfig, "Seasons") ?? 0;
-            DaysMin = XmlUtils.TryGetValueAsInt(xmlConfig, "DaysMin") ?? 0;
-            DaysMax = XmlUtils.TryGetValueAsInt(xmlConfig, "DaysMax") ?? 0;
+            DaysMin = XmlUtils.TryGetValueAsInt(xmlConfig, "DaysMin") ?? 1;
+            DaysMax = XmlUtils.TryGetValueAsInt(xmlConfig, "DaysMax") ?? 1;
             FoodTypes = XmlUtils.TryGetValueAsInt(xmlConfig, "FoodTypes") ?? 0;
             PoisonFoods = XmlUtils.TryGetValueAsInt(xmlConfig, "PoisonFoods") ?? 0;
             PoisonousTypeChanges = XmlUtils.TryGetValueAsInt(xmlConfig, "PoisonousTypeChanges") ?? 0;

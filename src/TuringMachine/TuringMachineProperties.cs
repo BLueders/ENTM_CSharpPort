@@ -16,6 +16,8 @@ namespace ENTM.TuringMachine
         public double MinSimilarityToJump;
         public double InitalValue;
         public bool InitalizeWithGradient;
+        public double DidWriteThreshold;
+        public bool UseMemoryExpandLocation;
 
         public TuringMachineProperties(XmlElement xmlConfig)
         {
@@ -35,6 +37,9 @@ namespace ENTM.TuringMachine
             InitalizeWithGradient = XmlUtils.TryGetValueAsBool(xmlConfig, "InitalizeWithGradient") ?? false;
 
             InitalValue = XmlUtils.TryGetValueAsDouble(xmlConfig, "InitalValue") ?? -1;
+
+            UseMemoryExpandLocation = XmlUtils.TryGetValueAsBool(xmlConfig, "UseMemoryExpandLocation") ?? false;
+            DidWriteThreshold = XmlUtils.TryGetValueAsDouble(xmlConfig, "DidWriteThreshold") ?? 0.9d;
         }
 
         public TuringMachineProperties(int m, int n, int shiftLength, ShiftMode shiftMode, bool enabled, int heads)

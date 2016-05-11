@@ -57,6 +57,9 @@ namespace ENTM.TuringMachine
         private int _zeroPosition;
         private bool _didWrite, _didRead;
 
+        // similarity threshold to check if a write changed the content of the tape at one location
+        private double _didWriteThreshold;
+
         // The minimal similarity for the tm to jump to that position, if non is found that satisfies this, the tm will
         // jump to the start of the tape.
         private double _minSimilarityToJump;
@@ -105,9 +108,9 @@ namespace ENTM.TuringMachine
             _tape = new List<double[]>();
             _initalizeWithGradient = props.InitalizeWithGradient;
             _initalValue = props.InitalValue;
-
+            _didWriteThreshold = props.DidWriteThreshold;
+            _useMemoryExpandLocation = props.UseMemoryExpandLocation;
             _noveltySearch = new NoveltySearchInfo();
-
             Reset();
             _initialRead = new double[_heads][];
             for (int i = 0; i < _heads; i++)
@@ -163,7 +166,7 @@ namespace ENTM.TuringMachine
         }
 
         private void InitTapeWithGradient() {
-            // add missing values
+            // add missing locations
             for (int i = 1; i < _n; i++)
             {
                 _tape.Add(new double[_m]);
@@ -181,13 +184,13 @@ namespace ENTM.TuringMachine
 
         private void InitTapeWithFixedValue()
         {
-            // add missing values
+            // add missing locations
             for (int i = 1; i < _n; i++)
             {
                 _tape.Add(new double[_m]);
             }
 
-            // make gradient
+            // fill with values
             for (int i = 0; i < _n; i++)
             {
                 for (int j = 0; j < _m; j++)
@@ -447,11 +450,9 @@ namespace ENTM.TuringMachine
         private void Write(int head, double[] content, double interp)
         {
             double[] preWrite = null;
-            if (NoveltySearch.ScoreNovelty)
-            {
-                // Store the tape data before the write
-                preWrite = _tape[_headPositions[head]];
-            }
+            
+            // Store the tape data before the write
+            preWrite = _tape[_headPositions[head]];
 
             switch (_writeMode)
             {
@@ -468,14 +469,25 @@ namespace ENTM.TuringMachine
                     break;
             }
 
-            if (NoveltySearch.ScoreNovelty)
+            // Compare the tape position before and after write
+            double similarity = Utilities.Emilarity(preWrite, _tape[_headPositions[head]]);
+            if (similarity < _didWriteThreshold)
             {
-                // Compare the tape position before and after write
-                double similarity = Utilities.Emilarity(preWrite, _tape[_headPositions[head]]);
-                if (similarity < .9d)
-                {
-                    // If the vectors are not similar, it means we wrote to the tape.
-                    _didWrite = true;
+                // If the vectors are not similar, it means we wrote to the tape.
+                _didWrite = true;
+
+                // the end of the tape will be our expand location, if we write here, we need to create a new expand location for new memories
+                if (_useMemoryExpandLocation && _headPositions[head] == _tape.Count - 1) {
+                    
+                    // Expand the memory to the right (end of array)
+                    if (_headPositions[head] == _tape.Count-1)
+                    {
+                        double[] newTapeVector = new double[_m];
+                        for (int i = 0; i < _m; i++) {
+                            newTapeVector[i] = _initalValue;
+                        }
+                        _tape.Add(newTapeVector);
+                    }
                 }
             }
 
