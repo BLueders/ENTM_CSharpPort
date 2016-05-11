@@ -1,4 +1,5 @@
 ﻿import os
+import sys
 import csv
 import time
 import datetime
@@ -14,12 +15,12 @@ for root, dirs, files in os.walk(os.getcwd()):
 print "Found %s results files" % len(results)
 
 with open("analysis.csv", 'w') as output:
-    fields = ["Run", "Comment", "Start time", "Total time spent", "Average time spent", "Experiments", "Solves", "Solve Percentage", "Mean Generations Solved", "Generations Solved Standard Deviation", "Mean Solved Hidden Nodes", "Mean Solved Birth Generation", "Mean Champion Fitness", "Mean Champion Complexity", "Mean Champion Hidden Nodes"]
+    fields = ["Run", "Comment", "Start time", "Total time spent", "Average time spent", "Experiments", "Solves", "Solve Percentage", "Mean Generations Solved", "Min Generations Solved", "Max Generations Solved", "Generations Solved Standard Deviation", "Mean Solved Hidden Nodes", "Mean Solved Birth Generation", "Mean Champion Fitness", "Mean Champion Complexity", "Mean Champion Hidden Nodes"]
     writer = csv.DictWriter(output, lineterminator='\n', fieldnames=fields)
     writer.writeheader()
-
+    
     run = 0
-
+    
     for r in results:
         run += 1
         times = []
@@ -30,7 +31,11 @@ with open("analysis.csv", 'w') as output:
         solvedHiddens = []
         solvedBirthGens = []
 
-        count = sum(1 for row in open(r))
+        minSolvedGens = sys.maxsize
+        maxSolvedGens = 0
+
+        # -1 for header
+        count = sum(1 for row in open(r)) - 1
         comment = "-"
         startTime = None
 
@@ -56,9 +61,15 @@ with open("analysis.csv", 'w') as output:
                 hiddens.append(float(row["Champion Hidden Nodes"]))
     
                 if row["Solved"] == "True":
-                    solvedGens.append(float(row["Generations"]))
+                    gens = float(row["Generations"])
+                    solvedGens.append(gens)
                     solvedHiddens.append(int(row["Champion Hidden Nodes"]))
                     solvedBirthGens.append(int(row["Champion Birth Generation"]))
+                    
+                    if gens < minSolvedGens:
+                        minSolvedGens = gens
+                    elif gens > maxSolvedGens:
+                        maxSolvedGens = gens
 
         
         totalTime = sum(times, datetime.timedelta(0))
@@ -70,6 +81,10 @@ with open("analysis.csv", 'w') as output:
         gensSolvedStdDev = -1
         meanSolvedHiddenNodes = -1
         meanSolvedBirthGens = -1
+
+        if solvedCount == 0:
+            minSolvedGens = -1
+            maxSolvedGens = -1
 
         if solvedCount > 0:
             gensSolvedMean = sum(solvedGens) / solvedCount
@@ -85,6 +100,9 @@ with open("analysis.csv", 'w') as output:
             meanSolvedHiddenNodes = float(sum(solvedHiddens)) / solvedCount
             meanSolvedBirthGens = float(sum(solvedBirthGens)) / solvedCount
 
+
+
+
         row = {}
         
         row["Run"] = run
@@ -96,6 +114,8 @@ with open("analysis.csv", 'w') as output:
         row["Solves"] = len(solvedGens)
         row["Solve Percentage"] = "%s%%" % round(float(solvedCount) / count * 100, 2)
         row["Mean Generations Solved"] = round(gensSolvedMean, 2)
+        row["Min Generations Solved"] = minSolvedGens
+        row["Max Generations Solved"] = maxSolvedGens
         row["Generations Solved Standard Deviation"] = round(gensSolvedStdDev, 2)
         row["Mean Solved Hidden Nodes"] = round(meanSolvedHiddenNodes, 2)
         row["Mean Solved Birth Generation"] = round(meanSolvedBirthGens, 2)

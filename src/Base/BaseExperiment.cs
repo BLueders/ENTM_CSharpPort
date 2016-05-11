@@ -71,32 +71,17 @@ namespace ENTM.Base
         const string TAPE_FILE = "tape{0:D4}_{1}.png";
         const string DATA_FILE = "data{0:D4}.csv";
 
-        private NeatEvolutionAlgorithmParameters _eaParams;
-        private NeatGenomeParameters _neatGenomeParams;
-        private NoveltySearchParameters _noveltySearchParams;
-        private MultiObjectiveParameters _multiObjectiveParams;
+        // Used for folder structure
+        private string _identifier;
+        private int _subIdentifier, _number;
 
-        private NeatEvolutionAlgorithm<NeatGenome> _ea;
-        protected TEvaluator _evaluator;
-        protected MultiObjectiveListEvaluator<NeatGenome, IBlackBox> _listEvaluator;
+        private bool _didStart = false;
+        private bool _abort = false;
 
-        private string _name, _description, _comment;
-        private int _populationSize, _maxGenerations;
-        private NetworkActivationScheme _activationScheme;
-        private IComplexityRegulationStrategy _complexityRegulationStrategy;
-        private string _complexityRegulationStr;
-        private int? _complexityThreshold;
-        private ParallelOptions _parallelOptions;
-        private bool _multiThreading;
-        private int _logInterval;
+        public Recorder Recorder => _evaluator.Recorder;
+        private Stopwatch _timer;
 
-        private uint _lastLog;
-        private long _lastLogTime;
-        private double _currentMaxFitness = -1;
-        private uint _lastMaxFitnessImprovementGen;
-        private uint _noveltySearchActivatedGen;
-
-        public string CurrentDirectory => string.Format($"{Program.ROOT_PATH}{Name}/{_identifier}/{_subIdentifier}/");
+        public string CurrentDirectory => string.Format($"{Program.ROOT_PATH}{Name}/{_identifier}/{_subIdentifier + 1:D4}/");
 
         private string ChampionFile => $"{CurrentDirectory}{string.Format(CHAMPION_FILE, _number)}";
         private string DataFile => $"{CurrentDirectory}{string.Format(DATA_FILE, _number)}";
@@ -111,17 +96,30 @@ namespace ENTM.Base
             return $"{CurrentDirectory}{string.Format(TAPE_FILE, _number, id)}";
         }
 
+        private NeatEvolutionAlgorithmParameters _eaParams;
+        private NeatGenomeParameters _neatGenomeParams;
+        private NoveltySearchParameters _noveltySearchParams;
+        private MultiObjectiveParameters _multiObjectiveParams;
+
+        private NeatEvolutionAlgorithm<NeatGenome> _ea;
+        protected TEvaluator _evaluator;
+        protected MultiObjectiveListEvaluator<NeatGenome, IBlackBox> _listEvaluator;
+
+        private string _name, _description, _comment;
+        private int _populationSize, _maxGenerations;
+        private NetworkActivationScheme _activationScheme;
+        private IComplexityRegulationStrategy _complexityRegulationStrategy;
+        private ParallelOptions _parallelOptions;
+        private bool _multiThreading;
+        private int _logInterval;
+
+        private uint _lastLog;
+        private long _lastLogTime;
+        private double _currentMaxFitness = -1;
+        private uint _lastMaxFitnessImprovementGen;
+        private uint _noveltySearchActivatedGen;
+
         public bool ExperimentCompleted { get; private set; } = false;
-
-        // Used for folder structure
-        private string _identifier;
-        private int _subIdentifier, _number;
-
-        private bool _didStart = false;
-        private bool _abort = false;
-
-        public Recorder Recorder => _evaluator.Recorder;
-        private Stopwatch _timer;
 
         public int InputCount => EnvironmentOutputCount + ControllerOutputCount;
         public int OutputCount => EnvironmentInputCount + ControllerInputCount;
@@ -401,6 +399,12 @@ namespace ENTM.Base
                     CreateExperimentDirectoryIfNecessary();
                     StringBuilder header = new StringBuilder("Generation,Novelty Search,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
 
+                    string[] objNames = _listEvaluator.ObjectiveNames;
+                    for (int i = 0; i < objNames.Length; i++)
+                    {
+                        header.Append($", Obj {i}: {objNames[i]} Max Score");
+                    }
+
                     for (int i = 0; i < spcCount; i++)
                     {
                         header.Append($",SS{i}");
@@ -416,10 +420,22 @@ namespace ENTM.Base
 
                     sw.WriteLine(header.ToString());
                 }
-
                 StringBuilder data = new StringBuilder(string.Format(CultureInfo.InvariantCulture,
                     "{0},{1},{2:F4},{3:F4},{4:F0},{5:F4},{6:F0},{7},{8},{9}",
                     gen, NoveltySearchEnabled, fitMax, fitMean, cmpMax, cmpMean, cmpChamp, champHidCount, spcMax, spcMin));
+
+                for (int i = 0; i < _listEvaluator.ObjectiveCount; i++)
+                {
+                    if (MultiObjectiveEnabled)
+                    {
+                        data.Append(string.Format(CultureInfo.InvariantCulture, ",{0:F4}", _listEvaluator.MaxObjectiveScores[i]));
+                    }
+                    else
+                    {
+                        data.Append(-1);
+                    }
+                }
+
 
                 for (int i = 0; i < spcCount; i++)
                 {

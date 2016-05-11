@@ -27,18 +27,22 @@ namespace ENTM.MultiObjective
     {
         private static readonly ILog _logger = LogManager.GetLogger("List Evaluator");
 
-        private const int OBJ_COUNT = 3;
-
         private const int OBJ_OBJECTIVE_FITNESS = 0;
         private const int OBJ_NOVELTY_SCORE = 1;
         private const int OBJ_GENETIC_DIVERSITY = 2;
+
+        public int ObjectiveCount => 3;
+
+        private static readonly string[] _objectiveNames = { "Objective", "Novelty", "Genetic Diversity" };
+        public string[] ObjectiveNames => _objectiveNames;
 
         public int ReportInterval { get; set; } = 0;
 
         private readonly Stopwatch _timer = new Stopwatch();
 
-        private double[] _maxObjectiveScores;
         private long _timeSpentEvaluation, _timeSpentNoveltySearch, _timeSpentGeneticDiversity, _timeSpentMultiObjective;
+
+        public double[] MaxObjectiveScores { get; private set; }
 
         private MultiObjectiveParameters _multiObjectiveParameters;
         public MultiObjectiveParameters MultiObjectiveParams
@@ -206,34 +210,45 @@ namespace ENTM.MultiObjective
 
                 if (MultiObjectiveEnabled)
                 {
+                    // Find all viable behaviours. NonViable could mean they failed to meet minimum criteria
                     Behaviour<TGenome>[] viable = behaviours.Where(x => !x.NonViable).ToArray();
 
                     // Score genetic diversity, since speciation will not work with MO
                     _geneticDiversityScorer.Score(viable, OBJ_GENETIC_DIVERSITY);
                     _timeSpentGeneticDiversity += _geneticDiversityScorer.TimeSpent;
 
-                    // Apply multi objective
-                    _multiObjectiveScorer.Score(viable);
-                    _timeSpentMultiObjective += _multiObjectiveScorer.TimeSpent;
-
-                    _maxObjectiveScores = new double[OBJ_COUNT];
-
-                    int vCount = viable.Length;
-                    for (int i = 0; i < vCount; i++)
+                    if (viable.Length > 0)
                     {
-                        Behaviour<TGenome> b = behaviours[i];
-                        for (int j = 0; j < OBJ_COUNT; j++)
-                        {
-                            // Debug max objective scores
-                            if (b.Objectives[j] > _maxObjectiveScores[j])
-                            {
-                                _maxObjectiveScores[j] = b.Objectives[j];
-                            }
-                        }
+                        // Apply multi objective
+                        _multiObjectiveScorer.Score(viable);
+                        _timeSpentMultiObjective += _multiObjectiveScorer.TimeSpent;
 
-                        // Apply final fitness as multi objective score
-                        b.ApplyMultiObjectiveScore();
+                        MaxObjectiveScores = new double[ObjectiveCount];
+
+                        int vCount = viable.Length;
+                        for (int i = 0; i < vCount; i++)
+                        {
+                            Behaviour<TGenome> b = behaviours[i];
+
+                            // Apply final fitness as multi objective score
+                            b.ApplyMultiObjectiveScore();
+
+                            // Debug max objective scores
+                            for (int j = 0; j < ObjectiveCount; j++)
+                            {
+                                if (b.Objectives[j] > MaxObjectiveScores[j])
+                                {
+                                    MaxObjectiveScores[j] = b.Objectives[j];
+                                }
+                            }
+
+                        }
                     }
+                    else
+                    {
+                        _logger.Warn("No viable genomes in population");
+                    }
+                   
                 }
                 else
                 {
@@ -252,9 +267,9 @@ namespace ENTM.MultiObjective
                 if (MultiObjectiveEnabled)
                 {
                     sb.Append($"Max Objective scores:");
-                    for (int i = 0; i < OBJ_COUNT; i++)
+                    for (int i = 0; i < ObjectiveCount; i++)
                     {
-                        sb.Append($" [{i}]: {_maxObjectiveScores[i]:F04}");
+                        sb.Append($" [{i}]: {MaxObjectiveScores[i]:F04}");
                     }
                 }
 
@@ -299,7 +314,7 @@ namespace ENTM.MultiObjective
             }
 
             // Evaluate the genome!
-            Behaviour<TGenome> behaviour = new Behaviour<TGenome>(genome, OBJ_COUNT);
+            Behaviour<TGenome> behaviour = new Behaviour<TGenome>(genome, ObjectiveCount);
             behaviour.Evaluation = _phenomeEvaluator.Evaluate(phenome);
 
             return behaviour;
