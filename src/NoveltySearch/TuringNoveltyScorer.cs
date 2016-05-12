@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ENTM.Base;
 using ENTM.Distance;
 using ENTM.MultiObjective;
@@ -65,8 +66,10 @@ namespace ENTM.NoveltySearch
             _timer.Restart();
 
             _generation++;
-            List<Behaviour<TGenome>> combinedBehaviours = new List<Behaviour<TGenome>>(_archive);
-            combinedBehaviours.AddRange(behaviours);
+
+            // Set of combined behaviours. Because of elitism, the same behaviour could appear twice
+            HashSet<Behaviour<TGenome>> combinedBehaviours = new HashSet<Behaviour<TGenome>>(_archive);
+            combinedBehaviours.UnionWith(behaviours);
 
             KnnMultiDimensional knnMultiDimensional = KnnMultiDimensional.Create(combinedBehaviours.ToArray());
 
@@ -77,7 +80,7 @@ namespace ENTM.NoveltySearch
                     break;
 
                 case NoveltyVectorMode.ReadContent:
-                    int dims = combinedBehaviours[0].Evaluation.NoveltyVectors[0].Length;
+                    int dims = behaviours[0].Evaluation.NoveltyVectors[0].Length;
                     for (int i = 0; i < dims; i++)
                     {
                         // Content is between 0 and 1

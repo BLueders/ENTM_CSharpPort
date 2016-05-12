@@ -1567,6 +1567,11 @@ namespace SharpNeat.Genomes.Neat
             return _networkConnectivityData;
         }
 
+        public override string ToString()
+        {
+            return $"ID: {Id}, Fitness: {EvaluationInfo.Fitness}, Evaluated: {EvaluationInfo.EvaluationCount}";
+        }
+
         #endregion
     }
 }

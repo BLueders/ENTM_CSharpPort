@@ -33,12 +33,17 @@ namespace ENTM.MultiObjective
         /// <summary>
         /// List of behaviours dominated by this behaviour
         /// </summary>
-        IList<IMultiObjectiveBehaviour> Dominates { get; }
+        IList<IMultiObjectiveBehaviour> Dominates { get; set; }
 
         /// <summary>
         /// How many behaviours dominate this behaviour
         /// </summary>
         int DominatedCount { get; set; }
+
+        /// <summary>
+        /// Reset the state of the behaviour for a new comparison. Usually only for elite behaviours.
+        /// </summary>
+        void Reset();
     }
 
     public class ObjectiveComparer : IComparer<IMultiObjectiveBehaviour>

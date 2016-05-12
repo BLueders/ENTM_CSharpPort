@@ -26,10 +26,10 @@ namespace ENTM
         private const string LOG4NET_CONFIG = "log4net.properties";
         private const string RESULTS_FILE = "results.csv";
 
-        private static Stopwatch _stopwatch = new Stopwatch();
+        private static readonly Stopwatch _stopwatch = new Stopwatch();
 
         private static string _currentDir;
-        private static Stack<string> _dirStack = new Stack<string>();
+        private static readonly Stack<string> _dirStack = new Stack<string>();
 
         private static bool _terminated = false;
         private static Type _experimentType;
@@ -264,7 +264,7 @@ namespace ENTM
             string timeSpent = Utilities.TimeToString(e.TimeSpent);
             _logger.Info($"Time spent: {timeSpent}");
 
-            _experiment.TestCurrentChampion();
+            double testedFitness = _experiment.TestCurrentChampion(10);
 
             string resultsFile = $"{e.Directory}{RESULTS_FILE}";
             bool writeHeader = !File.Exists(resultsFile);
@@ -273,12 +273,12 @@ namespace ENTM
             {
                 if (writeHeader)
                 {
-                    sw.WriteLine("Experiment,Comment,Start Time,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation");
+                    sw.WriteLine("Experiment,Comment,Start Time,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation,Tested Fitness");
                 }
 
                 sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0},\"{1}\",{9},{2},{3},{4},{5:F4},{6:F0},{7},{8}",
-                    e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen, _experimentStartedTime.ToString("ddMMyyyy-HHmmss")));
+                    "{0},\"{1}\",{9},{2},{3},{4},{5:F4},{6:F0},{7},{8},{10}",
+                    e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen, _experimentStartedTime.ToString("ddMMyyyy-HHmmss"), testedFitness));
             }
 
             NextExperiment();

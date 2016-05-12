@@ -38,7 +38,7 @@ namespace ENTM.MultiObjective
 
         public int ReportInterval { get; set; } = 0;
 
-        private readonly Stopwatch _timer = new Stopwatch();
+        private readonly Stopwatch _evaluationTimer = new Stopwatch();
 
         private long _timeSpentEvaluation, _timeSpentNoveltySearch, _timeSpentGeneticDiversity, _timeSpentMultiObjective;
 
@@ -65,6 +65,7 @@ namespace ENTM.MultiObjective
         private readonly ParallelOptions _parallelOptions;
         private readonly EvaluationMethod _evalMethod;
 
+        private Dictionary<TGenome, Behaviour<TGenome>> _previousGeneration; 
 
         private bool _multiObjectiveEnabled;
         private bool _multiObjectiveComplete;
@@ -96,7 +97,7 @@ namespace ENTM.MultiObjective
         }
 
 
-        public List<TGenome> Archive => new List<TGenome>(_noveltyScorer.Archive);
+        public List<TGenome> NoveltyArchive => new List<TGenome>(_noveltyScorer.Archive);
 
         /// <summary>
         /// Returns true if the novelty search has been completed, and the evaluation should switch to objective search.
@@ -159,10 +160,10 @@ namespace ENTM.MultiObjective
         {
             _generation++;
             IList<TGenome> filteredList;
+            IList<Behaviour<TGenome>> eliteBehaviours = new List<Behaviour<TGenome>>();
 
-            // If we are using novelty search we must reevaluate all genomes, because a given score can change in between 
-            // generations for the same behaviour
-            if (NoveltySearchEnabled || _reevaluateOnce)
+            // Check if elite genomes must be reevaluated
+            if (_reevaluateOnce)
             {
                 _reevaluateOnce = false;
                 filteredList = genomeList;
@@ -170,8 +171,11 @@ namespace ENTM.MultiObjective
             else
             {
                 filteredList = new List<TGenome>(genomeList.Count);
-                foreach (TGenome genome in genomeList)
+
+                int count = genomeList.Count;
+                for (int i = 0; i < count; i++)
                 {
+                    TGenome genome = genomeList[i];
                     // Only evalutate new genomes. Elite genomes will be skipped, as they already have an assigned fitness.
                     if (!genome.EvaluationInfo.IsEvaluated)
                     {   // Add the genome to the temp list for evaluation later.
@@ -180,44 +184,57 @@ namespace ENTM.MultiObjective
                     else
                     {   // Register that the genome skipped an evaluation.
                         genome.EvaluationInfo.EvaluationPassCount++;
+
+                        if (NoveltySearchEnabled || MultiObjectiveEnabled)
+                        {
+                            // Find the cached elite behaviours, as we need them for scoring novelty and genetic diversity
+                            eliteBehaviours.Add(_previousGeneration[genome]);
+                        }
                     }
                 }
             }
 
-            _timer.Restart();
+            _evaluationTimer.Restart();
 
-            IList<Behaviour<TGenome>> behaviours = _evalMethod(filteredList);
+            IList<Behaviour<TGenome>> evaluated = _evalMethod(filteredList);
 
-            _timer.Stop();
-            _timeSpentEvaluation += _timer.ElapsedMilliseconds;
+            _evaluationTimer.Stop();
+
+            _timeSpentEvaluation += _evaluationTimer.ElapsedMilliseconds;
 
             if (!NoveltySearchEnabled && !MultiObjectiveEnabled)
             {
                 // Ignore novelty score and multiobjective, apply environmental objective fitness
-                for (int i = 0; i < behaviours.Count; i++)
+                for (int i = 0; i < evaluated.Count; i++)
                 {
-                    behaviours[i].ApplyObjectiveFitnessOnly();
+                    evaluated[i].ApplyObjectiveFitnessOnly();
                 }
             }
             else
             {
+                // Elite behaviours must be novelty scored again
+                List<Behaviour<TGenome>> combined = new List<Behaviour<TGenome>>(eliteBehaviours);
+                combined.AddRange(evaluated);
+                int combinedCount = combined.Count;
+
                 if (NoveltySearchEnabled)
                 {
                     // Calculate novelty scores
-                    _noveltyScorer.Score(behaviours, OBJ_NOVELTY_SCORE);
+                    _noveltyScorer.Score(combined, OBJ_NOVELTY_SCORE);
                     _timeSpentNoveltySearch += _noveltyScorer.TimeSpent;
                 }
 
                 if (MultiObjectiveEnabled)
                 {
                     // Find all viable behaviours. NonViable could mean they failed to meet minimum criteria
-                    Behaviour<TGenome>[] viable = behaviours.Where(x => !x.NonViable).ToArray();
+                    Behaviour<TGenome>[] viable = combined.Where(x => !x.NonViable).ToArray();
+                    int vCount = viable.Length;
 
                     // Score genetic diversity, since speciation will not work with MO
                     _geneticDiversityScorer.Score(viable, OBJ_GENETIC_DIVERSITY);
                     _timeSpentGeneticDiversity += _geneticDiversityScorer.TimeSpent;
 
-                    if (viable.Length > 0)
+                    if (vCount > 0)
                     {
                         // Apply multi objective
                         _multiObjectiveScorer.Score(viable);
@@ -225,10 +242,9 @@ namespace ENTM.MultiObjective
 
                         MaxObjectiveScores = new double[ObjectiveCount];
 
-                        int vCount = viable.Length;
                         for (int i = 0; i < vCount; i++)
                         {
-                            Behaviour<TGenome> b = behaviours[i];
+                            Behaviour<TGenome> b = viable[i];
 
                             // Apply final fitness as multi objective score
                             b.ApplyMultiObjectiveScore();
@@ -241,7 +257,6 @@ namespace ENTM.MultiObjective
                                     MaxObjectiveScores[j] = b.Objectives[j];
                                 }
                             }
-
                         }
                     }
                     else
@@ -253,10 +268,17 @@ namespace ENTM.MultiObjective
                 else
                 {
                     // Only novelty score
-                    for (int i = 0; i < behaviours.Count; i++)
+                    for (int i = 0; i < combinedCount; i++)
                     {
-                        behaviours[i].ApplyNoveltyScoreOnly();
+                        combined[i].ApplyNoveltyScoreOnly();
                     }
+                }
+
+                _previousGeneration = new Dictionary<TGenome, Behaviour<TGenome>>(combinedCount);
+                for (int i = 0; i < combinedCount; i++)
+                {
+                    Behaviour<TGenome> b = combined[i];
+                    _previousGeneration.Add(b.Genome, b);
                 }
             }
 

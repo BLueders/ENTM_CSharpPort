@@ -31,7 +31,14 @@ namespace ENTM.Base
 
         public void ResetRandom()
         {
-            _sealedRandom = new Random(RandomSeed);
+            if (RandomSeed < 0)
+            {
+                _sealedRandom = new Random(System.Environment.TickCount);
+            }
+            else
+            {
+                _sealedRandom = new Random(RandomSeed);
+            }
         }
 
         public Random SealedRandom

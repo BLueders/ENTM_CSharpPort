@@ -83,5 +83,6 @@ namespace SharpNeat.Core
         /// <param name="birthGeneration">The current evolution algorithm generation. 
         /// Assigned to the new genome at its birth generation.</param>
         TGenome CreateOffspring(TGenome parent, uint birthGeneration);
+        
     }
 }

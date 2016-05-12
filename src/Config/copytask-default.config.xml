@@ -17,7 +17,7 @@
   <Comment>Default setup</Comment>
   
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>20</ExperimentCount>
+  <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
   <MaxGenerations>2000</MaxGenerations>
@@ -59,18 +59,11 @@
     <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
     <ShiftMode>Multiple</ShiftMode>
 
-	<!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
-	This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
-	<UseMemoryExpandLocation>false</UseMemoryExpandLocation>	
-	
-	<!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
-	<DidWriteThreshold>0.9</DidWriteThreshold>	
-	
     <!-- "Interpolate" or "Overwrite". 
         Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
         Overwrite: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
     -->
-    <WriteMode>Interpolate</WriteMode>
+    <WriteMode>Overwrite</WriteMode>
 
   </TuringMachineParams>
 
@@ -82,7 +75,7 @@
     <Iterations>50</Iterations>
 
     <!-- The seed used for random environment generations -->
-    <RandomSeed>0</RandomSeed>
+    <RandomSeed>-1</RandomSeed>
 
     <!-- The size of the bit vectors to be copied. -->
     <VectorSize>2</VectorSize>
@@ -114,7 +107,7 @@
   <NoveltySearch>
 
     <!-- If false, only environmental objective fitness will be used. -->
-    <Enabled>true</Enabled>
+    <Enabled>false</Enabled>
 
     <!-- What behaviour we want to score
       WritePattern:           Use the write position over time as the novelty vector.
@@ -122,10 +115,10 @@
       WritePatternAndInterp:  Use write position and interp as novelty vector.
       ShiftJumpInterp:        Shift, jump and interp for novelty vector
       -->
-    <NoveltyVector>WritePatternAndInterp</NoveltyVector>
+    <NoveltyVector>ShiftJumpInterp</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>30</PMin>
+    <PMin>15</PMin>
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
     <PMinLowerThreshold>1</PMinLowerThreshold>
@@ -168,7 +161,7 @@
 
   <MultiObjective>
     <!-- Enable multiobjective -->
-    <Enabled>true</Enabled>
+    <Enabled>false</Enabled>
 
     <!-- K value for KNN for genetic diversity -->
     <GeneticDiversityK>10</GeneticDiversityK>
@@ -201,10 +194,10 @@
     <!-- "Absolute" or "Relative"
        Absolute: Defines an absolute ceiling on complexity.
        Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
-    <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
+    <ComplexityRegulationStrategy>Relative</ComplexityRegulationStrategy>
 
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
-    <ComplexityThreshold>120</ComplexityThreshold>
+    <ComplexityThreshold>25</ComplexityThreshold>
 
   </ComplexityRegulation>
 
@@ -212,7 +205,7 @@
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
     <!-- Number of species in the population. Default: 10 -->
-    <SpecieCount>300</SpecieCount>
+    <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
     <ElitismProportion>0.1</ElitismProportion>
@@ -245,19 +238,19 @@
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>.3</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>1</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.8</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
-    <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
+    <AddNodeMutationProbability>0.0001</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
-    <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
+    <AddConnectionMutationProbability>0.09</AddConnectionMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.05</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

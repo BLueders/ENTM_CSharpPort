@@ -22,23 +22,13 @@ namespace ENTM.Experiments.Xor
         public override int NoveltyVectorLength => 0;
         public override int MinimumCriteriaLength => 0;
 
-        public override EvaluationInfo Evaluate(DefaultController controller, int iterations, bool record)
+        protected override void EvaluateObjective(DefaultController controller, int iterations, ref EvaluationInfo evaluation)
         {
             double totalScore = 0;
 
             for (int i = 0; i < iterations; i++)
             {
                 Reset();
-
-                if (record)
-                {
-                    Recorder = new Recorder();
-                    Recorder.Start();
-
-                    Environment.RecordTimeSteps = true;
-
-                    Recorder.Record(Environment.InitialTimeStep);
-                }
 
                 double[] enviromentOutput = Environment.InitialObservation;
 
@@ -47,19 +37,42 @@ namespace ENTM.Experiments.Xor
                     double[] environmentInput = controller.ActivateNeuralNetwork(enviromentOutput);
 
                     enviromentOutput = Environment.PerformAction(environmentInput);
-
-                    if (record)
-                    {
-                        Recorder.Record(Environment.PreviousTimeStep);
-                    }
                 }
 
                 totalScore += Environment.NormalizedScore;
             }
 
-            double score = totalScore / iterations;
+            evaluation.ObjectiveFitness = totalScore / iterations;
+        }
 
-            return new EvaluationInfo(score);
+        protected override void EvaluateNovelty(DefaultController controller, ref EvaluationInfo evaluation)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override void EvaluateRecord(DefaultController controller, ref EvaluationInfo evaluation)
+        {
+            Reset();
+
+            Recorder = new Recorder();
+            Recorder.Start();
+
+            Environment.RecordTimeSteps = true;
+
+            Recorder.Record(Environment.InitialTimeStep);
+
+            double[] enviromentOutput = Environment.InitialObservation;
+
+            while (!Environment.IsTerminated)
+            {
+                double[] environmentInput = controller.ActivateNeuralNetwork(enviromentOutput);
+
+                enviromentOutput = Environment.PerformAction(environmentInput);
+
+                Recorder.Record(Environment.PreviousTimeStep);
+            }
+
+            evaluation.ObjectiveFitness = Environment.NormalizedScore;
         }
 
         protected override void SetupTest()

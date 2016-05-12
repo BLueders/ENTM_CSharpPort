@@ -19,10 +19,21 @@ namespace ENTM.Experiments.CopyTask
             return new CopyTaskEnvironment(_copyTaskProps);
         }
 
-        protected override void OnEvaluationStart()
+        protected override void OnObjectiveEvaluationStart()
+        {
+            Environment.LengthRule = _copyTaskProps.LengthRule;
+
+            // Reset the environment. This will reset the random
+            Environment.ResetAll();
+        }
+
+        protected override void OnNoveltyEvaluationStart()
         {
             // We need a fixed sequence length for novelty search
-            Environment.LengthRule = NoveltySearchEnabled ? LengthRule.Fixed : _copyTaskProps.LengthRule;
+            Environment.LengthRule = LengthRule.Fixed;
+          
+            // Reset environment so random seed is reset
+            Environment.ResetAll();
         }
 
         protected override void SetupTest()

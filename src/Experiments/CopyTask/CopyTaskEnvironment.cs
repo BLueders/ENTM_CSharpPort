@@ -160,7 +160,6 @@ namespace ENTM.Experiments.CopyTask
             return result;
         }
 
-
         private void CreateSequence(int length)
         {
 

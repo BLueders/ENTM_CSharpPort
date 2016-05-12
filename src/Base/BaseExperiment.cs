@@ -195,15 +195,20 @@ namespace ENTM.Base
         /// <summary>
         /// Test the champion of the current EA
         /// </summary>
-        public FitnessInfo TestCurrentChampion()
+        public double TestCurrentChampion()
+        {
+            return TestCurrentChampion(1);
+        }
+
+        public double TestCurrentChampion(int runs)
         {
             if (_ea?.CurrentChampGenome == null)
             {
                 Console.WriteLine("No current champion");
-                return FitnessInfo.Zero;
+                return 0d;
             }
 
-            return TestGenome(_ea.CurrentChampGenome, 1, 1, true);
+            return TestGenome(_ea.CurrentChampGenome, 1, runs, true);
         }
 
         public void TestCurrentPopulation()
@@ -222,12 +227,12 @@ namespace ENTM.Base
             }
         }
 
-        public FitnessInfo TestSavedChampion(string xmlPath)
+        public double TestSavedChampion(string xmlPath)
         {
             return TestSavedChampion(xmlPath, 1, 1, true);
         }
 
-        public FitnessInfo TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings)
+        public double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings)
         {
             // Load genome from the xml file
             XmlDocument xmlChampion = new XmlDocument();
@@ -242,7 +247,7 @@ namespace ENTM.Base
             return TestGenome(championGenome, iterations, runs, createRecordings);
         }
 
-        private FitnessInfo TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings)
+        private double TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings)
         {
             if (_ea != null && _ea.RunState == RunState.Running)
             {
@@ -261,7 +266,7 @@ namespace ENTM.Base
             _logger.Info($"Testing phenome (ID: {genome.Id})...");
             Console.WriteLine($"Testing phenome (ID: {genome.Id})...");
 
-            double[] fitnessInfos = new double[runs];
+            double[] fitness = new double[runs];
 
             CreateExperimentDirectoryIfNecessary();
 
@@ -270,13 +275,13 @@ namespace ENTM.Base
             double maxFitness = double.MinValue;
             for (int i = 0; i < runs; i++)
             {
-                fitnessInfos[i] = _evaluator.TestPhenome(phenome, iterations).ObjectiveFitness;
-                if (fitnessInfos[i] < minFitness) {
-                    minFitness = fitnessInfos[i];
+                fitness[i] = _evaluator.TestPhenome(phenome, iterations).ObjectiveFitness;
+                if (fitness[i] < minFitness) {
+                    minFitness = fitness[i];
                 }
-                if (fitnessInfos[i] > maxFitness)
+                if (fitness[i] > maxFitness)
                 {
-                    maxFitness = fitnessInfos[i];
+                    maxFitness = fitness[i];
                 }
                 if (createRecordings)
                 {
@@ -297,8 +302,8 @@ namespace ENTM.Base
                         _logger.Warn("Recorder was null");
                         break;
                     }
-                    _logger.Info($"Run {i}: Achieved fitness: {fitnessInfos[i]:F4}");
-                    Console.WriteLine($"Run {i}: Achieved fitness: {fitnessInfos[i]:F4}");
+                    _logger.Info($"Run {i}: Achieved fitness: {fitness[i]:F4}");
+                    Console.WriteLine($"Run {i}: Achieved fitness: {fitness[i]:F4}");
                 }
             }
 
@@ -306,18 +311,18 @@ namespace ENTM.Base
             double result = 0;
             if (runs > 1)
             {
-                result = Utilities.Mean(fitnessInfos);
-                double sd = Utilities.StandartDeviation(fitnessInfos);
+                result = Utilities.Mean(fitness);
+                double sd = Utilities.StandartDeviation(fitness);
                 //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
                 //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
                 _logger.Info($"Done. Average fitness: {result:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
                 Console.WriteLine($"Done. Average fitness: {result:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
             } else
             {
-                result = fitnessInfos[0];
+                result = fitness[0];
             }
 
-            return new FitnessInfo(result, 0);
+            return result;
         }
 
         public void AbortCurrentExperiment()
@@ -327,10 +332,7 @@ namespace ENTM.Base
 
         public void Terminate()
         {
-            if (_ea != null)
-            {
-                _ea.Terminate();
-            }
+            _ea?.Terminate();
         }
 
         private void PrintEAStats()
@@ -654,7 +656,7 @@ namespace ENTM.Base
 
             _ea.Stop();
 
-            List<NeatGenome> seedList = _listEvaluator.Archive;
+            List<NeatGenome> seedList = _listEvaluator.NoveltyArchive;
             _logger.Info($"Creating seeded EA from novelty archive (size {seedList.Count})...");
 
             _ea = CreateEvolutionAlgorithm(_populationSize, _ea.CurrentGeneration, seedList);

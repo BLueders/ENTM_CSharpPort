@@ -146,6 +146,9 @@
     <Content Include="Config\copytask-generalization\copytask.config.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Config\copytask-default.config.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Config\copytask1.txt" />
     <Content Include="Config\SeasonTask\seasontask-5steps-noveltysearch.config.xml">
       <SubType>Designer</SubType>
@@ -154,7 +157,7 @@
     <Content Include="Config\xor.config.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Config\copytask.config.xml">
+    <Content Include="Config\copytask-moea.config.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Config\seasontask.config.xml" />

@@ -25,30 +25,6 @@ namespace ENTM.Base
 
         public abstract void Initialize(XmlElement properties);
 
-        /// <summary>
-        /// Override this if we need to do something at the beginning of a new evaluation
-        /// </summary>
-        protected virtual void OnEvaluationStart()
-        {
-            
-        }
-
-        /// <summary>
-        /// If we need to do some initialization, like change the parameters before testing a phenome, we can override this and do it here
-        /// </summary>
-        protected virtual void SetupTest()
-        {
-
-        }
-
-        /// <summary>
-        /// Return the evaluator to its original state after a test
-        /// </summary>
-        protected virtual void TearDownTest()
-        {
-
-        }
-
         public abstract int Iterations { get; }
         public abstract int MaxScore { get; }
 
@@ -61,7 +37,9 @@ namespace ENTM.Base
         public abstract int NoveltyVectorLength { get; }
         public abstract int MinimumCriteriaLength { get; }
 
-        public abstract EvaluationInfo Evaluate(TController controller, int iterations, bool record);
+        protected abstract void EvaluateObjective(TController controller, int iterations, ref EvaluationInfo evaluation);
+        protected abstract void EvaluateNovelty(TController controller, ref EvaluationInfo evaluation);
+        protected abstract void EvaluateRecord(TController controller, ref EvaluationInfo evaluation);
 
         private static readonly object _lockEnvironment = new object();
         private static readonly object _lockController = new object();
@@ -117,16 +95,78 @@ namespace ENTM.Base
 
 
         /// <summary>
+        /// Override this if we need to do something at the beginning of a new objective evaluation
+        /// </summary>
+        protected virtual void OnObjectiveEvaluationStart()
+        {
+
+        }
+
+        /// <summary>
+        /// Override this if we need to do something at the beginning of a new novelty evaluation
+        /// </summary>
+        protected virtual void OnNoveltyEvaluationStart()
+        {
+
+        }
+
+        /// <summary>
+        /// If we need to do some initialization, like change the parameters before testing a phenome, we can override this and do it here
+        /// </summary>
+        protected virtual void SetupTest()
+        {
+
+        }
+
+        /// <summary>
+        /// Return the evaluator to its original state after a test
+        /// </summary>
+        protected virtual void TearDownTest()
+        {
+
+        }
+
+        /// <summary>
         /// Main evaluation loop. Called from EA. Runs on separate / multiple threads.
         /// </summary>
         public EvaluationInfo Evaluate(IBlackBox phenome)
         {
-            OnEvaluationStart();
+            // Register the phenome
+            Controller.Phenome = phenome;
 
-            EvaluationInfo evaluation = Evaluate(phenome, Iterations, false);
+            // Register controller to environment. Rarely used, since the environment usually does not need to know about the controller
+            Environment.Controller = Controller;
 
+            EvaluationInfo evaluation = new EvaluationInfo();
+
+            // Notify subclasses that the objective evaluation is about to start
+            OnObjectiveEvaluationStart();
+
+            // Evaluate objective!
+            EvaluateObjective(Controller, Iterations, ref evaluation);
+
+            if (NoveltySearchEnabled && NoveltySearchParameters != null)
+            {
+                Controller.NoveltySearch.ScoreNovelty = NoveltySearchEnabled;
+                Controller.NoveltySearch.VectorMode = NoveltySearchParameters.VectorMode;
+                Controller.NoveltySearch.NoveltyVectorDimensions = NoveltyVectorDimensions;
+                Controller.NoveltySearch.NoveltyVectorLength = NoveltyVectorLength;
+                Controller.NoveltySearch.MinimumCriteriaLength = MinimumCriteriaLength;
+
+                // Notify subclasses that the novelty evaluation is about to start
+                OnNoveltyEvaluationStart();
+
+                // Evaluate novelty!
+                EvaluateNovelty(Controller, ref evaluation);
+            }
+
+            // Unregister the phenome
+            Controller.Phenome = null;
+
+            // Increment evaluation count
             _evaluationCount++;
 
+            // Check if the task has been solved
             if (evaluation.ObjectiveFitness >= MaxScore * .999f)
             {
                 _stopConditionSatisfied = true;
@@ -136,7 +176,7 @@ namespace ENTM.Base
         }
 
         /// <summary>
-        /// Evaluate a single phenome only once. Use this to test a champion. Runs on the main thread.
+        /// Evaluate a single phenome. Use this to test a champion. Runs on the main thread.
         /// </summary>
         /// <param name="phenome">The phenome to be tested</param>
         /// <param name="iterations">Number of evaluations</param>
@@ -146,34 +186,13 @@ namespace ENTM.Base
         {
             SetupTest();
 
-            EvaluationInfo evaluation = Evaluate(phenome, iterations, true);
+            Controller.Phenome = phenome;
+
+            EvaluationInfo evaluation = new EvaluationInfo();
+            EvaluateRecord(Controller, ref evaluation);
 
             TearDownTest();
 
-            return evaluation;
-        }
-
-        private EvaluationInfo Evaluate(IBlackBox phenome, int iterations, bool record)
-        {
-            // Register the phenome
-            Controller.Phenome = phenome;
-
-            if (NoveltySearchParameters != null)
-            {
-                Controller.NoveltySearch.ScoreNovelty = NoveltySearchEnabled;
-                Controller.NoveltySearch.VectorMode = NoveltySearchParameters.VectorMode;
-                Controller.NoveltySearch.NoveltyVectorDimensions = NoveltyVectorDimensions;
-                Controller.NoveltySearch.NoveltyVectorLength = NoveltyVectorLength;
-                Controller.NoveltySearch.MinimumCriteriaLength = MinimumCriteriaLength;
-            }
-
-            Environment.ResetAll();
-            Environment.Controller = Controller;
-
-            // Evaluate the controller / phenome
-            EvaluationInfo evaluation = Evaluate(Controller, iterations, record);
-
-            // Unregister the phenome
             Controller.Phenome = null;
 
             return evaluation;

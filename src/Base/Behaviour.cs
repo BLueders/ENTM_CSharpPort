@@ -29,7 +29,7 @@ namespace ENTM.Base
 
             Objectives = new double[objectives];
 
-            Dominates = new List<IMultiObjectiveBehaviour>();
+            Reset();
         }
 
         // If this behaviour has been deemed non-viable
@@ -74,8 +74,17 @@ namespace ENTM.Base
         public double[] Objectives { get; set; }
         public int Rank { get; set; }
         public double CrowdingDistance { get; set; }
-        public IList<IMultiObjectiveBehaviour> Dominates { get; }
+        public IList<IMultiObjectiveBehaviour> Dominates { get; set; }
         public int DominatedCount { get; set; }
+
+        public void Reset()
+        {
+            MultiObjectiveScore = 0;
+            Dominates = new List<IMultiObjectiveBehaviour>();
+            Rank = 0;
+            CrowdingDistance = 0;
+            DominatedCount = 0;
+        }
 
         #endregion
 

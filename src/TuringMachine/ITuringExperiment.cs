@@ -20,9 +20,10 @@ namespace ENTM.Experiments
 
         void StartStopEA();
     
-        FitnessInfo TestCurrentChampion();
-        FitnessInfo TestSavedChampion(string xmlChampion);
-        FitnessInfo TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings);
+        double TestCurrentChampion();
+        double TestCurrentChampion(int runs);
+        double TestSavedChampion(string xmlChampion);
+        double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings);
         void TestCurrentPopulation();
 
         void AbortCurrentExperiment();

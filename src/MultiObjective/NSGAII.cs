@@ -22,7 +22,6 @@ namespace ENTM.MultiObjective
         private List<IMultiObjectiveBehaviour> _population;
         private int _count;
         private int _objectives;
-        private int _maxRank;
 
         public void Score(IList<IMultiObjectiveBehaviour> behaviours)
         {
@@ -44,6 +43,9 @@ namespace ENTM.MultiObjective
 
                 // Score the individuals
                 b.MultiObjectiveScore = (double) i / (_count - 1);
+
+                // Reset the behaviour to remove any references, since the object might be cached in the novelty archive
+                b.Reset();
             }
 
             _timer.Stop();
@@ -162,8 +164,6 @@ namespace ENTM.MultiObjective
                 // Increment rank
                 currentRank++;
             }
-
-            _maxRank = currentRank - 1;
         }
 
         /// <summary>
