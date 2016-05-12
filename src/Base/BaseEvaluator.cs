@@ -206,10 +206,15 @@ namespace ENTM.Base
         {
             Controller.Phenome = phenome;
 
+            bool novelty = Controller.NoveltySearch.ScoreNovelty;
+            Controller.NoveltySearch.ScoreNovelty = false;
+
             EvaluationInfo evaluation = new EvaluationInfo();
             EvaluateRecord(Controller, iterations, ref evaluation);
 
             TearDownTest();
+
+            Controller.NoveltySearch.ScoreNovelty = novelty;
 
             Controller.Phenome = null;
 
