@@ -1,10 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using log4net;
 
 namespace ENTM.Distance
 {
     public abstract class Knn
     {
+        protected readonly ILog _log = LogManager.GetLogger("KNN");
+
+
         public interface INeighbour
         {
             double[][] KnnVectors { get; }
@@ -47,6 +51,13 @@ namespace ENTM.Distance
         public double AverageDistToKnn(INeighbour neighbour, int k)
         {
             double[] neighbourhood = _neighbourhoods[neighbour];
+
+            if (k > neighbourhood.Length)
+            {
+                _log.Warn($"K was larger than neighbourhood size for KNN (K = {k}, size = {neighbourhood.Length}");
+                k = neighbourhood.Length;
+            }
+
             double total = 0;
             for (int i = 0; i < k; i++)
             {

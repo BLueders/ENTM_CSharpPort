@@ -45,7 +45,7 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>5</M>
+    <M>19</M>
 
     <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
     <MinSimilarityToJump>0.5</MinSimilarityToJump>
@@ -85,7 +85,7 @@
     <RandomSeed>0</RandomSeed>
 
     <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>2</VectorSize>
+    <VectorSize>16</VectorSize>
 
     <!-- Maximum length of the sequence of bit vectors. 
          If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.

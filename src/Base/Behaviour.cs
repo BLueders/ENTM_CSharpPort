@@ -79,7 +79,6 @@ namespace ENTM.Base
 
         public void Reset()
         {
-            MultiObjectiveScore = 0;
             Dominates = new List<IMultiObjectiveBehaviour>();
             Rank = 0;
             CrowdingDistance = 0;

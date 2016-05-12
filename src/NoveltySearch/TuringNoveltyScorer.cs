@@ -68,8 +68,12 @@ namespace ENTM.NoveltySearch
             _generation++;
 
             // Set of combined behaviours. Because of elitism, the same behaviour could appear twice
-            HashSet<Behaviour<TGenome>> combinedBehaviours = new HashSet<Behaviour<TGenome>>(_archive);
-            combinedBehaviours.UnionWith(behaviours);
+            HashSet<Behaviour<TGenome>> combinedBehaviours = new HashSet<Behaviour<TGenome>>(behaviours);
+
+            if (_params.EnableArchiveComparison)
+            {
+                combinedBehaviours.UnionWith(_archive);
+            }
 
             KnnMultiDimensional knnMultiDimensional = KnnMultiDimensional.Create(combinedBehaviours.ToArray());
 

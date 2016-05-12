@@ -20,7 +20,7 @@
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>2000</MaxGenerations>
+  <MaxGenerations>2500</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -135,10 +135,13 @@
 
     <!-- Switch to Objective search if the Objective score has reached this value. -->
     <ObjectiveScoreThreshold>.9</ObjectiveScoreThreshold>
+
+    <!-- Whether or not behaviours must be compared with the historical archive -->
+    <EnableArchiveComparison>true</EnableArchiveComparison>
     
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
     <ArchiveLimit>500</ArchiveLimit>
-
+    
     <!-- PMin up adjustment factor-->
     <PMinAdjustUp>1.05</PMinAdjustUp>
 

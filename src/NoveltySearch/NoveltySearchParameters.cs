@@ -13,6 +13,7 @@ namespace ENTM.NoveltySearch
         public bool Enabled;
         public NoveltyVectorMode VectorMode;
         public double PMin;
+        public bool EnableArchiveComparison;
         public int ArchiveLimit;
         public int MaxNoveltySearchGenerations;
         public double PMinLowerThreshold;
@@ -32,6 +33,7 @@ namespace ENTM.NoveltySearch
 
             props.Enabled = XmlUtils.GetValueAsBool(xmlConfig, "Enabled");
             props.PMin = XmlUtils.GetValueAsDouble(xmlConfig, "PMin");
+            props.EnableArchiveComparison = XmlUtils.TryGetValueAsBool(xmlConfig, "EnableArchiveComparison") ?? true;
             props.ArchiveLimit = XmlUtils.GetValueAsInt(xmlConfig, "ArchiveLimit");
             props.MaxNoveltySearchGenerations = XmlUtils.GetValueAsInt(xmlConfig, "MaxNoveltySearchGenerations");
             props.PMinLowerThreshold = XmlUtils.GetValueAsDouble(xmlConfig, "PMinLowerThreshold");
