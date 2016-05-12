@@ -38,7 +38,7 @@ namespace ENTM.MultiObjective
         /// the the evolutionary algorithm search should stop. This property's value can remain false
         /// to allow the algorithm to run indefinitely.
         /// </summary>
-        bool StopConditionSatisfied { get; }
+        bool StopConditionSatisfied { get; set; }
 
         /// <summary>
         /// Evaluate the provided phenome and return its evaluation info

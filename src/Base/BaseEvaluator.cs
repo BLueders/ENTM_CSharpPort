@@ -4,6 +4,7 @@ using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
 using SharpNeat.Phenomes;
+using log4net;
 
 namespace ENTM.Base
 {
@@ -11,11 +12,12 @@ namespace ENTM.Base
         where TEnvironment : IEnvironment
         where TController : IController
     {
+        protected readonly ILog _logger = LogManager.GetLogger("Evaluator");
+
         protected ulong _evaluationCount = 0;
         public ulong EvaluationCount => _evaluationCount;
 
-        protected bool _stopConditionSatisfied = false;
-        public bool StopConditionSatisfied => _stopConditionSatisfied;
+        public bool StopConditionSatisfied { get; set; }
 
         public bool NoveltySearchEnabled { get; set; }
 
@@ -177,7 +179,8 @@ namespace ENTM.Base
             // Check if the task has been solved
             if (evaluation.ObjectiveFitness >= MaxScore * .999f)
             {
-                _stopConditionSatisfied = true;
+                _logger.Info($"Max fitness reached: {evaluation.ObjectiveFitness:F4}");
+                StopConditionSatisfied = true;
             }
 
             return evaluation;

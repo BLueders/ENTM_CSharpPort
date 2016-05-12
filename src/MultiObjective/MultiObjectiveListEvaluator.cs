@@ -93,7 +93,11 @@ namespace ENTM.MultiObjective
         public bool MultiObjectiveEnabled
         {
             get { return _multiObjectiveEnabled; }
-            set { _multiObjectiveEnabled = value; }
+            set
+            {
+                _multiObjectiveEnabled = value;
+                _reevaluateOnce = true;
+            }
         }
 
 

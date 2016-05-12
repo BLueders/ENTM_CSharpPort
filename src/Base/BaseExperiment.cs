@@ -534,13 +534,26 @@ namespace ENTM.Base
                 }
             }
 
+            
 
             // Check if the experiment has been aborted, the maximum generations count have been reached, or if the maximum fitness has been reached
             if (_abort || (_maxGenerations > 0 && _ea.CurrentGeneration >= _maxGenerations) || _evaluator.StopConditionSatisfied)
             {
                 PrintEAStats();
-                ExperimentCompleted = true;
-                _ea.RequestPause();
+
+                if (MultiObjectiveEnabled && _evaluator.StopConditionSatisfied)
+                {
+                    // If the max objective fitness has been found when running multi objective, we must run an objective search, 
+                    // since the champion is not necessarily the objective champion. Another objective champion could be ranked higher.
+                    MultiObjectiveEnabled = false;
+                    NoveltySearchEnabled = false;
+                    _evaluator.StopConditionSatisfied = false;
+                    _ea.StartContinue();
+                } else
+                {
+                    ExperimentCompleted = true;
+                    _ea.RequestPause();
+                }
             }
 
             // Save the best genome to file
