@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
-using ENTM.Base;
 using ENTM.Replay;
 using SharpNeat.Core;
 using SharpNeat.EvolutionAlgorithms;
 using SharpNeat.Genomes.Neat;
 using SharpNeat.Phenomes;
 
-namespace ENTM.Experiments
+namespace ENTM.Base
 {
-    interface ITuringExperiment
+    interface IExperiment
     {
         Recorder Recorder { get; }
 
@@ -21,9 +20,10 @@ namespace ENTM.Experiments
         void StartStopEA();
     
         double TestCurrentChampion();
-        double TestCurrentChampion(int runs);
+        double TestCurrentChampion(int iterations);
+        double TestCurrentChampionGeneralization(int iterations);
         double TestSavedChampion(string xmlChampion);
-        double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings);
+        double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings, bool generalize);
         void TestCurrentPopulation();
 
         void AbortCurrentExperiment();

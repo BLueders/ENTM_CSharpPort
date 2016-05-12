@@ -55,7 +55,7 @@
     <Compile Include="Base\DefaultController.cs" />
     <Compile Include="Distance\Knn.cs" />
     <Compile Include="Distance\KnnSingleDimension.cs" />
-    <Compile Include="TuringMachine\ITuringExperiment.cs" />
+    <Compile Include="Base\IExperiment.cs" />
     <Compile Include="Experiments\SeasonTask\TwoStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\OneStepSeasonTaskEnviroment.cs" />
     <Compile Include="Experiments\SeasonTask\MultiStepSeasonTaskEnviroment.cs" />

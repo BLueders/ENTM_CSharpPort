@@ -17,7 +17,7 @@ namespace ENTM.Experiments.CopyTask
         private readonly int _vectorSize;
 
         // The maximum length that the sequence can be(if random), else the actual sequence length.
-        private readonly int _maxSequenceLength;
+        public int MaxSequenceLength { get; set; }
 
         public bool EliminiateZeroVectors { get; set; }
 
@@ -28,8 +28,6 @@ namespace ENTM.Experiments.CopyTask
 
         // Current fitness score
         private double _score;
-
-
 
         public override IController Controller { get; set; }
 
@@ -44,9 +42,9 @@ namespace ENTM.Experiments.CopyTask
         /// </summary>
         public override int OutputCount => _vectorSize + 2;
 
-        public override double CurrentScore => _score * ((double)_maxSequenceLength / (double) Sequence.Length);
+        public override double CurrentScore => _score * ((double)MaxSequenceLength / (double) Sequence.Length);
 
-        public override double MaxScore => _maxSequenceLength;
+        public override double MaxScore => MaxSequenceLength;
 
         public override double NormalizedScore => CurrentScore / MaxScore;
 
@@ -63,7 +61,7 @@ namespace ENTM.Experiments.CopyTask
         /// <summary>
         /// The maximum amount of timesteps in a non random environment
         /// </summary>
-        public override int MaxTimeSteps => 2 * _maxSequenceLength + 2 + 1;
+        public override int MaxTimeSteps => 2 * MaxSequenceLength + 2 + 1;
 
         public sealed override int RandomSeed { get; set; }
 
@@ -71,7 +69,7 @@ namespace ENTM.Experiments.CopyTask
         public CopyTaskEnvironment(CopyTaskProperties props)
         {
             _vectorSize = props.VectorSize;
-            _maxSequenceLength = props.MaxSequenceLength;
+            MaxSequenceLength = props.MaxSequenceLength;
             LengthRule = props.LengthRule;
             _fitnessFunction = props.FitnessFunction;
             RandomSeed = props.RandomSeed;
@@ -93,11 +91,11 @@ namespace ENTM.Experiments.CopyTask
             switch (LengthRule)
             {
                 case LengthRule.Fixed:
-                    length = _maxSequenceLength;
+                    length = MaxSequenceLength;
                     break;
 
                 case LengthRule.Random:
-                    length = ThreadSafeRandom.Next(0, _maxSequenceLength) + 1;
+                    length = ThreadSafeRandom.Next(0, MaxSequenceLength) + 1;
                     //length = random.Next(0, _maxSequenceLength) + 1;
 
                     break;

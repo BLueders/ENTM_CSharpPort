@@ -50,7 +50,7 @@ namespace ENTM.Experiments.Xor
             throw new System.NotImplementedException();
         }
 
-        protected override void EvaluateRecord(DefaultController controller, ref EvaluationInfo evaluation)
+        protected override void EvaluateRecord(DefaultController controller, int iterations, ref EvaluationInfo evaluation)
         {
             Reset();
 

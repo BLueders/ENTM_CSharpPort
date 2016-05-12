@@ -190,6 +190,10 @@ namespace SharpNeat.EvolutionAlgorithms
             {   // Already running. Log a warning.
                 __log.Warn("StartContinue() called but algorithm is already running.");
             }
+            else if (RunState.Terminated == _runState)
+            {
+                __log.Warn("StartContinue() called but algorithm has been terminated.");
+            }
             else
             {
                 throw new SharpNeatException(string.Format("StartContinue() call failed. Unexpected RunState [{0}]", _runState));
@@ -204,6 +208,9 @@ namespace SharpNeat.EvolutionAlgorithms
             RequestPause();
         }
 
+        /// <summary>
+        /// Terminate the algorithm thread.
+        /// </summary>
         public void Terminate()
         {
             _terminateRequestFlag = true;
@@ -289,6 +296,7 @@ namespace SharpNeat.EvolutionAlgorithms
 
                     if (_terminateRequestFlag)
                     {
+                        _runState = RunState.Terminated;
                         break;
                     }
                 }

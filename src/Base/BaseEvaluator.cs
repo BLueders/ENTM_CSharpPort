@@ -39,7 +39,7 @@ namespace ENTM.Base
 
         protected abstract void EvaluateObjective(TController controller, int iterations, ref EvaluationInfo evaluation);
         protected abstract void EvaluateNovelty(TController controller, ref EvaluationInfo evaluation);
-        protected abstract void EvaluateRecord(TController controller, ref EvaluationInfo evaluation);
+        protected abstract void EvaluateRecord(TController controller, int iterations, ref EvaluationInfo evaluation);
 
         private static readonly object _lockEnvironment = new object();
         private static readonly object _lockController = new object();
@@ -119,7 +119,15 @@ namespace ENTM.Base
         }
 
         /// <summary>
-        /// Return the evaluator to its original state after a test
+        /// Override to setup the environment for generalization testing. Generally this implies testing a longer sequence or lifetime
+        /// </summary>
+        protected virtual void SetupGeneralizationTest()
+        {
+
+        }
+
+        /// <summary>
+        /// Override to return the evaluator to its original state after a test (includes generalization tests)
         /// </summary>
         protected virtual void TearDownTest()
         {
@@ -185,11 +193,21 @@ namespace ENTM.Base
         public EvaluationInfo TestPhenome(IBlackBox phenome, int iterations)
         {
             SetupTest();
+            return Test(phenome, iterations);
+        }
 
+        public EvaluationInfo TestPhenomeGeneralization(IBlackBox phenome, int iterations)
+        {
+            SetupGeneralizationTest();
+            return Test(phenome, iterations);
+        }
+
+        private EvaluationInfo Test(IBlackBox phenome, int iterations)
+        {
             Controller.Phenome = phenome;
 
             EvaluationInfo evaluation = new EvaluationInfo();
-            EvaluateRecord(Controller, ref evaluation);
+            EvaluateRecord(Controller, iterations, ref evaluation);
 
             TearDownTest();
 

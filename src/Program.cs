@@ -13,6 +13,7 @@ using SharpNeat.Domains;
 using ENTM.Experiments;
 using System.Threading;
 using ENTM.Base;
+using ENTM.TuringMachine;
 using log4net;
 
 namespace ENTM
@@ -34,7 +35,7 @@ namespace ENTM
         private static bool _terminated = false;
         private static Type _experimentType;
         private static  XmlElement[] _configs;
-        private static ITuringExperiment _experiment;
+        private static IExperiment _experiment;
         private static readonly string _identifier = string.Format($"{DateTime.Now.ToString("yyyyMMdd-HHmmss")}_{Guid.NewGuid().ToString().Substring(0, 8)}");
 
         private static bool _didStartExperiment = false;
@@ -222,7 +223,7 @@ namespace ENTM
             _experimentType = assembly.GetType(XmlUtils.GetValueAsString(config, "ExperimentClass"), false, false);
             _experiementCount = XmlUtils.TryGetValueAsInt(config, "ExperimentCount") ?? 1;
 
-            _experiment = (ITuringExperiment) Activator.CreateInstance(_experimentType);
+            _experiment = (IExperiment) Activator.CreateInstance(_experimentType);
 
             string name = XmlUtils.GetValueAsString(config, "Name");
 
@@ -265,6 +266,7 @@ namespace ENTM
             _logger.Info($"Time spent: {timeSpent}");
 
             double testedFitness = _experiment.TestCurrentChampion(10);
+            double testedGenFitness = _experiment.TestCurrentChampionGeneralization(10);
 
             string resultsFile = $"{e.Directory}{RESULTS_FILE}";
             bool writeHeader = !File.Exists(resultsFile);
@@ -273,12 +275,12 @@ namespace ENTM
             {
                 if (writeHeader)
                 {
-                    sw.WriteLine("Experiment,Comment,Start Time,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation,Tested Fitness");
+                    sw.WriteLine("Experiment,Comment,Start Time,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation,Tested Fitness,Tested Generalization Fitness");
                 }
 
                 sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0},\"{1}\",{9},{2},{3},{4},{5:F4},{6:F0},{7},{8},{10}",
-                    e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen, _experimentStartedTime.ToString("ddMMyyyy-HHmmss"), testedFitness));
+                    "{0},\"{1}\",{9},{2},{3},{4},{5:F4},{6:F0},{7},{8},{10:F4},{11:F4}",
+                    e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen, _experimentStartedTime.ToString("ddMMyyyy-HHmmss"), testedFitness, testedGenFitness));
             }
 
             NextExperiment();
@@ -348,10 +350,12 @@ namespace ENTM
             _dirStack.Clear();
 
             string[] champions = Browse();
-            int runs = GetIntegerConsoleInput("Enter number of test runs");
-            int iterations = GetIntegerConsoleInput("Enter number of iterations per run");
-            bool record = GetBoolConsoleInput("Create recordings for each run? (y/n)");
-            _experiment.TestSavedChampion(champions[0], iterations, runs, record);
+            int runs = GetIntegerConsoleInput("Enter number of test runs:");
+            int iterations = GetIntegerConsoleInput("Enter number of iterations per run:");
+            bool record = GetBoolConsoleInput("Create recordings for each run? (y/n):");
+            bool generalize = GetBoolConsoleInput("Do a generalization test? (y/n):");
+
+            _experiment.TestSavedChampion(champions[0], iterations, runs, record, generalize);
         }
 
         private static void StartStop()
@@ -382,6 +386,11 @@ namespace ENTM
         private static void TestCurrentChampion()
         {
             _experiment.TestCurrentChampion();
+        }
+
+        private static void TestCurrentChampionGeneralization()
+        {
+            _experiment.TestCurrentChampionGeneralization(1);
         }
 
         private static void TestCurrentPopulation()
@@ -421,6 +430,7 @@ namespace ENTM
                 new InputOption(ConsoleKey.D, "Toggle Debug (only available for debug builds)", ToggleDebug);
                 new InputOption(ConsoleKey.N, "Toggle Novelty Search", ToggleNoveltySearch);
                 new InputOption(ConsoleKey.C, "Test current champion", TestCurrentChampion);
+                new InputOption(ConsoleKey.G, "Test current champion generalization", TestCurrentChampionGeneralization);
                 new InputOption(ConsoleKey.P, "Test current population", TestCurrentPopulation);
                 new InputOption(ConsoleKey.S, "Test saved champion (from xml)", LoadGenomeFromXml);
                 new InputOption(ConsoleKey.A, "Abort current experiment and continue with the next, if any", AbortCurrentExperiment);

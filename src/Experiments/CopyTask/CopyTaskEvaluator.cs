@@ -42,10 +42,17 @@ namespace ENTM.Experiments.CopyTask
             Environment.RandomSeed = System.Environment.TickCount;
         }
 
+        protected override void SetupGeneralizationTest()
+        {
+            SetupTest();
+            Environment.MaxSequenceLength = 100;
+        }
+
         protected override void TearDownTest()
         {
             Environment.LengthRule = _copyTaskProps.LengthRule;
             Environment.RandomSeed = _copyTaskProps.RandomSeed;
+            Environment.MaxSequenceLength = _copyTaskProps.MaxSequenceLength;
         }
 
         public override int MaxScore => 1;

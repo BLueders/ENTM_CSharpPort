@@ -59,6 +59,13 @@
     <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
     <ShiftMode>Multiple</ShiftMode>
 
+    <!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
+        This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
+    <UseMemoryExpandLocation>false</UseMemoryExpandLocation>
+
+    <!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
+    <DidWriteThreshold>0.9</DidWriteThreshold>
+
     <!-- "Interpolate" or "Overwrite". 
         Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
         Overwrite: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
@@ -75,7 +82,7 @@
     <Iterations>50</Iterations>
 
     <!-- The seed used for random environment generations -->
-    <RandomSeed>-1</RandomSeed>
+    <RandomSeed>0</RandomSeed>
 
     <!-- The size of the bit vectors to be copied. -->
     <VectorSize>2</VectorSize>
@@ -208,7 +215,7 @@
     <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.1</ElitismProportion>
+    <ElitismProportion>0.02</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->

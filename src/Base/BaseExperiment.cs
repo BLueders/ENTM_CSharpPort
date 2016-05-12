@@ -35,6 +35,7 @@ using ENTM.Experiments;
 using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
+using ENTM.TuringMachine;
 using ENTM.Utility;
 using log4net;
 using SharpNeat.Core;
@@ -59,7 +60,7 @@ namespace ENTM.Base
     /// evaluations) then you probably want to implement your own INeatExperiment
     /// class.
     /// </summary>
-    public abstract class BaseExperiment<TEvaluator, TEnviroment, TController> : ITuringExperiment
+    public abstract class BaseExperiment<TEvaluator, TEnviroment, TController> : IExperiment
         where TEnviroment : IEnvironment
         where TEvaluator : BaseEvaluator<TEnviroment, TController>, new()
         where TController : IController
@@ -68,7 +69,9 @@ namespace ENTM.Base
 
         const string CHAMPION_FILE = "champion{0:D4}.xml";
         const string RECORDING_FILE = "recording{0:D4}_{1}.png";
+        const string RECORDING_GENERALIZATION_FILE = "recording_gen{0:D4}_{1}.png";
         const string TAPE_FILE = "tape{0:D4}_{1}.png";
+        const string TAPE_GENERALIZATION_FILE = "tape_gen{0:D4}_{1}.png";
         const string DATA_FILE = "data{0:D4}.csv";
 
         // Used for folder structure
@@ -91,9 +94,19 @@ namespace ENTM.Base
             return $"{CurrentDirectory}{string.Format(RECORDING_FILE, _number, id)}";
         }
 
+        private string RecordingGeneralizationFile(string id)
+        {
+            return $"{CurrentDirectory}{string.Format(RECORDING_GENERALIZATION_FILE, _number, id)}";
+        }
+
         private string TapeFile(string id)
         {
             return $"{CurrentDirectory}{string.Format(TAPE_FILE, _number, id)}";
+        }
+
+        private string TapeGeneralizationFile(string id)
+        {
+            return $"{CurrentDirectory}{string.Format(TAPE_GENERALIZATION_FILE, _number, id)}";
         }
 
         private NeatEvolutionAlgorithmParameters _eaParams;
@@ -197,10 +210,20 @@ namespace ENTM.Base
         /// </summary>
         public double TestCurrentChampion()
         {
-            return TestCurrentChampion(1);
+            return TestCurrentChampion(1, false);
         }
 
-        public double TestCurrentChampion(int runs)
+        public double TestCurrentChampion(int iterations)
+        {
+            return TestCurrentChampion(iterations, false);
+        }
+
+        public double TestCurrentChampionGeneralization(int iterations)
+        {
+            return TestCurrentChampion(iterations, true);
+        }
+
+        private double TestCurrentChampion(int iterations, bool generalize)
         {
             if (_ea?.CurrentChampGenome == null)
             {
@@ -208,12 +231,12 @@ namespace ENTM.Base
                 return 0d;
             }
 
-            return TestGenome(_ea.CurrentChampGenome, 1, runs, true);
+            return TestGenome(_ea.CurrentChampGenome, iterations, 1, true, generalize);
         }
 
         public void TestCurrentPopulation()
         {
-            if (_ea == null)
+            if (_ea?.GenomeList == null || _ea?.GenomeList.Count == 0)
             {
                 Console.WriteLine("No current population");
                 return;
@@ -223,16 +246,16 @@ namespace ENTM.Base
 
             foreach (NeatGenome genome in _ea.GenomeList)
             {
-                TestGenome(genome, 1, 1, true);
+                TestGenome(genome, 1, 1, true, false);
             }
         }
 
         public double TestSavedChampion(string xmlPath)
         {
-            return TestSavedChampion(xmlPath, 1, 1, true);
+            return TestSavedChampion(xmlPath, 1, 1, true, false);
         }
 
-        public double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings)
+        public double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings, bool generalize)
         {
             // Load genome from the xml file
             XmlDocument xmlChampion = new XmlDocument();
@@ -243,11 +266,10 @@ namespace ENTM.Base
             // Create and set the genome factory
             championGenome.GenomeFactory = CreateGenomeFactory() as NeatGenomeFactory;
 
-
-            return TestGenome(championGenome, iterations, runs, createRecordings);
+            return TestGenome(championGenome, iterations, runs, createRecordings, generalize);
         }
 
-        private double TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings)
+        private double TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings, bool generalize)
         {
             if (_ea != null && _ea.RunState == RunState.Running)
             {
@@ -263,7 +285,7 @@ namespace ENTM.Base
             //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
             //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
             Debug.On = true;
-            _logger.Info($"Testing phenome (ID: {genome.Id})...");
+            _logger.Info($"Testing phenome {(generalize ? "generalization " : "")}(ID: {genome.Id})...");
             Console.WriteLine($"Testing phenome (ID: {genome.Id})...");
 
             double[] fitness = new double[runs];
@@ -275,26 +297,44 @@ namespace ENTM.Base
             double maxFitness = double.MinValue;
             for (int i = 0; i < runs; i++)
             {
-                fitness[i] = _evaluator.TestPhenome(phenome, iterations).ObjectiveFitness;
+                if (generalize)
+                {
+                    fitness[i] = _evaluator.TestPhenomeGeneralization(phenome, iterations).ObjectiveFitness;
+                }
+                else
+                {
+                    fitness[i] = _evaluator.TestPhenome(phenome, iterations).ObjectiveFitness;
+                }
+
                 if (fitness[i] < minFitness) {
                     minFitness = fitness[i];
                 }
+
                 if (fitness[i] > maxFitness)
                 {
                     maxFitness = fitness[i];
                 }
+
                 if (createRecordings)
                 {
                     if (Recorder != null)
                     {
+                        string recordingFile = generalize
+                            ? $"{RecordingGeneralizationFile($"{genome.Id}_{i}")}"
+                            : $"{RecordingFile($"{genome.Id}_{i}")}";
+
+                        string tapeFile = generalize
+                            ? $"{TapeGeneralizationFile($"{genome.Id}_{i}")}"
+                            : $"{TapeFile($"{genome.Id}_{i}")}";
+
                         using (Bitmap bmp = Recorder.LifetimeToBitmap())
                         {
-                            bmp.Save($"{RecordingFile($"{genome.Id}_{i}")}", ImageFormat.Png);
+                                bmp.Save(recordingFile, ImageFormat.Png);
                         }
 
                         using (Bitmap bmp = Recorder.TapeToBitmap())
                         {
-                            bmp.Save($"{TapeFile($"{genome.Id}_{i}")}", ImageFormat.Png);
+                            bmp.Save(tapeFile, ImageFormat.Png);
                         }
                     }
                     else
@@ -302,6 +342,7 @@ namespace ENTM.Base
                         _logger.Warn("Recorder was null");
                         break;
                     }
+
                     _logger.Info($"Run {i}: Achieved fitness: {fitness[i]:F4}");
                     Console.WriteLine($"Run {i}: Achieved fitness: {fitness[i]:F4}");
                 }
@@ -550,7 +591,7 @@ namespace ENTM.Base
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        _logger.Warn("ExperimentCompleteEvent listener threw exception: " + ex.Message);
+                        _logger.Warn($"ExperimentCompleteEvent listener threw exception: {ex.Message}", ex);
                     }
                 }
             }
@@ -566,7 +607,7 @@ namespace ENTM.Base
                     catch (Exception ex)
                     {
                         // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                        _logger.Warn("ExperimentPausedEvent listener threw exception: " + ex.Message);
+                        _logger.Warn($"ExperimentPausedEvent listener threw exception: {ex.Message}", ex);
                     }
                 }
             }
@@ -601,7 +642,7 @@ namespace ENTM.Base
                             catch (Exception ex)
                             {
                                 // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                                _logger.Warn("ExperimentResumedEvent listener threw exception: " + ex.Message);
+                                _logger.Warn($"ExperimentResumedEvent listener threw exception: {ex.Message}", ex);
                             }
                         }
                         _ea.StartContinue();
@@ -644,7 +685,7 @@ namespace ENTM.Base
                 catch (Exception ex)
                 {
                     // Catch exceptions thrown by even listeners. This prevents listener exceptions from terminating the algorithm thread.
-                    _logger.Warn("ExperimentStartedEvent listener threw exception: " + ex.Message);
+                    _logger.Warn($"ExperimentStartedEvent listener threw exception: {ex.Message}", ex);
                 }
             }
         }

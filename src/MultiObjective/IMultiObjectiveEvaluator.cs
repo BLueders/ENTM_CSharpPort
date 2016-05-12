@@ -18,6 +18,7 @@
  */
 
 using ENTM.Base;
+using SharpNeat.Phenomes;
 
 namespace ENTM.MultiObjective
 {
@@ -48,5 +49,16 @@ namespace ENTM.MultiObjective
         /// Reset the internal state of the evaluation scheme if any exists.
         /// </summary>
         void Reset();
+
+        /// <summary>
+        /// Test a phenome with this evaluator
+        /// </summary>
+        EvaluationInfo TestPhenome(IBlackBox phenome, int iterations);
+
+
+        /// <summary>
+        /// Test a phenome's ability to generalize with this evaluator
+        /// </summary>
+        EvaluationInfo TestPhenomeGeneralization(IBlackBox phenome, int iterations);
     }
 }

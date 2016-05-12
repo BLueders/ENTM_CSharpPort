@@ -101,36 +101,53 @@ namespace ENTM.TuringMachine
             evaluation.MinimumCriteria = result.MinimumCriteria;
         }
 
-        protected override void EvaluateRecord(TuringController controller, ref EvaluationInfo evaluation)
+        protected override void EvaluateRecord(TuringController controller, int iterations, ref EvaluationInfo evaluation)
         {
-            Reset();
+            double totalScore = 0;
 
-            Recorder = new Recorder();
-            Recorder.Start();
-
-            controller.TuringMachine.RecordTimeSteps = true;
-            Environment.RecordTimeSteps = true;
-
-            Recorder.Record(Environment.InitialTimeStep, controller.TuringMachine.InitialTimeStep);
-
-            double[] enviromentOutput = Environment.InitialObservation;
-
-            // Environment loop
-            while (!Environment.IsTerminated)
+            // Iteration loop
+            for (int i = 0; i < iterations; i++)
             {
-                // Activate the controller with the environment output. 
-                // The turing controller will handle the turing machine I/O
-                double[] environmentInput = controller.ActivateNeuralNetwork(enviromentOutput);
+                Reset();
 
-                // Activate the environment with the output from the controller (NN)
-                enviromentOutput = Environment.PerformAction(environmentInput);
+                // Only record first iterations, as subsequent ones will overwrite
+                if (i == 0)
+                {
+                    Recorder = new Recorder();
+                    Recorder.Start();
 
-                Recorder.Record(Environment.PreviousTimeStep, controller.TuringMachine.PreviousTimeStep);
+                    controller.TuringMachine.RecordTimeSteps = true;
+                    Environment.RecordTimeSteps = true;
+
+                    Recorder.Record(Environment.InitialTimeStep, controller.TuringMachine.InitialTimeStep);
+                }
+
+                double[] enviromentOutput = Environment.InitialObservation;
+
+                // Environment loop
+                while (!Environment.IsTerminated)
+                {
+                    double[] environmentInput = controller.ActivateNeuralNetwork(enviromentOutput);
+
+                    enviromentOutput = Environment.PerformAction(environmentInput);
+
+                    if (i == 0)
+                    {
+                        // Record the state of the environment and turing machine
+                        Recorder.Record(Environment.PreviousTimeStep, controller.TuringMachine.PreviousTimeStep);
+                    }
+                }
+
+                totalScore += Environment.NormalizedScore;
+
+                if (i == 0)
+                {
+                    // Record the final state of the turing machine tape
+                    Recorder.FinalTuringTape = Controller.TuringMachine.TapeValues;
+                }
             }
 
-            Recorder.FinalTuringTape = Controller.TuringMachine.TapeValues;
-
-            evaluation.ObjectiveFitness = Environment.NormalizedScore;
+            evaluation.ObjectiveFitness = Math.Max(0d, totalScore / iterations);
         }
 
         public override int NoveltyVectorDimensions
