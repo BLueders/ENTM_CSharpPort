@@ -271,17 +271,28 @@ namespace ENTM
             string resultsFile = $"{e.Directory}{RESULTS_FILE}";
             bool writeHeader = !File.Exists(resultsFile);
 
-            using (StreamWriter sw = File.AppendText(resultsFile))
+            try
             {
-                if (writeHeader)
+                using (StreamWriter sw = File.AppendText(resultsFile))
                 {
-                    sw.WriteLine("Experiment,Comment,Start Time,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation,Tested Fitness,Tested Generalization Fitness");
-                }
+                    if (writeHeader)
+                    {
+                        sw.WriteLine(
+                            "Experiment,Comment,Start Time,Time,Solved,Generations,Champion Fitness,Champion Complexity,Champion Hidden Nodes,Champion Birth Generation,Tested Fitness,Tested Generalization Fitness");
+                    }
 
-                sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0},\"{1}\",{9},{2},{3},{4},{5:F4},{6:F0},{7},{8},{10:F4},{11:F4}",
-                    e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity, e.ChampHiddenNodes, e.ChampBirthGen, _experimentStartedTime.ToString("ddMMyyyy-HHmmss"), testedFitness, testedGenFitness));
+                    sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                        "{0},\"{1}\",{9},{2},{3},{4},{5:F4},{6:F0},{7},{8},{10:F4},{11:F4}",
+                        e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity,
+                        e.ChampHiddenNodes, e.ChampBirthGen, _experimentStartedTime.ToString("ddMMyyyy-HHmmss"),
+                        testedFitness, testedGenFitness));
+                }
             }
+            catch (IOException ex)
+            {
+                _logger.Warn($"Could not write to results file: {ex.Message}", ex);
+            }
+         
 
             NextExperiment();
         }
