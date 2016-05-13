@@ -9,10 +9,6 @@ namespace ENTM.Experiments.SeasonTask
 
         protected override SeasonTaskEnvironment NewEnvironment()
         {
-            if (_seasonTaskProps.StepsPerFood == 1)
-                return new OneStepSeasonTaskEnviroment(_seasonTaskProps);
-            if (_seasonTaskProps.StepsPerFood == 2)
-                return new TwoStepSeasonTaskEnviroment(_seasonTaskProps);
             return new MultiStepSeasonTaskEnviroment(_seasonTaskProps, _seasonTaskProps.StepsPerFood);
         }
 
@@ -27,11 +23,22 @@ namespace ENTM.Experiments.SeasonTask
             Environment.RandomSeed = System.Environment.TickCount;
         }
 
+        protected override void SetupGeneralizationTest()
+        {
+            base.SetupGeneralizationTest();
+            Environment.DaysMin = 4;
+            Environment.DaysMax = 10;
+            Environment.Years = 20;
+        }
+
         protected override void TearDownTest()
         {
             Environment.RandomSeed = _seasonTaskProps.RandomSeed;
+            Environment.DaysMin = _seasonTaskProps.DaysMin;
+            Environment.DaysMax = _seasonTaskProps.DaysMax;
+            Environment.Years = _seasonTaskProps.Years;
         }
-
+                
         public override int MaxScore => 1;
 
         // Eat or don't eat

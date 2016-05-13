@@ -13,14 +13,14 @@ namespace ENTM.Experiments.SeasonTask
     abstract class SeasonTaskEnvironment : BaseEnvironment
     {
         // Describes how many repetitions of each season there will be
-        protected readonly int _years;
+        public int Years;
 
         // How many different seasons are there each year
-        protected readonly int _seasons;
+        public int Seasons;
 
         // How many different days are there each season
-        protected readonly int _daysMin;
-        protected readonly int _daysMax;
+        public int DaysMin;
+        public int DaysMax;
         protected int _days; 
 
         // How many different foods there are to select from each season
@@ -49,7 +49,7 @@ namespace ENTM.Experiments.SeasonTask
 
         public Food[] Sequence { get; protected set; }
 
-        public int SequenceLength => _years * _seasons * _days * _foodTypes;
+        public int SequenceLength => Years * Seasons * _days * _foodTypes;
 
         public override double CurrentScore => _score * _fitnessFactor;
 
@@ -59,16 +59,16 @@ namespace ENTM.Experiments.SeasonTask
                 if (_ignoreFirstDayOfSeasonInFirstYear)
                 {
                     // do not score first day of each season of the first year, this is where the food is encountered the first time and for learning
-                    return _fitnessFactor * _foodTypes * _days * _seasons * _years - (_fitnessFactor * _seasons * _foodTypes);
+                    return _fitnessFactor * _foodTypes * _days * Seasons * Years - (_fitnessFactor * Seasons * _foodTypes);
                 }
-                return _fitnessFactor*_foodTypes* _days * _seasons*_years;
+                return _fitnessFactor*_foodTypes* _days * Seasons*Years;
             }
         } 
 
         // jk. do not score first day of each season of the first year. There we encounter each food the first time and cant know if its poisonous.
         protected bool ScoreThisStep(int step)
         {
-            bool isFirstDay = step < _foodTypes * _days * _seasons && step % (_foodTypes * _days) < _foodTypes;
+            bool isFirstDay = step < _foodTypes * _days * Seasons && step % (_foodTypes * _days) < _foodTypes;
             if (isFirstDay)
             {
                 int a = 1;
@@ -84,7 +84,7 @@ namespace ENTM.Experiments.SeasonTask
 
         public override IController Controller { get; set; }
         // to deterime if the food was eaten (>0.5) or not (<0.5)
-        public override int OutputCount => _foodTypes * _seasons + 2;
+        public override int OutputCount => _foodTypes * Seasons + 2;
         // one input for each food type each season type 
         // + one reward and + one punishing input to determine if a healthy or poisonous food was eaten.
         public override int InputCount => 1;
@@ -93,10 +93,10 @@ namespace ENTM.Experiments.SeasonTask
 
         public SeasonTaskEnvironment(SeasonTaskProperties props)
         {
-            _years = props.Years;
-            _seasons = props.Seasons;
-            _daysMin = props.DaysMin;
-            _daysMax = props.DaysMax;
+            Years = props.Years;
+            Seasons = props.Seasons;
+            DaysMin = props.DaysMin;
+            DaysMax = props.DaysMax;
             _foodTypes = props.FoodTypes;
             _fitnessFactor = props.FitnessFactor;
             _poisonFoods = props.PoisonFoods;
@@ -118,13 +118,13 @@ namespace ENTM.Experiments.SeasonTask
 
             Debug.DLogHeader("SEASON TASK NEW ITERATION", true);
 
-            _days = SealedRandom.Next(_daysMin, _daysMax + 1);
+            _days = SealedRandom.Next(DaysMin, DaysMax + 1);
             CreateSequence();
 
-            Debug.DLog($"{"Years:",-16} {_years}" +
-            $"\n{"Seasons:",-16} {_seasons}" +
-            $"\n{"DaysMin:",-16} {_daysMin}" +
-            $"\n{"DaysMax:",-16} {_daysMax}" +
+            Debug.DLog($"{"Years:",-16} {Years}" +
+            $"\n{"Seasons:",-16} {Seasons}" +
+            $"\n{"DaysMin:",-16} {DaysMin}" +
+            $"\n{"DaysMax:",-16} {DaysMax}" +
             $"\n{"Foods:",-16} {_foodTypes}" +
             $"\n{"Max score:",-16} {MaxScore}", true);
 
@@ -168,13 +168,13 @@ namespace ENTM.Experiments.SeasonTask
             // if we are going to change which foods are poisonous during sequence, this is where
             LinkedList<int> poisonFoodShufflePositions = GetPoisonousFoodShufflePositions(Sequence.Length);
 
-            for (int i = 0; i < _years; i++)
+            for (int i = 0; i < Years; i++)
             {
-                for (int j = 0; j < _seasons; j++)
+                for (int j = 0; j < Seasons; j++)
                 {
                     for (int k = 0; k < _days; k++)
                     {
-                        int currentDayIndex = i*_seasons* _days * _foodTypes + j* _days * _foodTypes + k*_foodTypes;
+                        int currentDayIndex = i*Seasons* _days * _foodTypes + j* _days * _foodTypes + k*_foodTypes;
                         // shuffle dem poisons
                         if (poisonFoodShufflePositions.Count != 0 && currentDayIndex >= poisonFoodShufflePositions.First.Value)
                         {
@@ -226,7 +226,7 @@ namespace ENTM.Experiments.SeasonTask
         private List<int> GetPoisonousFoodTypes()
         {
             List<int> pFoodTypes = new List<int>();
-            for (int i = 0; i < _seasons; i++)
+            for (int i = 0; i < Seasons; i++)
             {
                 int[] allFoodTypes = new int[_foodTypes];
                 // fill array with all foodTypes
