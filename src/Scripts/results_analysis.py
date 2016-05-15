@@ -35,10 +35,11 @@ print "Found %s results files" % len(results)
 
 with open("analysis.csv", 'w') as output:
     fields = ["Run", "Path", "Comment", "Start time", "Total time spent", "Average time spent", "Experiments", "Solves", "Solve Percentage", 
-              "Mean Generations Solved", "Min Generations Solved", "Max Generations Solved", "Generations Solved Standard Deviation", 
-              "Mean Solved Hidden Nodes", "Min Solved Hidden Nodes", "Max Solved Hidden Nodes", "Solved Hidden Nodes Standard Deviation", 
-              "Mean Champion Fitness", "Mean Tested Fitness", "Mean Generalization Fitness", "Mean Tested Fitness Solved", "Mean Generalization Fitness Solved", 
-              "Mean Champion Complexity", "Mean Champion Hidden Nodes"]
+              "Generations Solved Mean", "Generations Solved Standard Deviation", "Generations Solved Min", "Generations Solved Max", 
+              "Complexity Solved Mean", "Complexity Solved Standard Deviation", "Complexity Solved Min", "Complexity Solved Max", 
+              "Hidden Nodes Solved Mean", "Hidden Nodes Solved Standard Deviation", "Hidden Nodes Solved Min", "Hidden Nodes Solved Max", 
+              "Champion Fitness Mean", "Tested Fitness Mean", "Generalization Fitness Mean", "Tested Fitness Solved Mean", "Generalization Fitness Solved Mean", 
+              "Champion Complexity Mean", "Champion Hidden Nodes Mean"]
 
     writer = csv.DictWriter(output, lineterminator='\n', fieldnames=fields)
     writer.writeheader()
@@ -55,16 +56,23 @@ with open("analysis.csv", 'w') as output:
         fitnessTestSolved = []
         fitnessGen = []
         fitnessGenSolved = []
+        
         complexity = []
         hiddens = []
+
         solvedGens = []
+        solvedComplexity = []
         solvedHiddens = []
 
-        minSolvedGens = sys.maxsize
-        maxSolvedGens = 0
+        minGensSolved = sys.maxsize
+        maxGensSolved = 0
 
-        minSolvedHiddens = sys.maxsize
-        maxSolvedHiddens = 0
+        minHiddenNodesSolved = sys.maxsize
+        maxHiddenNodesSolved = 0
+
+        minComplexitySolved = sys.maxsize
+        maxComplexitySolved = 0
+
 
         # -1 for header
         count = sum(1 for row in open(r)) - 1
@@ -104,7 +112,8 @@ with open("analysis.csv", 'w') as output:
                     if solved:
                         fitnessGenSolved.append(f)
 
-                complexity.append(float(row["Champion Complexity"]))
+                comp = float(row["Champion Complexity"])
+                complexity.append(comp)
                 
                 hid = float(row["Champion Hidden Nodes"])
                 hiddens.append(hid)
@@ -112,17 +121,23 @@ with open("analysis.csv", 'w') as output:
                 if solved:
                     gens = float(row["Generations"])
                     solvedGens.append(gens)
+                    solvedComplexity.append(comp)
                     solvedHiddens.append(hid)
                     
-                    if gens < minSolvedGens:
-                        minSolvedGens = gens
-                    if gens > maxSolvedGens:
-                        maxSolvedGens = gens
+                    if gens < minGensSolved:
+                        minGensSolved = gens
+                    if gens > maxGensSolved:
+                        maxGensSolved = gens
 
-                    if hid < minSolvedHiddens:
-                        minSolvedHiddens = hid
-                    if hid > maxSolvedHiddens:
-                        maxSolvedHiddens = hid
+                    if comp < minComplexitySolved:
+                        minComplexitySolved = comp
+                    if comp > maxComplexitySolved:
+                        maxComplexitySolved = comp
+
+                    if hid < minHiddenNodesSolved:
+                        minHiddenNodesSolved = hid
+                    if hid > maxHiddenNodesSolved:
+                        maxHiddenNodesSolved = hid
 
         
         totalTime = sum(times, datetime.timedelta(0))
@@ -132,8 +147,10 @@ with open("analysis.csv", 'w') as output:
         
         gensSolvedMean = -1
         gensSolvedStdDev = -1
-        meanSolvedHiddenNodes = -1
-        hiddensSolvedStdDev = -1
+        complexitySolvedMean = -1
+        complexitySolvedStdDev = -1
+        hiddenNodesSolvedMean = -1
+        hiddenNodesSolvedStdDev = -1
         
         meanTestedFitness = -1
         if len(fitnessTest) > 0:
@@ -152,17 +169,22 @@ with open("analysis.csv", 'w') as output:
             meanGeneralizationFitnessSolved = sum(fitnessGenSolved) / len(fitnessGenSolved)
 
         if solvedCount == 0:
-            minSolvedGens = -1
-            maxSolvedGens = -1
-            minSolvedHiddens = -1
-            maxSolvedHiddens = -1
+            minGensSolved = -1
+            maxGensSolved = -1
+            minComplexitySolved = -1
+            maxComplexitySolved = -1
+            minHiddenNodesSolved = -1
+            maxHiddenNodesSolved = -1
 
         elif solvedCount > 0:
             gensSolvedMean = sum(solvedGens) / solvedCount
             gensSolvedStdDev = stddev(solvedGens)
     
-            meanSolvedHiddenNodes = float(sum(solvedHiddens)) / solvedCount
-            hiddensSolvedStdDev = stddev(solvedHiddens)
+            complexitySolvedMean = sum(solvedComplexity) / solvedCount
+            complexitySolvedStdDev = stddev(solvedComplexity)
+
+            hiddenNodesSolvedMean = float(sum(solvedHiddens)) / solvedCount
+            hiddenNodesSolvedStdDev = stddev(solvedHiddens)
 
 
 
@@ -178,25 +200,30 @@ with open("analysis.csv", 'w') as output:
         row["Solves"] = len(solvedGens)
         row["Solve Percentage"] = "%s%%" % round(float(solvedCount) / count * 100, 2)
 
-        row["Mean Generations Solved"] = round(gensSolvedMean, 2)
-        row["Min Generations Solved"] = minSolvedGens
-        row["Max Generations Solved"] = maxSolvedGens
+        row["Generations Solved Mean"] = round(gensSolvedMean, 2)
         row["Generations Solved Standard Deviation"] = round(gensSolvedStdDev, 2)
+        row["Generations Solved Min"] = minGensSolved
+        row["Generations Solved Max"] = maxGensSolved
 
-        row["Mean Solved Hidden Nodes"] = round(meanSolvedHiddenNodes, 2)
-        row["Min Solved Hidden Nodes"] = minSolvedHiddens
-        row["Max Solved Hidden Nodes"] = maxSolvedHiddens
-        row["Solved Hidden Nodes Standard Deviation"] = round(hiddensSolvedStdDev, 2)
+        row["Complexity Solved Mean"] = round(complexitySolvedMean, 2)
+        row["Complexity Solved Standard Deviation"] = round(complexitySolvedStdDev, 2)
+        row["Complexity Solved Min"] = minComplexitySolved
+        row["Complexity Solved Max"] = maxComplexitySolved
 
-        row["Mean Champion Fitness"] = round(sum(fitness) / count, 4)
-        row["Mean Tested Fitness"] = round(meanTestedFitness, 4)
-        row["Mean Generalization Fitness"] = round(meanGeneralizationFitness, 4)
+        row["Hidden Nodes Solved Mean"] = round(hiddenNodesSolvedMean, 2)
+        row["Hidden Nodes Solved Standard Deviation"] = round(hiddenNodesSolvedStdDev, 2)
+        row["Hidden Nodes Solved Min"] = minHiddenNodesSolved
+        row["Hidden Nodes Solved Max"] = maxHiddenNodesSolved
 
-        row["Mean Tested Fitness Solved"] = round(meanTestedFitnessSolved, 4)
-        row["Mean Generalization Fitness Solved"] = round(meanGeneralizationFitnessSolved, 4)
+        row["Champion Fitness Mean"] = round(sum(fitness) / count, 4)
+        row["Tested Fitness Mean"] = round(meanTestedFitness, 4)
+        row["Generalization Fitness Mean"] = round(meanGeneralizationFitness, 4)
 
-        row["Mean Champion Complexity"] = round(sum(complexity) / count, 2)
-        row["Mean Champion Hidden Nodes"] = round(sum(hiddens) / count, 2)
+        row["Tested Fitness Solved Mean"] = round(meanTestedFitnessSolved, 4)
+        row["Generalization Fitness Solved Mean"] = round(meanGeneralizationFitnessSolved, 4)
+
+        row["Champion Complexity Mean"] = round(sum(complexity) / count, 2)
+        row["Champion Hidden Nodes Mean"] = round(sum(hiddens) / count, 2)
 
         writer.writerow(row)
 
