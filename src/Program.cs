@@ -26,6 +26,7 @@ namespace ENTM
         private const string CONFIG_PATH = ROOT_PATH + "Config/";
         private const string LOG4NET_CONFIG = "log4net.properties";
         private const string RESULTS_FILE = "results.csv";
+        private const string CONFIG_FILE = "config.xml";
 
         private static readonly Stopwatch _stopwatch = new Stopwatch();
 
@@ -34,7 +35,7 @@ namespace ENTM
 
         private static bool _terminated = false;
         private static Type _experimentType;
-        private static  XmlElement[] _configs;
+        private static XmlDocument[] _configs;
         private static IExperiment _experiment;
         private static readonly string _identifier = string.Format($"{DateTime.Now.ToString("yyyyMMdd-HHmmss")}_{Guid.NewGuid().ToString().Substring(0, 8)}");
 
@@ -185,7 +186,7 @@ namespace ENTM
 
         private static void LoadExperiments(string[] configPaths)
         {
-            _configs = new XmlElement[configPaths.Length];
+            _configs = new XmlDocument[configPaths.Length];
 
             for (int i = 0; i < configPaths.Length; i++)
             {
@@ -195,7 +196,7 @@ namespace ENTM
                 try
                 {
                     xml.Load(configPaths[i]);
-                    _configs[i] = xml.DocumentElement;
+                    _configs[i] = xml;
 
                 }
                 catch (FileNotFoundException)
@@ -207,7 +208,7 @@ namespace ENTM
             Console.WriteLine($"Loaded {_configs.Length} configs");
         }
 
-        private static bool InitializeExperiment(XmlElement config)
+        private static bool InitializeExperiment(XmlDocument config)
         {
             // Termine any ongoing experiment, or the algorithm thread will block indefinitely and leak
             _experiment?.Terminate();
@@ -220,12 +221,14 @@ namespace ENTM
 
             Assembly assembly = Assembly.GetExecutingAssembly();
 
-            _experimentType = assembly.GetType(XmlUtils.GetValueAsString(config, "ExperimentClass"), false, false);
-            _experiementCount = XmlUtils.TryGetValueAsInt(config, "ExperimentCount") ?? 1;
+            XmlElement xmlConfig = config.DocumentElement;
+
+            _experimentType = assembly.GetType(XmlUtils.GetValueAsString(xmlConfig, "ExperimentClass"), false, false);
+            _experiementCount = XmlUtils.TryGetValueAsInt(xmlConfig, "ExperimentCount") ?? 1;
 
             _experiment = (IExperiment) Activator.CreateInstance(_experimentType);
 
-            string name = XmlUtils.GetValueAsString(config, "Name");
+            string name = XmlUtils.GetValueAsString(xmlConfig, "Name");
 
             _logger.Info($"Initializing experiment: {name}...");
 
@@ -236,16 +239,29 @@ namespace ENTM
             _experiment.ExperimentCompleteEvent += ExperimentCompleteEvent;
 
             _experimentStartedTime = DateTime.Now;
-            _experiment.Initialize(name, config, _identifier, _currentConfig, _currentExperiment);
+            _experiment.Initialize(name, xmlConfig, _identifier, _currentConfig, _currentExperiment);
             
             return true;
         }
         
 
-        private static void ExperimentStartedEvent(object sender, EventArgs e)
+        private static void ExperimentStartedEvent(object sender, ExperimentEventArgs e)
         {
             _stopwatch.Start();
             _logger.Info($"Started experiment {_experiment.Name} {_currentExperiment}/{_experiementCount}");
+
+            string configFile = $"{e.Directory}{CONFIG_FILE}";
+            if (!File.Exists(configFile))
+            {
+                try
+                {
+                    _configs[_currentConfig].Save(configFile);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warn($"Could not write to config file: {ex.Message}", ex);
+                }
+            }
         }
 
         private static void ExperimentPausedEvent(object sender, EventArgs e)
@@ -288,7 +304,7 @@ namespace ENTM
                         testedFitness, testedGenFitness));
                 }
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 _logger.Warn($"Could not write to results file: {ex.Message}", ex);
             }
@@ -336,7 +352,7 @@ namespace ENTM
                 _currentConfig++;
                 _currentExperiment = 1;
 
-                string name = XmlUtils.GetValueAsString(_configs[_currentConfig], "Name");
+                string name = XmlUtils.GetValueAsString(_configs[_currentConfig].DocumentElement, "Name");
 
                 // Initialize logging
                 GlobalContext.Properties["name"] = name;
@@ -345,7 +361,7 @@ namespace ENTM
                 XmlConfigurator.Configure(new FileInfo(LOG4NET_CONFIG));
 
                 // Print config
-                ConfigPrinter.Print(_configs[_currentConfig]);
+                ConfigPrinter.Print(_configs[_currentConfig].DocumentElement);
             }
             else
             {

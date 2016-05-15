@@ -29,7 +29,7 @@ namespace ENTM.Base
         void AbortCurrentExperiment();
         void Terminate();
 
-        event EventHandler ExperimentStartedEvent;
+        event EventHandler<ExperimentEventArgs> ExperimentStartedEvent;
         event EventHandler ExperimentPausedEvent;
         event EventHandler ExperimentResumedEvent;
         event EventHandler<ExperimentCompleteEventArgs> ExperimentCompleteEvent;

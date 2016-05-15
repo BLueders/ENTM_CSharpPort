@@ -188,7 +188,7 @@ namespace ENTM.Base
         /// <summary>
         /// Notifies listeners that the experiment has started
         /// </summary>
-        public event EventHandler ExperimentStartedEvent;
+        public event EventHandler<ExperimentEventArgs> ExperimentStartedEvent;
 
         /// <summary>
         /// Notifies listeners that the experiment was paused
@@ -693,7 +693,13 @@ namespace ENTM.Base
             {
                 try
                 {
-                    ExperimentStartedEvent(this, EventArgs.Empty);
+                    ExperimentEventArgs args = new ExperimentEventArgs();
+                    args.Experiment = _number;
+                    args.Directory = CurrentDirectory;
+                    args.TimeSpent = _timer.Elapsed;
+                    args.Comment = _comment;
+
+                    ExperimentStartedEvent(this, args);
                 }
                 catch (Exception ex)
                 {
@@ -992,13 +998,16 @@ namespace ENTM.Base
         #endregion
     }
 
-    public class ExperimentCompleteEventArgs : EventArgs
+    public class ExperimentEventArgs : EventArgs
     {
         public int Experiment { get; internal set; }
         public string Directory { get; internal set; }
         public TimeSpan TimeSpent { get; internal set; }
         public string Comment { get; internal set; }
+    }
 
+    public class ExperimentCompleteEventArgs : ExperimentEventArgs
+    {
         public bool Solved { get; internal set; }
         public uint Generations { get; internal set; }
         public double ChampFitness { get; internal set; }
