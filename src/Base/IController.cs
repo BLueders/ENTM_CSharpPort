@@ -25,6 +25,6 @@ namespace ENTM.Base
         /// <summary>
         /// Novelty Search data
         /// </summary>
-        NoveltySearchInfo NoveltySearch { get; }
+        NoveltySearchInfo NoveltySearch { get; set; }
     }
 }

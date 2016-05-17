@@ -75,7 +75,8 @@ namespace ENTM.NoveltySearch
                 combinedBehaviours.UnionWith(_archive);
             }
 
-            KnnMultiDimensional knnMultiDimensional = KnnMultiDimensional.Create(combinedBehaviours.ToArray());
+            int dims = behaviours[0].Evaluation.NoveltyVectors[0].Length;
+            KnnMultiDimensional knnMultiDimensional = KnnMultiDimensional.Create(combinedBehaviours.ToArray(), dims);
 
             switch (_params.VectorMode)
             {
@@ -84,7 +85,6 @@ namespace ENTM.NoveltySearch
                     break;
 
                 case NoveltyVectorMode.ReadContent:
-                    int dims = behaviours[0].Evaluation.NoveltyVectors[0].Length;
                     for (int i = 0; i < dims; i++)
                     {
                         // Content is between 0 and 1
@@ -107,6 +107,14 @@ namespace ENTM.NoveltySearch
 
                     break;
 
+                case NoveltyVectorMode.EnvironmentAction:
+                    for (int i = 0; i < dims; i++)
+                    {
+                        // action is between 0 and 1
+                        knnMultiDimensional.SetVectorBoundaries(i, 0d, 1d);
+                    }
+                    break;
+
                 default:
                     _logger.Warn($"Unimplemented NoveltyVectorMode {_params.VectorMode}");
                     break;
@@ -127,11 +135,8 @@ namespace ENTM.NoveltySearch
                     _maxObjectiveScore = objectiveScore;
                 }
 
-                double redundantTimeSteps = b.Evaluation.MinimumCriteria[0];
-                double totalTimeSteps = b.Evaluation.MinimumCriteria[1];
-
                 // Check if behaviour meets minimum criteria
-                if (redundantTimeSteps/totalTimeSteps <= _params.MinimumCriteriaReadWriteLowerThreshold)
+                if (MeetsMinimumCriteria(b))
                 {
                     double score = knnMultiDimensional.AverageDistToKnn(b, _params.K);
 
@@ -197,6 +202,16 @@ namespace ENTM.NoveltySearch
             }
 
             _timer.Stop();
+        }
+
+        private bool MeetsMinimumCriteria(Behaviour<TGenome> b)
+        {
+            if (_params.VectorMode == NoveltyVectorMode.EnvironmentAction) return true;
+
+            double redundantTimeSteps = b.Evaluation.MinimumCriteria[0];
+            double totalTimeSteps = b.Evaluation.MinimumCriteria[1];
+
+            return redundantTimeSteps / totalTimeSteps <= _params.MinimumCriteriaReadWriteLowerThreshold;
         }
     }
 }

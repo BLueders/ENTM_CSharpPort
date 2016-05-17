@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ENTM.Base;
-using ENTM.Experiments.SeasonTask;
 using ENTM.Replay;
 using ENTM.Utility;
 
@@ -63,7 +59,13 @@ namespace ENTM.Experiments.SeasonTask
                 }
                 return _fitnessFactor*_foodTypes* _days * Seasons*Years;
             }
-        } 
+        }
+
+        public override int NoveltyVectorLength => 0;
+
+        public override int NoveltyVectorDimensions => 0;
+
+        public override int MinimumCriteriaLength => 0;
 
         // jk. do not score first day of each season of the first year. There we encounter each food the first time and cant know if its poisonous.
         protected bool ScoreThisStep(int step)
@@ -115,7 +117,6 @@ namespace ENTM.Experiments.SeasonTask
 
         public override void ResetIteration()
         {
-
             Debug.DLogHeader("SEASON TASK NEW ITERATION", true);
 
             _days = SealedRandom.Next(DaysMin, DaysMax + 1);

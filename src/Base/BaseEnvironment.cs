@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Security.Cryptography;
+using ENTM.NoveltySearch;
 using ENTM.Replay;
 using log4net;
 
@@ -22,18 +24,23 @@ namespace ENTM.Base
         public abstract double NormalizedScore { get; }
         public abstract bool IsTerminated { get; }
         public abstract int RandomSeed { get; set; }
-
-        public abstract void ResetAll();
-        public abstract void ResetIteration();
-        public abstract double[] PerformAction(double[] action);
         public abstract int TotalTimeSteps { get; }
         public abstract int MaxTimeSteps { get; }
+
+        public abstract double[] PerformAction(double[] action);
+        public abstract void ResetAll();
+        public abstract void ResetIteration();
+
+        public NoveltySearchInfo NoveltySearch { get; set; }
+        public abstract int NoveltyVectorLength { get; }
+        public abstract int NoveltyVectorDimensions { get; }
+        public abstract int MinimumCriteriaLength { get; }
 
         public void ResetRandom()
         {
             if (RandomSeed < 0)
             {
-                _sealedRandom = new Random(System.Environment.TickCount);
+                _sealedRandom = new Random(Environment.TickCount);
             }
             else
             {

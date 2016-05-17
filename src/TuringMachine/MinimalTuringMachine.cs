@@ -73,8 +73,7 @@ namespace ENTM.TuringMachine
         // If we do not use a gradient to initialize, what is the initial value of the tape locations?
         private bool _useMemoryExpandLocation;
 
-        private NoveltySearchInfo _noveltySearch;
-        public NoveltySearchInfo NoveltySearch => _noveltySearch;
+        public NoveltySearchInfo NoveltySearch { get; set; }
 
         public int ReadHeadCount => 1;
 
@@ -88,8 +87,6 @@ namespace ENTM.TuringMachine
         public double[][] TapeValues => Utilities.DeepCopy(_tape.ToArray());
 
         public double[][] DefaultRead => _initialRead;
-
-
 
         // Number of times each location was accessed during livetime of the tm
         // private List<int> _writeActivities = new List<int>();
@@ -110,8 +107,9 @@ namespace ENTM.TuringMachine
             _initalValue = props.InitalValue;
             _didWriteThreshold = props.DidWriteThreshold;
             _useMemoryExpandLocation = props.UseMemoryExpandLocation;
-            _noveltySearch = new NoveltySearchInfo();
+
             Reset();
+
             _initialRead = new double[_heads][];
             for (int i = 0; i < _heads; i++)
             {
@@ -147,11 +145,6 @@ namespace ENTM.TuringMachine
             }
 
             _headPositions = new int[_heads];
-
-            if (NoveltySearch.ScoreNovelty)
-            {
-                NoveltySearch.Reset();
-            }
 
             // clear debug log lists
             //_readActivities.Clear();
@@ -353,8 +346,6 @@ namespace ENTM.TuringMachine
 
                                 break;
 
-                            default:
-                                throw new ArgumentOutOfRangeException();
                         }
                    
 
@@ -368,15 +359,18 @@ namespace ENTM.TuringMachine
                             }
                         }
 
-                        // If the turing machine neither wrote or read this iteration, we note it for the minimum criteria novelty search
-                        if (!_didWrite && !_didRead)
+                        if (NoveltySearch.VectorMode != NoveltyVectorMode.EnvironmentAction)
                         {
-                            // Store number of redundant iterations in the novelty vector.
-                            NoveltySearch.MinimumCriteria[0] += 1;
-                        }
+                            // If the turing machine neither wrote or read this iteration, we note it for the minimum criteria novelty search
+                            if (!_didWrite && !_didRead)
+                            {
+                                // Store number of redundant iterations in the novelty vector.
+                                NoveltySearch.MinimumCriteria[0] += 1;
+                            }
 
-                        // Total timesteps to calculate redundancy factor
-                        NoveltySearch.MinimumCriteria[1] += 1;
+                            // Total timesteps to calculate redundancy factor
+                            NoveltySearch.MinimumCriteria[1] += 1;
+                        }
                     }
 
                     if (RecordTimeSteps)

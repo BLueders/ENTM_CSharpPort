@@ -314,7 +314,7 @@ namespace ENTM.MultiObjective
                         sb.Append($" [{i}]: {MaxObjectiveScores[i]:F04}");
                     }
 
-                    sb.Append($"Avg Pareto optimal behaviours: {_paretoOptimal / ReportInterval}");
+                    sb.Append($" Avg Pareto optimal behaviours: {_paretoOptimal / ReportInterval}");
                 }
 
                 sb.Append($" Avg time spent: [Evaluation: {_timeSpentEvaluation / ReportInterval} ms]");

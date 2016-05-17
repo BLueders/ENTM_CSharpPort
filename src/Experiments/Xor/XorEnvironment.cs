@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ENTM.Base;
 using ENTM.Replay;
 
@@ -29,7 +25,10 @@ namespace ENTM.Experiments.Xor
         public override int TotalTimeSteps => _sequence.Length + 1;
 
         public override int MaxTimeSteps => 5;
-        
+        public override int NoveltyVectorLength { get; }
+        public override int NoveltyVectorDimensions { get; }
+        public override int MinimumCriteriaLength { get; }
+
         private int _step;
         private double _score;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using ENTM.Base;
+using ENTM.NoveltySearch;
 using ENTM.Replay;
 using ENTM.TuringMachine;
 using ENTM.Utility;
@@ -63,6 +64,13 @@ namespace ENTM.Experiments.CopyTask
         /// </summary>
         public override int MaxTimeSteps => 2 * MaxSequenceLength + 2 + 1;
 
+
+        public override int NoveltyVectorLength => MaxSequenceLength;
+
+        public override int NoveltyVectorDimensions => _vectorSize;
+
+        public override int MinimumCriteriaLength => 0;
+
         public sealed override int RandomSeed { get; set; }
 
 
@@ -75,6 +83,7 @@ namespace ENTM.Experiments.CopyTask
             RandomSeed = props.RandomSeed;
             EliminiateZeroVectors = props.EliminateZeroVectors;
         }
+
 
         public override void ResetAll()
         {
@@ -138,6 +147,12 @@ namespace ENTM.Experiments.CopyTask
                 double[] received = action;
                 thisScore = Evaluate(correct, received);
                 _score += thisScore;
+
+                if (NoveltySearch.ScoreNovelty && NoveltySearch.VectorMode == NoveltyVectorMode.EnvironmentAction)
+                {
+                    // Register read as novelty behaviour
+                    NoveltySearch.NoveltyVectors[index] = action;
+                }
 
                 Debug.DLog($"{"Reading:",-16} {Utilities.ToString(received, "F2")}" +
                             $"\n{"Actual:",-16} {Utilities.ToString(correct, "F2")}" +
