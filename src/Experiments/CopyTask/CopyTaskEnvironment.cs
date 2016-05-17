@@ -13,7 +13,7 @@ namespace ENTM.Experiments.CopyTask
         // Determines if the length of the sequence should be fixed or random
         public LengthRule LengthRule { get; set; }
 
-        // The length of an element in the sequence (usually M - 1)
+        // The length of an element in the sequence
         private readonly int _vectorSize;
 
         // The maximum length that the sequence can be(if random), else the actual sequence length.
@@ -296,7 +296,7 @@ namespace ENTM.Experiments.CopyTask
             for (int i = 0; i < target.Length; i++)
             {
                 result += 1.0 - Math.Min(threshold, Math.Abs(target[i] - actual[i])) / threshold;
-            }
+            }   
 
             return result / target.Length;
         }

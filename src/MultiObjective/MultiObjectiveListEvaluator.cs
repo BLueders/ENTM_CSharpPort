@@ -31,7 +31,17 @@ namespace ENTM.MultiObjective
         private const int OBJ_NOVELTY_SCORE = 1;
         private const int OBJ_GENETIC_DIVERSITY = 2;
 
-        public int ObjectiveCount => 3;
+        public int ObjectiveCount
+        {
+            get
+            {
+                int count = 1;
+                if (NoveltySearchEnabled) count++;
+                if (_multiObjectiveParameters.GeneticDiversityEnabled) count++;
+
+                return count;
+            }
+        }
 
         private static readonly string[] _objectiveNames = { "Objective", "Novelty", "Genetic Diversity" };
         public string[] ObjectiveNames => _objectiveNames;
@@ -41,6 +51,7 @@ namespace ENTM.MultiObjective
         private readonly Stopwatch _evaluationTimer = new Stopwatch();
 
         private long _timeSpentEvaluation, _timeSpentNoveltySearch, _timeSpentGeneticDiversity, _timeSpentMultiObjective;
+        private long _paretoOptimal;
 
         public double[] MaxObjectiveScores { get; private set; }
 
@@ -180,9 +191,10 @@ namespace ENTM.MultiObjective
                 for (int i = 0; i < count; i++)
                 {
                     TGenome genome = genomeList[i];
+                    
                     // Only evalutate new genomes. Elite genomes will be skipped, as they already have an assigned fitness.
                     if (!genome.EvaluationInfo.IsEvaluated)
-                    {   // Add the genome to the temp list for evaluation later.
+                    {   // Add the genome to the filtered list for evaluation later.
                         filteredList.Add(genome);
                     }
                     else
@@ -234,14 +246,18 @@ namespace ENTM.MultiObjective
                     Behaviour<TGenome>[] viable = combined.Where(x => !x.NonViable).ToArray();
                     int vCount = viable.Length;
 
-                    // Score genetic diversity, since speciation will not work with MO
-                    _geneticDiversityScorer.Score(viable, OBJ_GENETIC_DIVERSITY);
-                    _timeSpentGeneticDiversity += _geneticDiversityScorer.TimeSpent;
+                    if (_multiObjectiveParameters.GeneticDiversityEnabled)
+                    {
+                        // Score genetic diversity
+                        _geneticDiversityScorer.Score(viable, OBJ_GENETIC_DIVERSITY);
+                        _timeSpentGeneticDiversity += _geneticDiversityScorer.TimeSpent;
+                    }
 
                     if (vCount > 0)
                     {
                         // Apply multi objective
                         _multiObjectiveScorer.Score(viable);
+                        _paretoOptimal += _multiObjectiveScorer.ParetoOptimal;
                         _timeSpentMultiObjective += _multiObjectiveScorer.TimeSpent;
 
                         MaxObjectiveScores = new double[ObjectiveCount];
@@ -297,6 +313,8 @@ namespace ENTM.MultiObjective
                     {
                         sb.Append($" [{i}]: {MaxObjectiveScores[i]:F04}");
                     }
+
+                    sb.Append($"Avg Pareto optimal behaviours: {_paretoOptimal / ReportInterval}");
                 }
 
                 sb.Append($" Avg time spent: [Evaluation: {_timeSpentEvaluation / ReportInterval} ms]");
@@ -307,16 +325,22 @@ namespace ENTM.MultiObjective
                 }
                 if (MultiObjectiveEnabled)
                 {
-                    sb.Append($" [Genetic Diversity: {_timeSpentGeneticDiversity / ReportInterval} ms]");
+                    if (_multiObjectiveParameters.GeneticDiversityEnabled)
+                    {
+                        sb.Append($" [Genetic Diversity: {_timeSpentGeneticDiversity / ReportInterval} ms]");
+                    }
                     sb.Append($" [Multi Objective: {_timeSpentMultiObjective / ReportInterval} ms]");
                 }
 
                 _logger.Info(sb.ToString());
 
+                _paretoOptimal = 0;
+
                 _timeSpentEvaluation = 0;
                 _timeSpentNoveltySearch = 0;
                 _timeSpentGeneticDiversity = 0;
                 _timeSpentMultiObjective = 0;
+
             }
         }
 
@@ -352,11 +376,13 @@ namespace ENTM.MultiObjective
         /// <param name="genomeList"></param>
         private IList<Behaviour<TGenome>> EvaluateParallel(IList<TGenome> genomeList)
         {
-            int concurrencyLevel = _parallelOptions.MaxDegreeOfParallelism == -1
+            if (_generation == 1)
+            {
+                int concurrencyLevel = _parallelOptions.MaxDegreeOfParallelism == -1
                 ? Environment.ProcessorCount
                 : Math.Min(Environment.ProcessorCount, _parallelOptions.MaxDegreeOfParallelism);
-
-            if (_generation == 1) _logger.Info($"Running parallel, number of threads: {concurrencyLevel}");
+                _logger.Info($"Running parallel, number of threads: {concurrencyLevel}");
+            }
 
             ConcurrentAddList<Behaviour<TGenome>> behaviours = new ConcurrentAddList<Behaviour<TGenome>>();
 

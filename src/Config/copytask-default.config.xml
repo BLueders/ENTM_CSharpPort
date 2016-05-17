@@ -170,6 +170,9 @@
     <!-- Enable multiobjective -->
     <Enabled>false</Enabled>
 
+    <!-- Enable the genetic diversity objective. If false, only objective fitness and novelty search will be used. -->
+    <GeneticDiversityEnabled>false</GeneticDiversityEnabled>
+    
     <!-- K value for KNN for genetic diversity -->
     <GeneticDiversityK>10</GeneticDiversityK>
   </MultiObjective>

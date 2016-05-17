@@ -31,11 +31,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using ENTM.Experiments;
 using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
 using ENTM.Replay;
-using ENTM.TuringMachine;
 using ENTM.Utility;
 using log4net;
 using SharpNeat.Core;
@@ -131,6 +129,8 @@ namespace ENTM.Base
         private double _currentMaxFitness = -1;
         private uint _lastMaxFitnessImprovementGen;
         private uint _noveltySearchActivatedGen;
+
+        public string SeedGenome { get; set; }
 
         public bool ExperimentCompleted { get; private set; } = false;
 
@@ -257,16 +257,22 @@ namespace ENTM.Base
 
         public double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings, bool generalize)
         {
-            // Load genome from the xml file
-            XmlDocument xmlChampion = new XmlDocument();
-            xmlChampion.Load(xmlPath);
 
-            NeatGenome championGenome = NeatGenomeXmlIO.LoadGenome(xmlChampion.DocumentElement, false);
+            NeatGenome championGenome = LoadGenomeFromXml(xmlPath);
 
             // Create and set the genome factory
             championGenome.GenomeFactory = CreateGenomeFactory() as NeatGenomeFactory;
 
             return TestGenome(championGenome, iterations, runs, createRecordings, generalize);
+        }
+
+        private NeatGenome LoadGenomeFromXml(string path)
+        {
+            // Load genome from the xml file
+            XmlDocument xmlChampion = new XmlDocument();
+            xmlChampion.Load(path);
+
+            return NeatGenomeXmlIO.LoadGenome(xmlChampion.DocumentElement, false);
         }
 
         private double TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings, bool generalize)
@@ -683,7 +689,16 @@ namespace ENTM.Base
             _logger.Info("\nCreating EA...");
 
             // Create evolution algorithm and attach events.
-            _ea = CreateEvolutionAlgorithm();
+            if (SeedGenome != null)
+            {
+                NeatGenome seed = LoadGenomeFromXml(SeedGenome);
+                seed.GenomeFactory = CreateGenomeFactory() as NeatGenomeFactory;
+                _ea = CreateEvolutionAlgorithm(seed);
+            }
+            else
+            {
+                _ea = CreateEvolutionAlgorithm();
+            }
 
 
             _ea.UpdateEvent += EAUpdateEvent;
@@ -936,6 +951,14 @@ namespace ENTM.Base
             return CreateEvolutionAlgorithm(genomeFactory, genomeList);
         }
 
+        /// <summary>
+        /// Create and return a NeatEvolutionAlgorithm with a single seed genome.
+        /// </summary>
+        public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(NeatGenome seed)
+        {
+            // Create evolution algorithm.
+            return CreateEvolutionAlgorithm(_populationSize, seed.BirthGeneration, new List<NeatGenome> { seed });
+        }
 
         /// <summary>
         /// Create and return a NeatEvolutionAlgorithm with a seeded population.
