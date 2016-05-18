@@ -2,7 +2,7 @@
 <Config>
   
   <!-- The name of the experiment -->
-  <Name>SeasonTask-5Steps-NoveltySearch</Name>
+  <Name>SeasonTask-Fancy-Expand-Test</Name>
   
   <!-- The fully qualified name of the experiment class -->
   <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
@@ -14,25 +14,24 @@
     Then recall the information when it encounters that season again to decide wich to eat.
   </Description>
 
+    <!-- Comment about the specific experiment setup. NO LINE BREAKS!!!!!!!!!!!! -->
+  <Comment>Test for new (old) fancy memory expand method with jump to end of tape with similarity threshold and expand tape if tm wrote there</Comment>
+  
   <!-- How many experiments will be performed (serially) -->
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>20000</MaxGenerations>
+  <MaxGenerations>1000</MaxGenerations>
 
   <!-- NEAT -->
-  <PopulationSize>300</PopulationSize>
+  <PopulationSize>250</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>5</LogInterval>
+  <LogInterval>50</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
- 
-	<!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
-	This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
-	<UseMemoryExpandLocation>false</UseMemoryExpandLocation>
-	
+  
     <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
   <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
   
@@ -43,14 +42,27 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>8</M>
+    <M>10</M>
 
-    <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
-    <MinSimilarityToJump>0.65</MinSimilarityToJump>
+    <!-- Minimum similarity of the turing data vector to consider this location for a content jump. Default = 0 -->
+    <MinSimilarityToJump>0.6</MinSimilarityToJump>
     
-    <!-- Number of shift inputs -->
+	<!-- If M > 1 this will initialize the values of the turing machine with a gradient from 0 to 1. Default = false -->
+    <InitalizeWithGradient>false</InitalizeWithGradient>
+	
+	<!-- the turing machine vectors can have a initial values instead of a gradient. Default = 0-->
+    <InitalValue>0</InitalValue>
+	
+    <!-- Number of shift inputs. Default = 3-->
     <ShiftLength>3</ShiftLength>
 
+	<!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
+		This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
+	<UseMemoryExpandLocation>true</UseMemoryExpandLocation>
+	
+	<!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
+	<DidWriteThreshold>0.9</DidWriteThreshold>
+	
     <!-- Shift mode: "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
     <ShiftMode>Multiple</ShiftMode>
 
@@ -69,53 +81,64 @@
     <RandomSeed>0</RandomSeed>
 
     <FitnessFactor>1</FitnessFactor>
-    <Years>1</Years>
-    <Seasons>1</Seasons>
-    <Days>8</Days>
+    <Years>3</Years>
+    <Seasons>2</Seasons>
+    <DaysMin>1</DaysMin>
+	<DaysMax>5</DaysMax>
     <FoodTypes>4</FoodTypes>
     <PoisonFoods>2</PoisonFoods>
-    <PoisonousTypeChanges>1</PoisonousTypeChanges>
+	<!-- Randomly shuffle wich foods are poisonous at a random position in the sequence -->
+    <PoisonousTypeChanges>0</PoisonousTypeChanges>
+	<!-- The first time a food is encountered, the system cant know the answer, so maybe we dont want to score them -->
     <IgnoreFirstDayOfSeasonInFirstYear>true</IgnoreFirstDayOfSeasonInFirstYear>
-    <StepsPerFood>5</StepsPerFood>
+    <!-- How many steps to we spend at each food before giving the feedback -->
+	<StepsPerFood>4</StepsPerFood>
+	<!-- User reinforcment learning punishment and reward on food that is not eaten but ignored? -->
+	<FeedbackOnIgnoredFood>true</FeedbackOnIgnoredFood>
 
   </SeasonTaskParams>
 
-  <!-- Novelty Search Parameters -->
+<!-- Novelty Search Parameters -->
   <NoveltySearch>
 
     <!-- If false, only environmental objective fitness will be used. -->
-    <Enabled>true</Enabled>
-    
-	<!-- What behaviour we want to score
-      WritePattern: Use the write position over time as the novelty vector.
-      ReadContent: Use the read vector over time as the novelty vector.
+    <Enabled>false</Enabled>
+
+    <!-- What behaviour we want to score
+      WritePattern:           Use the write position over time as the novelty vector.
+      ReadContent:            Use the read vector over time as the novelty vector.
+      WritePatternAndInterp:  Use write position and interp as novelty vector.
+      ShiftJumpInterp:        Shift, jump and interp for novelty vector
       -->
-    <NoveltyVector>ReadContent</NoveltyVector>
-	
+    <NoveltyVector>ShiftJumpInterp</NoveltyVector>
+
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>50</PMin>
-	
+    <PMin>15</PMin>
+
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
-    <PMinLowerThreshold>10</PMinLowerThreshold>
-	
+    <PMinLowerThreshold>1</PMinLowerThreshold>
+
+    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
+    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
+
+    <!-- Switch to Objective search if the Objective score has reached this value. -->
+    <ObjectiveScoreThreshold>.9</ObjectiveScoreThreshold>
+    
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
-    <ArchiveLimit>300</ArchiveLimit>
+    <ArchiveLimit>500</ArchiveLimit>
 
     <!-- PMin up adjustment factor-->
     <PMinAdjustUp>1.05</PMinAdjustUp>
 
     <!-- PMin down adjustment factor -->
     <PMinAdjustDown>0.95</PMinAdjustDown>
-       
+
     <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
     <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
 
     <!-- How many generations without archihve additions before PMin is adjusted down -->
     <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
 
-    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
-    <MaxNoveltySearchGenerations>5000</MaxNoveltySearchGenerations>
-    
     <!-- K nearest neighbors -->
     <K>10</K>
 
@@ -126,8 +149,11 @@
       0-1 relative to total timesteps during lifetime. -->
     <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
     
+    <!-- Multiply the Novely Score with the Objective fitness to the power of x. 0 to use only Novelty Score. -->
+    <ObjectiveFactorExponent>0</ObjectiveFactorExponent>
+
   </NoveltySearch>
-  
+
   <MultiObjective>
     <!-- Enable multiobjective -->
     <Enabled>false</Enabled>
@@ -165,11 +191,9 @@
     <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
 
     <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
-    <ComplexityThreshold>450</ComplexityThreshold>
+    <ComplexityThreshold>350</ComplexityThreshold>
 
   </ComplexityRegulation>
-
- 
 
   
   <!-- Evolution Algorithm Parameters -->
@@ -182,7 +206,7 @@
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
-    <SelectionProportion>0.4</SelectionProportion>
+    <SelectionProportion>0.2</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
     <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
@@ -211,7 +235,7 @@
 
     <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
          This is a proportion of the total number of possible interconnections. Default: 0.05 -->
-    <InitialInterconnectionsProportion>0.3</InitialInterconnectionsProportion>
+    <InitialInterconnectionsProportion>0.2</InitialInterconnectionsProportion>
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
@@ -224,13 +248,13 @@
     <AddNodeMutationProbability>0.005</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
-    <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
+    <AddConnectionMutationProbability>0.09</AddConnectionMutationProbability>
 
     <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
     <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.05</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

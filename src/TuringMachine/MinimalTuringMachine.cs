@@ -79,7 +79,7 @@ namespace ENTM.TuringMachine
         public int ReadHeadCount => 1;
 
         public int WriteHeadCount => 1;
-        
+
         // WriteKey, Interpolation, ToContentJump, Shift
         public int InputCount => _heads * (_m + 2 + GetShiftInputs());
 
@@ -89,7 +89,7 @@ namespace ENTM.TuringMachine
 
         public double[][] DefaultRead => _initialRead;
 
-
+        private int EndOfTape => _tape.Count - 1;
 
         // Number of times each location was accessed during livetime of the tm
         // private List<int> _writeActivities = new List<int>();
@@ -129,21 +129,18 @@ namespace ENTM.TuringMachine
 
             _tape.Add(new double[_m]);
 
-            if (_initalizeWithGradient) {
+            if (_initalizeWithGradient)
+            {
                 InitTapeWithGradient();
             }
 
-            if (_initalValue >= 0 && _initalValue <= 1)
+            if (_initalValue != 0)
             {
                 if (_initalizeWithGradient)
                 {
                     throw new ArgumentOutOfRangeException("Tape can not be initialized with a fixed value and gradient. Choose one.");
                 }
                 InitTapeWithFixedValue();
-            }
-            else if (_initalValue != -1)
-            {
-                throw new ArgumentOutOfRangeException("Inital Value of turing machine vectors was " + _initalValue + ". But should be -1 or bewteen 0 and 1");
             }
 
             _headPositions = new int[_heads];
@@ -165,7 +162,8 @@ namespace ENTM.TuringMachine
             Debug.DLog(PrintState(), true);
         }
 
-        private void InitTapeWithGradient() {
+        private void InitTapeWithGradient()
+        {
             // add missing locations
             for (int i = 1; i < _n; i++)
             {
@@ -243,7 +241,7 @@ namespace ENTM.TuringMachine
                     written = new double[_heads][];
                 }
             }
-            
+
             int p = 0;
 
             // First all writes
@@ -293,7 +291,7 @@ namespace ENTM.TuringMachine
             // Shift and read (no interaction)
             for (int i = 0; i < _heads; i++)
             {
-               
+
                 // If the memory has been expanded down below 0, which means the memory has shiftet
                 _increasedSizeDown = false;
 
@@ -356,7 +354,7 @@ namespace ENTM.TuringMachine
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
-                   
+
 
                         // Check for non-empty reads, to see if novelty search minimum criteria has been reached
                         for (int j = 0; j < result[i].Length; j++)
@@ -450,7 +448,7 @@ namespace ENTM.TuringMachine
         private void Write(int head, double[] content, double interp)
         {
             double[] preWrite = null;
-            
+
             // Store the tape data before the write
             preWrite = _tape[_headPositions[head]];
 
@@ -477,17 +475,11 @@ namespace ENTM.TuringMachine
                 _didWrite = true;
 
                 // the end of the tape will be our expand location, if we write here, we need to create a new expand location for new memories
-                if (_useMemoryExpandLocation && _headPositions[head] == _tape.Count - 1) {
-                    
+                if (_useMemoryExpandLocation && _headPositions[head] == EndOfTape)
+                {
+
                     // Expand the memory to the right (end of array)
-                    if (_headPositions[head] == _tape.Count-1)
-                    {
-                        double[] newTapeVector = new double[_m];
-                        for (int i = 0; i < _m; i++) {
-                            newTapeVector[i] = _initalValue;
-                        }
-                        _tape.Add(newTapeVector);
-                    }
+                    ExpandTapeRight();
                 }
             }
 
@@ -500,7 +492,7 @@ namespace ENTM.TuringMachine
             double[] result = new double[first.Length];
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = interp*first[i] + (1 - interp)*second[i];
+                result[i] = interp * first[i] + (1 - interp) * second[i];
             }
             return result;
         }
@@ -545,7 +537,7 @@ namespace ENTM.TuringMachine
                 }
                 else
                 {
-                    _headPositions[head] = _tape.Count -1;
+                    _headPositions[head] = EndOfTape;
                 }
             }
             else
@@ -561,7 +553,7 @@ namespace ENTM.TuringMachine
             switch (_shiftMode)
             {
                 case ShiftMode.Single:
-                    highest = (int) (shift[0]*_shiftLength);
+                    highest = (int)(shift[0] * _shiftLength);
                     break;
 
                 case ShiftMode.Multiple:
@@ -572,7 +564,7 @@ namespace ENTM.TuringMachine
                     throw new ArgumentException("Unrecognized Shift Mode: " + _shiftMode);
             }
 
-            int offset = highest - (_shiftLength/2);
+            int offset = highest - (_shiftLength / 2);
 
             int result = offset;
 
@@ -585,7 +577,7 @@ namespace ENTM.TuringMachine
                 if (offset > 0)
                 {
                     // Wrap around if memory size is limited and the limit is reached
-                    if (_n > 0 && _tape.Count >= _n && _headPositions[head] == _tape.Count - 1)
+                    if (_n > 0 && _tape.Count >= _n && _headPositions[head] == EndOfTape)
                     {
                         _headPositions[head] = 0;
                     }
@@ -596,7 +588,7 @@ namespace ENTM.TuringMachine
                         // Expand the memory to the right (end of array)
                         if (_headPositions[head] >= _tape.Count)
                         {
-                            _tape.Add(new double[_m]);
+                            ExpandTapeRight();
 
                             // extend debug logs for read and write activities
                             //_writeActivities.Add(0);
@@ -610,7 +602,7 @@ namespace ENTM.TuringMachine
                     // Wrap around if memory size is limited and the limit is reached
                     if (_n > 0 && _tape.Count >= _n && _headPositions[head] == 0)
                     {
-                        _headPositions[head] = _tape.Count - 1;
+                        _headPositions[head] = EndOfTape;
                     }
                     else
                     {
@@ -619,19 +611,7 @@ namespace ENTM.TuringMachine
                         // if we shift below index 0, we have to add elements to the start of the tape and move all heads accordingly
                         if (_headPositions[head] < 0)
                         {
-                            _tape.Insert(0, new double[_m]);
-
-                            // extend debug logs for read and write activities
-                            // _writeActivities.Insert(0, 0);
-                            // _readActivities.Insert(0, 0);
-
-                            // Moving all heads accordingly
-                            for (int i = 0; i < _heads; i++)
-                            {
-                                _headPositions[i] = _headPositions[i] + 1;
-                            }
-
-                            _increasedSizeDown = true;
+                            ExpandTapeLeft();
                         }
                     }
                 }
@@ -649,7 +629,48 @@ namespace ENTM.TuringMachine
             // log debug read activity
             //_readActivities[_headPositions[head]]++;
 
-            return (double[]) _tape[_headPositions[head]].Clone();
+            return (double[])_tape[_headPositions[head]].Clone();
+        }
+
+        private double[] ExpandTapeLeft()
+        {
+            double[] newLocation = new double[_m];
+            if (_initalValue != 0)
+            {
+                for (int i = 0; i < _m; i++)
+                {
+                    newLocation[i] = _initalValue;
+                }
+            }
+            _tape.Insert(0, newLocation);
+
+            // extend debug logs for read and write activities
+            // _writeActivities.Insert(0, 0);
+            // _readActivities.Insert(0, 0);
+
+            // Moving all heads accordingly
+            for (int i = 0; i < _heads; i++)
+            {
+                _headPositions[i] = _headPositions[i] + 1;
+            }
+
+            _increasedSizeDown = true;
+            return newLocation;
+        }
+
+        private double[] ExpandTapeRight()
+        {
+            double[] newLocation = new double[_m];
+            if (_initalValue != 0) {
+                for (int i = 0; i < _m; i++)
+                {
+                    newLocation[i] = _initalValue;
+                }
+            }
+
+            _tape.Add(newLocation);
+
+            return newLocation;
         }
 
         #region Replayable

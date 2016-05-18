@@ -15,7 +15,7 @@
   </Description>
 
     <!-- Comment about the specific experiment setup. NO LINE BREAKS!!!!!!!!!!!! -->
-  <Comment>2 foods, 1 of them poisonous per season, 2 seasons, initialize tape with a value, vanilla feedback, extra memory location with initial values</Comment>
+  <Comment>2 foods, 1 of them poisonous per season, 2 seasons, initialize tape with a value, vanilla feedback, extra memory location with initial values, random daylength 1-5</Comment>
   
   <!-- How many experiments will be performed (serially) -->
   <ExperimentCount>10</ExperimentCount>
