@@ -264,20 +264,19 @@ namespace ENTM.MultiObjective
                 IMultiObjectiveBehaviour bMax = front[fCount - 1];
 
                 // Max - min = span of objective
-                // span * objCount to normalize total crowding dist between 0-1 
-                double nSpan = (bMax.Objectives[i] - bMin.Objectives[i]) * _objectiveCount;
+                double oSpan = (bMax.Objectives[i] - bMin.Objectives[i]);
 
-                bMin.CrowdingDistance = 1d;
-                bMax.CrowdingDistance = 1d;
+                bMin.CrowdingDistance = .9999d * _objectiveCount;
+                bMax.CrowdingDistance = 1d * _objectiveCount;
 
                 for (int j = 1; j < fCount - 1; j++)
                 {
                     IMultiObjectiveBehaviour b = front[j];
 
 
-                    if (b.CrowdingDistance == 1d || nSpan == 0d) continue;
+                    if (b.CrowdingDistance >= 1d || oSpan == 0d) continue;
 
-                    b.CrowdingDistance += (front[j + 1].Objectives[i] - front[j - 1].Objectives[i]) / nSpan;
+                    b.CrowdingDistance += (front[j + 1].Objectives[i] - front[j - 1].Objectives[i]) / oSpan;
                 }
             }
         }
