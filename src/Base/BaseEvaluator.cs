@@ -179,12 +179,9 @@ namespace ENTM.Base
         /// </summary>
         public EvaluationInfo Evaluate(IBlackBox phenome)
         {
-            if (NoveltySearchEnabled)
-            {
-                Environment.NoveltySearch = NoveltySearchInfo;
-                Controller.NoveltySearch = NoveltySearchInfo;
-            }
-            
+            Controller.NoveltySearch = NoveltySearchInfo;
+            Environment.NoveltySearch = NoveltySearchInfo;
+
             // Register the phenome
             Controller.Phenome = phenome;
 
@@ -267,7 +264,10 @@ namespace ENTM.Base
         {
             Environment.ResetIteration();
             Controller.Reset();
-            NoveltySearchInfo.Reset();
+            if (NoveltySearchEnabled)
+            {
+                NoveltySearchInfo.Reset();
+            }
         }
     }
 }

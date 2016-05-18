@@ -29,7 +29,7 @@
   <LogInterval>10</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
-  <MultiThreading>true</MultiThreading>
+  <MultiThreading>false</MultiThreading>
 
   <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
   <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>

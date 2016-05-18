@@ -57,6 +57,6 @@ namespace ENTM.Base
 
                 return _sealedRandom;
             }
-        } 
+        }
     }
 }

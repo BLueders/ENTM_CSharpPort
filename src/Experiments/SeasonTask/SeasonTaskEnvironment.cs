@@ -61,9 +61,9 @@ namespace ENTM.Experiments.SeasonTask
             }
         }
 
-        public override int NoveltyVectorLength => 0;
+        public override int NoveltyVectorLength => SequenceLength;
 
-        public override int NoveltyVectorDimensions => 0;
+        public override int NoveltyVectorDimensions => 1;
 
         public override int MinimumCriteriaLength => 0;
 
@@ -138,21 +138,27 @@ namespace ENTM.Experiments.SeasonTask
         public abstract override double[] PerformAction(double[] action);
         protected abstract double[] GetOutput(int step, double evaluation);
 
-        protected double Evaluate(double eatVal, int step)
+        // To eat or not to eat, that is the question
+        protected double Evaluate(double eatVal, int currentFoodIndex)
         {
+            // record novelty vector
+            if (NoveltySearch.ScoreNovelty)
+            {
+                NoveltySearch.NoveltyVectors[currentFoodIndex][0] = eatVal;
+            }
             const double tolerance = 0.3;
 
-            if (step < 0)
+            if (currentFoodIndex < 0)
             {
                 return 0;
             }
 
             // TODO make a more sophisticated score function
-            if (eatVal > (1 - tolerance) && !Sequence[step].IsPoisonous)
+            if (eatVal > (1 - tolerance) && !Sequence[currentFoodIndex].IsPoisonous)
             {
                 return 1;
             }
-            if (eatVal < tolerance && Sequence[step].IsPoisonous)
+            if (eatVal < tolerance && Sequence[currentFoodIndex].IsPoisonous)
             {
                 return 1;
             }
