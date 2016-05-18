@@ -95,10 +95,8 @@ namespace ENTM.TuringMachine
                 enviromentOutput = Environment.PerformAction(environmentInput);
             }
 
-            NoveltySearchInfo result = controller.NoveltySearch;
-
-            evaluation.NoveltyVectors = result.NoveltyVectors;
-            evaluation.MinimumCriteria = result.MinimumCriteria;
+            evaluation.NoveltyVectors = NoveltySearchInfo.NoveltyVectors;
+            evaluation.MinimumCriteria = NoveltySearchInfo.MinimumCriteria;
         }
 
         protected override void EvaluateRecord(TuringController controller, int iterations, ref EvaluationInfo evaluation)
@@ -168,16 +166,45 @@ namespace ENTM.TuringMachine
                     case NoveltyVectorMode.ShiftJumpInterp:
                         return 3;
 
+                    case NoveltyVectorMode.EnvironmentAction:
+                        return Environment.NoveltyVectorDimensions;
+
                     default:
                         throw new ArgumentOutOfRangeException("Unknown novelty vector mode" + NoveltySearchParameters.VectorMode);
                 }
             }
         }
 
-        // total timesteps - 1 (initial timestep is not scored)
-        public override int NoveltyVectorLength => Environment.MaxTimeSteps - 1;
+        public override int NoveltyVectorLength
+        {
+            get
+            {
 
-        // Minimum criteria: redundant timesteps + total timesteps
-        public override int MinimumCriteriaLength => 2;
+                switch (NoveltySearchParameters.VectorMode)
+                {
+                    case NoveltyVectorMode.EnvironmentAction:
+                        return Environment.NoveltyVectorLength;
+                    default:
+                        // total timesteps - 1 (initial timestep is not scored)
+                        return Environment.MaxTimeSteps - 1;
+                }
+
+            }
+        }
+
+        public override int MinimumCriteriaLength
+        {
+            get
+            {
+                switch (NoveltySearchParameters.VectorMode)
+                {
+                    case NoveltyVectorMode.EnvironmentAction:
+                        return Environment.MinimumCriteriaLength;
+                    default:
+                        // Minimum criteria: redundant timesteps + total timesteps
+                        return 2;
+                }
+            }
+        }
     }
 }

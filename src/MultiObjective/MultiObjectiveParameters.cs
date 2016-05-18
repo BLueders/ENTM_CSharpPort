@@ -11,6 +11,7 @@ namespace ENTM.NoveltySearch
     public class MultiObjectiveParameters
     {
         public bool Enabled;
+        public bool GeneticDiversityEnabled;
         public int GeneticDiversityK;
 
         public static MultiObjectiveParameters ReadXmlProperties(XmlElement xmlConfig)
@@ -18,6 +19,7 @@ namespace ENTM.NoveltySearch
             MultiObjectiveParameters props = new MultiObjectiveParameters();
 
             props.Enabled = XmlUtils.TryGetValueAsBool(xmlConfig, "Enabled") ?? false;
+            props.GeneticDiversityEnabled = XmlUtils.TryGetValueAsBool(xmlConfig, "GeneticDiversityEnabled") ?? true;
             props.GeneticDiversityK = XmlUtils.TryGetValueAsInt(xmlConfig, "GeneticDiversityK") ?? 10;
 
             return props;

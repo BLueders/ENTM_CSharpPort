@@ -13,6 +13,7 @@ namespace ENTM.Base
     {
         Recorder Recorder { get; }
 
+        string SeedGenome { get; set; }
         bool NoveltySearchEnabled { get; set; }
 
         void Initialize(string name, XmlElement xmlConfig, string identifier, int subIdentifier, int number);

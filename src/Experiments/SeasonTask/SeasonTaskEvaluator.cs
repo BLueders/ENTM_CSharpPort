@@ -25,7 +25,7 @@ namespace ENTM.Experiments.SeasonTask
 
         protected override void SetupGeneralizationTest()
         {
-            base.SetupGeneralizationTest();
+            SetupTest();
             Environment.DaysMin = 4;
             Environment.DaysMax = 10;
             Environment.Years = 20;

@@ -20,7 +20,7 @@ namespace ENTM.TuringMachine
         /// <summary>
         /// Novelty Search data
         /// </summary>
-        NoveltySearchInfo NoveltySearch { get; }
+        NoveltySearchInfo NoveltySearch { get; set; }
 
         // Get the info saved
         double[][] TapeValues { get; }

@@ -45,11 +45,12 @@ namespace ENTM.Base
 
         private static readonly object _lockEnvironment = new object();
         private static readonly object _lockController = new object();
+        private static readonly object _lockNoveltySearchInfo = new object();
 
         private ThreadLocal<TEnvironment> _environment;
 
         /// <summary>
-        /// ThreadLocal environment instance
+        /// ThreadLocal Environment instance
         /// </summary>
         protected TEnvironment Environment
         {
@@ -74,6 +75,9 @@ namespace ENTM.Base
 
         private ThreadLocal<TController> _controller;
 
+        /// <summary>
+        /// ThreadLocal Controller instance
+        /// </summary>
         protected TController Controller
         {
             get
@@ -88,6 +92,40 @@ namespace ENTM.Base
                 }
             }
         }
+
+        private ThreadLocal<NoveltySearchInfo> _noveltySearchInfo;
+
+        private NoveltySearchInfo NewNoveltySearchInfo()
+        {
+            NoveltySearchInfo info = new NoveltySearchInfo();
+
+            info.ScoreNovelty = NoveltySearchEnabled;
+            info.VectorMode = NoveltySearchParameters.VectorMode;
+            info.NoveltyVectorDimensions = NoveltyVectorDimensions;
+            info.NoveltyVectorLength = NoveltyVectorLength;
+            info.MinimumCriteriaLength = MinimumCriteriaLength;
+
+            return info;
+        }
+
+        /// <summary>
+        /// ThreadLocal NoveltySearchInfo instance
+        /// </summary>
+        protected NoveltySearchInfo NoveltySearchInfo
+        {
+            get
+            {
+                lock (_lockNoveltySearchInfo)
+                {
+                    if (_noveltySearchInfo == null)
+                    {
+                        _noveltySearchInfo = new ThreadLocal<NoveltySearchInfo>(NewNoveltySearchInfo);
+                    }
+                    return _noveltySearchInfo.Value;
+                }
+            }
+        }
+
 
         /// <summary>
         /// Override must return a new controller instance, which will be used for all evaluations on the current thread
@@ -141,6 +179,12 @@ namespace ENTM.Base
         /// </summary>
         public EvaluationInfo Evaluate(IBlackBox phenome)
         {
+            if (NoveltySearchEnabled)
+            {
+                Environment.NoveltySearch = NoveltySearchInfo;
+                Controller.NoveltySearch = NoveltySearchInfo;
+            }
+            
             // Register the phenome
             Controller.Phenome = phenome;
 
@@ -155,14 +199,8 @@ namespace ENTM.Base
             // Evaluate objective!
             EvaluateObjective(Controller, Iterations, ref evaluation);
 
-            if (NoveltySearchEnabled && NoveltySearchParameters != null)
+            if (NoveltySearchEnabled)
             {
-                Controller.NoveltySearch.ScoreNovelty = NoveltySearchEnabled;
-                Controller.NoveltySearch.VectorMode = NoveltySearchParameters.VectorMode;
-                Controller.NoveltySearch.NoveltyVectorDimensions = NoveltyVectorDimensions;
-                Controller.NoveltySearch.NoveltyVectorLength = NoveltyVectorLength;
-                Controller.NoveltySearch.MinimumCriteriaLength = MinimumCriteriaLength;
-
                 // Notify subclasses that the novelty evaluation is about to start
                 OnNoveltyEvaluationStart();
 
@@ -209,15 +247,16 @@ namespace ENTM.Base
         {
             Controller.Phenome = phenome;
 
-            bool novelty = Controller.NoveltySearch.ScoreNovelty;
-            Controller.NoveltySearch.ScoreNovelty = false;
+            // Deactivate novelty search for testing
+            bool novelty = NoveltySearchInfo.ScoreNovelty;
+            NoveltySearchInfo.ScoreNovelty = false;
 
             EvaluationInfo evaluation = new EvaluationInfo();
             EvaluateRecord(Controller, iterations, ref evaluation);
 
             TearDownTest();
 
-            Controller.NoveltySearch.ScoreNovelty = novelty;
+            NoveltySearchInfo.ScoreNovelty = novelty;
 
             Controller.Phenome = null;
 
@@ -228,6 +267,7 @@ namespace ENTM.Base
         {
             Environment.ResetIteration();
             Controller.Reset();
+            NoveltySearchInfo.Reset();
         }
     }
 }

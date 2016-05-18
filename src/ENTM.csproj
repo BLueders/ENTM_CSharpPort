@@ -143,9 +143,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Config\copytask-generalization\copytask.config.xml">
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="Config\copytask-default.config.xml">
       <SubType>Designer</SubType>
     </Content>

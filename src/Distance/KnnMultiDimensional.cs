@@ -7,20 +7,20 @@ namespace ENTM.Distance
 {
     public class KnnMultiDimensional : Knn
     {
-        private KnnMultiDimensional(INeighbour[] population) : base(population)
+        private KnnMultiDimensional(INeighbour[] population, int dimensions) : base(population)
         {
             _vectorDimensions = population[0].KnnVectors[0].Length;
             _vectorMins = new double?[_vectorDimensions];
             _vectorMaxs = new double?[_vectorDimensions];
         }
 
-        public static KnnMultiDimensional Create(Knn.INeighbour[] population)
+        public static KnnMultiDimensional Create(INeighbour[] population, int dimensions)
         {
             if (population == null || population.Length == 0) throw new ArgumentException("Population was null or empty");
             if (population[0].KnnVectors == null || population[0].KnnVectors.Length == 0) throw new ArgumentException("Knn vectors not instantiated");
             if (population[0].KnnVectors[0] == null || population[0].KnnVectors[0].Length == 0) throw new ArgumentException("Zero dimensionality knn vector");
 
-            KnnMultiDimensional knn = new KnnMultiDimensional(population);
+            KnnMultiDimensional knn = new KnnMultiDimensional(population, dimensions);
 
             return knn;
         }

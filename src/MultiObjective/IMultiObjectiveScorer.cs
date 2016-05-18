@@ -6,6 +6,11 @@ namespace ENTM.MultiObjective
     public interface IMultiObjectiveScorer : ITimeable
     {
         void Score(IList<IMultiObjectiveBehaviour> behaviours);
+
+        /// <summary>
+        /// Returns the number of Pareto Optimal behaviours after a given run.
+        /// </summary>
+        int ParetoOptimal { get; }
     }
 
     public interface IMultiObjectiveBehaviour

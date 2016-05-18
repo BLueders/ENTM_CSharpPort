@@ -371,12 +371,18 @@ namespace ENTM
             }
         }
 
-        private static void LoadGenomeFromXml()
+        private static string[] LoadGenomeFromXml()
         {
             _currentDir = ROOT_PATH;
             _dirStack.Clear();
 
-            string[] champions = Browse();
+            return Browse();
+        }
+
+        private static void TestGenomeFromXml()
+        {
+            string[] champions = LoadGenomeFromXml();
+
             int runs = GetIntegerConsoleInput("Enter number of test runs:");
             int iterations = GetIntegerConsoleInput("Enter number of iterations per run:");
             bool record = GetBoolConsoleInput("Create recordings for each run? (y/n):");
@@ -430,6 +436,13 @@ namespace ENTM
             _experiment.AbortCurrentExperiment();
         }
 
+        private static void AddSeedGenome()
+        {
+            string[] champions = LoadGenomeFromXml();
+            _experiment.SeedGenome = champions[0];
+            Console.WriteLine("Seed Genome loaded");
+        }
+
         private static void ProcessInput()
         {
             do
@@ -453,14 +466,15 @@ namespace ENTM
             {
                 Options = new Dictionary<ConsoleKey, InputOption>();
 
-                new InputOption(ConsoleKey.Spacebar, "Start/Pause Evolutionary Algorithm", StartStop);
-                new InputOption(ConsoleKey.D, "Toggle Debug (only available for debug builds)", ToggleDebug);
-                new InputOption(ConsoleKey.N, "Toggle Novelty Search", ToggleNoveltySearch);
-                new InputOption(ConsoleKey.C, "Test current champion", TestCurrentChampion);
-                new InputOption(ConsoleKey.G, "Test current champion generalization", TestCurrentChampionGeneralization);
-                new InputOption(ConsoleKey.P, "Test current population", TestCurrentPopulation);
-                new InputOption(ConsoleKey.S, "Test saved champion (from xml)", LoadGenomeFromXml);
-                new InputOption(ConsoleKey.A, "Abort current experiment and continue with the next, if any", AbortCurrentExperiment);
+                Create(ConsoleKey.Spacebar, "Start/Pause Evolutionary Algorithm", StartStop);
+                Create(ConsoleKey.D, "Toggle Debug (only available for debug builds)", ToggleDebug);
+                Create(ConsoleKey.N, "Toggle Novelty Search", ToggleNoveltySearch);
+                Create(ConsoleKey.C, "Test current champion", TestCurrentChampion);
+                Create(ConsoleKey.G, "Test current champion generalization", TestCurrentChampionGeneralization);
+                Create(ConsoleKey.P, "Test current population", TestCurrentPopulation);
+                Create(ConsoleKey.S, "Test saved champion (from xml)", TestGenomeFromXml);
+                Create(ConsoleKey.A, "Abort current experiment and continue with the next, if any", AbortCurrentExperiment);
+                Create(ConsoleKey.E, "Add seed genome", AddSeedGenome);
             }
 
             protected internal static string PrintAll()
@@ -476,26 +490,30 @@ namespace ENTM
             protected internal static bool Execute(ConsoleKey key)
             {
                 if (!Options.ContainsKey(key)) return false;
-                Options[key].InputDelegate();
+                Options[key]._inputDelegate();
                 return true;
+            }
+
+            private static void Create(ConsoleKey key, string description, InputOptionDelegate inputDelegate)
+            {
+                InputOption option = new InputOption(key, description, inputDelegate);
+                Options.Add(key, option);
             }
 
             private InputOption(ConsoleKey key, string description, InputOptionDelegate inputDelegate)
             {
-                Key = key;
-                Description = description;
-                InputDelegate = inputDelegate;
-
-                Options.Add(Key, this);
+                _key = key;
+                _description = description;
+                _inputDelegate = inputDelegate;
             }
 
-            private readonly ConsoleKey Key;
-            private readonly string Description;
-            private readonly InputOptionDelegate InputDelegate;
+            private readonly ConsoleKey _key;
+            private readonly string _description;
+            private readonly InputOptionDelegate _inputDelegate;
 
             private string Readable()
             {
-                return $"-{$"{Key}:",-10} {Description}";
+                return $"-{$"{_key}:",-10} {_description}";
             }
         }
 

@@ -15,6 +15,7 @@ namespace ENTM.MultiObjective
 
         private readonly Stopwatch _timer = new Stopwatch();
         public long TimeSpent => _timer.ElapsedMilliseconds;
+        public int ParetoOptimal { get; private set; }
 
         private readonly ObjectiveComparer _objectiveComparer = new ObjectiveComparer();
         private readonly PopulationComparer _populationComparer = new PopulationComparer();
@@ -143,6 +144,8 @@ namespace ENTM.MultiObjective
                 }
 
                 int fCount = front.Count;
+                if (currentRank == 1) ParetoOptimal = fCount;
+
                 for (int i = 0; i < fCount; i++)
                 {
                     IMultiObjectiveBehaviour b = front[i];

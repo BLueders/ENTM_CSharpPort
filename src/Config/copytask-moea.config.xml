@@ -120,12 +120,13 @@
       WritePattern:           Use the write position over time as the novelty vector.
       ReadContent:            Use the read vector over time as the novelty vector.
       WritePatternAndInterp:  Use write position and interp as novelty vector.
-      ShiftJumpInterp:        Shift, jump and interp for novelty vector
+      ShiftJumpInterp:        Shift, jump and interp for novelty vector.
+      EnvironmentAction:      Environment dependant.
       -->
-    <NoveltyVector>ShiftJumpInterp</NoveltyVector>
+    <NoveltyVector>EnvironmentAction</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>15</PMin>
+    <PMin>5</PMin>
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
     <PMinLowerThreshold>1</PMinLowerThreshold>
@@ -173,8 +174,12 @@
     <!-- Enable multiobjective -->
     <Enabled>true</Enabled>
 
+    <!-- Enable the genetic diversity objective. If false, only objective fitness and novelty search will be used. -->
+    <GeneticDiversityEnabled>false</GeneticDiversityEnabled>
+
     <!-- K value for KNN for genetic diversity -->
     <GeneticDiversityK>10</GeneticDiversityK>
+
   </MultiObjective>
 
   <!-- The network activation scheme to use -->

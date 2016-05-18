@@ -17,6 +17,7 @@ namespace ENTM.TuringMachine
         public NoveltySearchInfo NoveltySearch
         {
             get { return TuringMachine.NoveltySearch; }
+            set { TuringMachine.NoveltySearch = value; }
         }
 
         public TuringController(TuringMachineProperties props)
