@@ -123,10 +123,10 @@
       ShiftJumpInterp:        Shift, jump and interp for novelty vector.
       EnvironmentAction:      Environment dependant.
       -->
-    <NoveltyVector>EnvironmentAction</NoveltyVector>
+    <NoveltyVector>ShiftJumpInterp</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>5</PMin>
+    <PMin>15</PMin>
 
     <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
     <PMinLowerThreshold>1</PMinLowerThreshold>
@@ -175,11 +175,17 @@
     <Enabled>true</Enabled>
 
     <!-- Enable the genetic diversity objective. If false, only objective fitness and novelty search will be used. -->
-    <GeneticDiversityEnabled>false</GeneticDiversityEnabled>
+    <GeneticDiversityEnabled>true</GeneticDiversityEnabled>
 
     <!-- K value for KNN for genetic diversity -->
     <GeneticDiversityK>10</GeneticDiversityK>
 
+    <!-- If the algorithm should reject behaviours that have the same or similar values for all objectives (one copy will be kept) -->
+    <RejectSimilarBehaviours>false</RejectSimilarBehaviours>
+
+    <!-- The minimum similarity behaviours can have before being rejected -->
+    <RejectSimilarThreshold>0.001</RejectSimilarThreshold>
+  
   </MultiObjective>
 
   <!-- The network activation scheme to use -->
@@ -220,7 +226,7 @@
   <!-- Evolution Algorithm Parameters -->
   <EAParams>
     <!-- Number of species in the population. Default: 10 -->
-    <SpecieCount>1</SpecieCount>
+    <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
     <ElitismProportion>0.1</ElitismProportion>
@@ -253,13 +259,13 @@
 
     <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
          Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
-    <DisjointExcessGenesRecombinedProbability>.3</DisjointExcessGenesRecombinedProbability>
+    <DisjointExcessGenesRecombinedProbability>1</DisjointExcessGenesRecombinedProbability>
 
     <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
-    <ConnectionWeightMutationProbability>0.8</ConnectionWeightMutationProbability>
+    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
-    <AddNodeMutationProbability>0.001</AddNodeMutationProbability>
+    <AddNodeMutationProbability>0.0005</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
     <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>

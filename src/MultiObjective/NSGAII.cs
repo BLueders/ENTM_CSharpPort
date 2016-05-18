@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ENTM.Base;
+using ENTM.NoveltySearch;
 using ENTM.Utility;
 using log4net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -25,15 +26,30 @@ namespace ENTM.MultiObjective
 
         private List<IMultiObjectiveBehaviour> _population;
         private int _count;
-        private int _objectives;
+        private int _objectiveCount;
+
+        private MultiObjectiveParameters _params;
+
+        public NSGAII(MultiObjectiveParameters multiObjectiveParameters)
+        {
+            _params = multiObjectiveParameters;
+        }
 
         public void Score(IList<IMultiObjectiveBehaviour> behaviours)
         {
             _timer.Restart();
 
-            _objectives = behaviours[0].Objectives.Length;
+            _objectiveCount = behaviours[0].Objectives.Length;
 
-            _population = RejectSimilarBehaviours(behaviours);
+            if (_params.RejectSimilarBehaviours)
+            {
+                _population = RejectSimilarBehaviours(behaviours);
+            }
+            else
+            {
+                _population = new List<IMultiObjectiveBehaviour>(behaviours);
+            }
+
             _count = _population.Count;
 
             UpdateDominations();
@@ -92,7 +108,7 @@ namespace ENTM.MultiObjective
 
                     double similarity = b.Objectives.Select((t, k) => Math.Abs(t - nb.Objectives[k])).Sum();
 
-                    if (similarity < 0.001)
+                    if (similarity < _params.RejectSimilarThreshold)
                     {
                         reject = true;
                         break;
@@ -151,7 +167,7 @@ namespace ENTM.MultiObjective
             bool dominates = false;
 
             // Compare all objectives
-            for (int i = 0; i < _objectives; i++)
+            for (int i = 0; i < _objectiveCount; i++)
             {
                 double ox = bx.Objectives[i];
                 double oy = by.Objectives[i];
@@ -238,7 +254,7 @@ namespace ENTM.MultiObjective
 
             if (fCount == 1) front[0].CrowdingDistance = 1d;
 
-            for (int i = 0; i < _objectives; i++)
+            for (int i = 0; i < _objectiveCount; i++)
             {
                 // Sort the population based on each objective
                 _objectiveComparer.Objective = i;
@@ -249,7 +265,7 @@ namespace ENTM.MultiObjective
 
                 // Max - min = span of objective
                 // span * objCount to normalize total crowding dist between 0-1 
-                double nSpan = (bMax.Objectives[i] - bMin.Objectives[i]) * _objectives;
+                double nSpan = (bMax.Objectives[i] - bMin.Objectives[i]) * _objectiveCount;
 
                 bMin.CrowdingDistance = 1d;
                 bMax.CrowdingDistance = 1d;

@@ -13,6 +13,8 @@ namespace ENTM.NoveltySearch
         public bool Enabled;
         public bool GeneticDiversityEnabled;
         public int GeneticDiversityK;
+        public bool RejectSimilarBehaviours;
+        public double RejectSimilarThreshold;
 
         public static MultiObjectiveParameters ReadXmlProperties(XmlElement xmlConfig)
         {
@@ -21,6 +23,8 @@ namespace ENTM.NoveltySearch
             props.Enabled = XmlUtils.TryGetValueAsBool(xmlConfig, "Enabled") ?? false;
             props.GeneticDiversityEnabled = XmlUtils.TryGetValueAsBool(xmlConfig, "GeneticDiversityEnabled") ?? true;
             props.GeneticDiversityK = XmlUtils.TryGetValueAsInt(xmlConfig, "GeneticDiversityK") ?? 10;
+            props.RejectSimilarBehaviours = XmlUtils.TryGetValueAsBool(xmlConfig, "RejectSimilarBehaviours") ?? false;
+            props.RejectSimilarThreshold = XmlUtils.TryGetValueAsDouble(xmlConfig, "RejectSimilarThreshold") ?? 0.001d;
 
             return props;
         }

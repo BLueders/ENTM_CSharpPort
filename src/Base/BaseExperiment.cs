@@ -994,7 +994,7 @@ namespace ENTM.Base
 
             INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
             IGeneticDiversityScorer<NeatGenome> geneticDiversityScorer = new GeneticDiversityKnn<NeatGenome>(_neatGenomeParams.ConnectionWeightRange);
-            IMultiObjectiveScorer multiObjectiveScorer = new NSGAII();
+            IMultiObjectiveScorer multiObjectiveScorer = new NSGAII(_multiObjectiveParams);
 
              _listEvaluator = new MultiObjectiveListEvaluator<NeatGenome, IBlackBox>(
                  genomeDecoder, 
