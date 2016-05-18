@@ -46,6 +46,11 @@ namespace ENTM.MultiObjective
         int DominatedCount { get; set; }
 
         /// <summary>
+        /// Reject a behaviour based on too high behavioural similarity
+        /// </summary>
+        void Reject();
+
+        /// <summary>
         /// Reset the state of the behaviour for a new comparison. Usually only for elite behaviours.
         /// </summary>
         void Reset();

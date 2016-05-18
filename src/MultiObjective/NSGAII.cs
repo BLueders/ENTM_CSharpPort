@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
+using ENTM.Base;
+using ENTM.Utility;
 using log4net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpNeat.Core;
@@ -28,9 +31,10 @@ namespace ENTM.MultiObjective
         {
             _timer.Restart();
 
-            _population = new List<IMultiObjectiveBehaviour>(behaviours);
+            _objectives = behaviours[0].Objectives.Length;
+
+            _population = RejectSimilarBehaviours(behaviours);
             _count = _population.Count;
-            _objectives = _population[0].Objectives.Length;
 
             UpdateDominations();
             RankPopulation();
@@ -38,20 +42,75 @@ namespace ENTM.MultiObjective
             // Sort population based on rank and crowding distance
             _population.Sort(_populationComparer);
 
-            for (int i = 0; i < _count; i++)
+            IMultiObjectiveBehaviour b = null;
+
+            // Reverse iteration so we get the higher score for equal individuals.
+            for (int i = _count - 1; i > 0; i--)
             {
-                IMultiObjectiveBehaviour b = _population[i];
+                IMultiObjectiveBehaviour pb = b;
+
+                b = _population[i];
 
                 // Score the individuals
-                b.MultiObjectiveScore = (double) i / (_count - 1);
+                if (pb != null && _populationComparer.Compare(b, pb) == 0)
+                {
+                    // This behaviour is equally ranked with the previous one.
+                    b.MultiObjectiveScore = pb.MultiObjectiveScore;
+                }
+                else
+                {
+                    b.MultiObjectiveScore = (double) i / (_count - 1);
+                }
 
-                // Reset the behaviour to remove any references, since the object might be cached in the novelty archive
-                b.Reset();
             }
+
+            for (int i = 0; i < _count; i++)
+            {
+                // Reset the behaviour to remove any references, since the object might be cached in the novelty archive
+                _population[i].Reset();
+            }
+
 
             _timer.Stop();
         }
 
+        private List<IMultiObjectiveBehaviour> RejectSimilarBehaviours(IList<IMultiObjectiveBehaviour> behaviours)
+        {
+
+            List<IMultiObjectiveBehaviour> nonsimilar = new List<IMultiObjectiveBehaviour>();
+
+            int count = behaviours.Count;
+            for (int i = 0; i < count; i++)
+            {
+                IMultiObjectiveBehaviour b = behaviours[i];
+
+                bool reject = false;
+                int nCount = nonsimilar.Count;
+                for (int j = 0; j < nCount; j++)
+                {
+                    IMultiObjectiveBehaviour nb = nonsimilar[j];
+
+                    double similarity = b.Objectives.Select((t, k) => Math.Abs(t - nb.Objectives[k])).Sum();
+
+                    if (similarity < 0.001)
+                    {
+                        reject = true;
+                        break;
+                    }
+                }
+
+                if (reject)
+                {
+                    b.Reject();
+                }
+                else
+                {
+                    nonsimilar.Add(b);
+                }
+            }
+
+            return nonsimilar;
+        }
 
         /// <summary>
         /// Compares all behaviours in the population to each other, to determine who dominates who
@@ -189,7 +248,8 @@ namespace ENTM.MultiObjective
                 IMultiObjectiveBehaviour bMax = front[fCount - 1];
 
                 // Max - min = span of objective
-                double oSpan = bMax.Objectives[i] - bMin.Objectives[i];
+                // span * objCount to normalize total crowding dist between 0-1 
+                double nSpan = (bMax.Objectives[i] - bMin.Objectives[i]) * _objectives;
 
                 bMin.CrowdingDistance = 1d;
                 bMax.CrowdingDistance = 1d;
@@ -199,9 +259,9 @@ namespace ENTM.MultiObjective
                     IMultiObjectiveBehaviour b = front[j];
 
 
-                    if (b.CrowdingDistance == 1d || oSpan == 0d) continue;
+                    if (b.CrowdingDistance == 1d || nSpan == 0d) continue;
 
-                    b.CrowdingDistance += (front[j + 1].Objectives[i] - front[j - 1].Objectives[i]) / oSpan;
+                    b.CrowdingDistance += (front[j + 1].Objectives[i] - front[j - 1].Objectives[i]) / nSpan;
                 }
             }
         }

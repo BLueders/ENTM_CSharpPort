@@ -77,6 +77,11 @@ namespace ENTM.Base
         public IList<IMultiObjectiveBehaviour> Dominates { get; set; }
         public int DominatedCount { get; set; }
 
+        public void Reject()
+        {
+            NonViable = true;
+        }
+
         public void Reset()
         {
             Dominates = new List<IMultiObjectiveBehaviour>();
