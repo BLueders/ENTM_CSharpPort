@@ -20,7 +20,7 @@
   <ExperimentCount>10</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>2500</MaxGenerations>
+  <MaxGenerations>5000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
@@ -47,8 +47,14 @@
     <!-- Write vector size -->
     <M>5</M>
 
-    <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
-    <MinSimilarityToJump>0.5</MinSimilarityToJump>
+    <!-- If M > 1 this will initialize the values of the turing machine with a gradient from 0 to 1. Default = false -->
+    <InitalizeWithGradient>false</InitalizeWithGradient>
+
+    <!-- The turing machine vectors can have an initial values instead of a gradient. Default = 0-->
+    <InitalValue>0</InitalValue>
+
+    <!-- Minimum similarity of the turing data vector to consider this location for a content jump. Default = 0 -->
+    <MinSimilarityToJump>0</MinSimilarityToJump>
 
     <!-- Number of Read/Write heads-->
     <Heads>1</Heads>
@@ -229,7 +235,7 @@
     <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.2</ElitismProportion>
+    <ElitismProportion>0.1</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
@@ -268,10 +274,10 @@
     <AddNodeMutationProbability>0.0005</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
-    <AddConnectionMutationProbability>0.05</AddConnectionMutationProbability>
+    <AddConnectionMutationProbability>0.09</AddConnectionMutationProbability>
 
     <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
-    <DeleteConnectionMutationProbability>0.02</DeleteConnectionMutationProbability>
+    <DeleteConnectionMutationProbability>0.05</DeleteConnectionMutationProbability>
   </GenomeParams>
 
 </Config>

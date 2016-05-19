@@ -36,7 +36,7 @@ namespace ENTM.TuringMachine
 
             InitalizeWithGradient = XmlUtils.TryGetValueAsBool(xmlConfig, "InitalizeWithGradient") ?? false;
 
-            InitalValue = XmlUtils.TryGetValueAsDouble(xmlConfig, "InitalValue") ?? -1;
+            InitalValue = XmlUtils.TryGetValueAsDouble(xmlConfig, "InitalValue") ?? 0;
 
             UseMemoryExpandLocation = XmlUtils.TryGetValueAsBool(xmlConfig, "UseMemoryExpandLocation") ?? false;
             DidWriteThreshold = XmlUtils.TryGetValueAsDouble(xmlConfig, "DidWriteThreshold") ?? 0.9d;

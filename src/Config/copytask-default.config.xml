@@ -14,19 +14,19 @@
   </Description>
 
   <!-- Comment about the specific experiment setup. NO LINE BREAKS! -->
-  <Comment>Default setup</Comment>
+  <Comment>Size 2, MultiObjective, Overwrite, ShiftJumpInterp, Elitsm .1, Species</Comment>
   
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>10</ExperimentCount>
+  <ExperimentCount>20</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>2000</MaxGenerations>
+  <MaxGenerations>5000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>10</LogInterval>
+  <LogInterval>100</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -45,8 +45,14 @@
     <N>-1</N>
 
     <!-- Write vector size -->
-    <M>19</M>
-
+    <M>5</M>
+    
+    <!-- If M > 1 this will initialize the values of the turing machine with a gradient from 0 to 1. Default = false -->
+    <InitalizeWithGradient>false</InitalizeWithGradient>
+    
+    <!-- The turing machine vectors can have an initial values instead of a gradient. Default = 0-->
+    <InitalValue>0</InitalValue>
+    
     <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
     <MinSimilarityToJump>0.5</MinSimilarityToJump>
 
@@ -59,13 +65,13 @@
     <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
     <ShiftMode>Multiple</ShiftMode>
 
-    <!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
-        This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
-    <UseMemoryExpandLocation>false</UseMemoryExpandLocation>
+	 <!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
+		This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
+	<UseMemoryExpandLocation>false</UseMemoryExpandLocation>	
 
-    <!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
-    <DidWriteThreshold>0.9</DidWriteThreshold>
-
+	<!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
+	<DidWriteThreshold>0.9</DidWriteThreshold>	
+	
     <!-- "Interpolate" or "Overwrite". 
         Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
         Overwrite: Turing machine will overwrite if output is >= 0.5, otherwise it will not write.
@@ -85,7 +91,7 @@
     <RandomSeed>0</RandomSeed>
 
     <!-- The size of the bit vectors to be copied. -->
-    <VectorSize>16</VectorSize>
+    <VectorSize>2</VectorSize>
 
     <!-- Maximum length of the sequence of bit vectors. 
          If LengthRule is Random, sequence length will be betweeen 1 and MaxLength.
@@ -155,7 +161,7 @@
     <K>10</K>
 
     <!-- How often the novelty scorer should report to the log (generations) -->
-    <ReportInterval>10</ReportInterval>
+    <ReportInterval>100</ReportInterval>
 
     <!-- How many redundant iterations an individual can have before it does not meet minimum criteria. 
       0-1 relative to total timesteps during lifetime. -->
@@ -169,12 +175,18 @@
   <MultiObjective>
     <!-- Enable multiobjective -->
     <Enabled>false</Enabled>
-
-    <!-- Enable the genetic diversity objective. If false, only objective fitness and novelty search will be used. -->
-    <GeneticDiversityEnabled>false</GeneticDiversityEnabled>
     
+    <!-- Enable the genetic diversity objective. If false, only objective fitness and novelty search will be used. -->
+    <GeneticDiversityEnabled>true</GeneticDiversityEnabled>
+
     <!-- K value for KNN for genetic diversity -->
     <GeneticDiversityK>10</GeneticDiversityK>
+
+    <!-- If the algorithm should reject behaviours that have the same or similar values for all objectives (one copy will be kept) -->
+    <RejectSimilarBehaviours>false</RejectSimilarBehaviours>
+
+    <!-- The minimum similarity behaviours can have before being rejected -->
+    <RejectSimilarThreshold>0.001</RejectSimilarThreshold>
   </MultiObjective>
 
   <!-- The network activation scheme to use -->
@@ -218,7 +230,7 @@
     <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.02</ElitismProportion>
+    <ElitismProportion>0.1</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
@@ -254,7 +266,7 @@
     <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
-    <AddNodeMutationProbability>0.0001</AddNodeMutationProbability>
+    <AddNodeMutationProbability>0.0005</AddNodeMutationProbability>
 
     <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
     <AddConnectionMutationProbability>0.09</AddConnectionMutationProbability>

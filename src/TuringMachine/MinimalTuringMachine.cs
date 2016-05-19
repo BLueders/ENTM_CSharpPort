@@ -500,7 +500,6 @@ namespace ENTM.TuringMachine
                 // JUMPING POINTER TO BEST MATCH
                 int best = 0;
                 double similarity = double.MinValue;
-                bool doJump = false;
                 for (int i = 0; i < _tape.Count; i++)
                 {
                     double curSim = Utilities.Emilarity(key, _tape[i]);
@@ -514,12 +513,6 @@ namespace ENTM.TuringMachine
                         best = i;
                     }
 
-                    if (_minSimilarityToJump > similarity)
-                    {
-                        continue;
-                    }
-
-                    doJump = true;
                     // Perfect similarity, we don't need to check the rest
                     if (similarity > 0.9999) break;
                 }
@@ -527,7 +520,8 @@ namespace ENTM.TuringMachine
                 Debug.DLog($"Content Jump Head {head} from {_headPositions[head]} to {best}", true);
 
                 // Jump the head to the best position found, or to the end if no simillar position was found
-                if (doJump)
+                // Check if similarity meets lower threshold
+                if (similarity >= _minSimilarityToJump)
                 {
                     _headPositions[head] = best;
                 }
