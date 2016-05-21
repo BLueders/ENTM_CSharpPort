@@ -36,6 +36,8 @@ namespace ENTM.Experiments.SeasonTask
         // How often will the poisonous food type change during one sequence
         protected int _poisonousTypeChanges;
 
+        protected int _specificPoisonousTypeChange;
+
         // will not score the first day of each season in the first year
         protected bool _ignoreFirstDayOfSeasonInFirstYear;
 
@@ -53,12 +55,14 @@ namespace ENTM.Experiments.SeasonTask
         public override double MaxScore {
             get
             {
+                double maxScore = _fitnessFactor * _foodTypes * _days * Seasons * Years; // regular max score
+                maxScore -= _poisonFoodShufflePositions.Count * _foodTypes; // dont score days where the food associations are shuffled
                 if (_ignoreFirstDayOfSeasonInFirstYear)
                 {
                     // do not score first day of each season of the first year, this is where the food is encountered the first time and for learning
-                    return _fitnessFactor * _foodTypes * _days * Seasons * Years - (_fitnessFactor * Seasons * _foodTypes);
+                    return maxScore - (_fitnessFactor * Seasons * _foodTypes);
                 }
-                return _fitnessFactor*_foodTypes* _days * Seasons*Years;
+                return maxScore;
             }
         }
 
@@ -104,6 +108,7 @@ namespace ENTM.Experiments.SeasonTask
             _poisonousTypeChanges = props.PoisonousTypeChanges;
             RandomSeed = props.RandomSeed;
             _feedbackOnIgnoredFood = props.FeedbackOnIgnoredFood;
+            _specificPoisonousTypeChange = props.SpecificPoisonousTypeChange;
         }
 
         public override void ResetAll()
@@ -210,8 +215,15 @@ namespace ENTM.Experiments.SeasonTask
 
         private List<int> GetPoisonousFoodShufflePositions()
         {
-            // this will not happen on the first, the second or the last day, that would be pointless.
             List<int> shufflePositions = new List<int>();
+            // If we have a specific date specified, just use this to shuffle the food items around.
+            if (_specificPoisonousTypeChange != -1) {
+                shufflePositions.Add(_specificPoisonousTypeChange);
+                return shufflePositions;
+            }
+
+
+            // this will not happen on the first, the second or the last day, that would be pointless.
             int[] allPositions = new int[_days - 3];
 
             // fill array with all foodTypes

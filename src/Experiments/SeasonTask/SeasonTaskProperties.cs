@@ -22,6 +22,7 @@ namespace ENTM.Experiments.SeasonTask
             FoodTypes = XmlUtils.TryGetValueAsInt(xmlConfig, "FoodTypes") ?? 0;
             PoisonFoods = XmlUtils.TryGetValueAsInt(xmlConfig, "PoisonFoods") ?? 0;
             PoisonousTypeChanges = XmlUtils.TryGetValueAsInt(xmlConfig, "PoisonousTypeChanges") ?? 0;
+            SpecificPoisonousTypeChange = XmlUtils.TryGetValueAsInt(xmlConfig, "SpecificPoisonousTypeChange") ?? -1;
             IgnoreFirstDayOfSeasonInFirstYear = XmlUtils.TryGetValueAsBool(xmlConfig, "IgnoreFirstDayOfSeasonInFirstYear") ?? false;
             StepsPerFood = XmlUtils.TryGetValueAsInt(xmlConfig, "StepsPerFood") ?? 3;
             FeedbackOnIgnoredFood = XmlUtils.TryGetValueAsBool(xmlConfig, "FeedbackOnIgnoredFood") ?? true;
@@ -39,7 +40,7 @@ namespace ENTM.Experiments.SeasonTask
         public int PoisonFoods { get; set; }
         public int StepsPerFood { get; set; }
         public bool FeedbackOnIgnoredFood { get; set; }
-
+        public int SpecificPoisonousTypeChange { get; set; }
         public int PoisonousTypeChanges;
         public bool IgnoreFirstDayOfSeasonInFirstYear; // this could be chosen not to be scored, as the algorithm cant know the answer here
     }
