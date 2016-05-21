@@ -34,11 +34,12 @@ if len(results) == 0:
 print "Found %s results files" % len(results)
 
 with open("analysis.csv", 'w') as output:
-    fields = ["Run", "Path", "Comment", "Start time", "Total time spent", "Average time spent", "Experiments", "Solves", "Solve Percentage", 
+    fields = ["Run", "Path", "Comment", "Start time", "Total time spent", "Average time spent", "Experiments", "Solves", "Solve Percentage", "Max Generations",
               "Generations Solved Mean", "Generations Solved Standard Deviation", "Generations Solved Min", "Generations Solved Max", 
               "Complexity Solved Mean", "Complexity Solved Standard Deviation", "Complexity Solved Min", "Complexity Solved Max", 
               "Hidden Nodes Solved Mean", "Hidden Nodes Solved Standard Deviation", "Hidden Nodes Solved Min", "Hidden Nodes Solved Max", 
-              "Champion Fitness Mean", "Tested Fitness Mean", "Generalization Fitness Mean", "Tested Fitness Solved Mean", "Generalization Fitness Solved Mean", 
+              "Champion Fitness Mean", "Tested Fitness Mean", "Generalization Fitness Mean", 
+              "Tested Fitness Solved Mean", "Tested Fitness Solved Standard Deviation", "Generalization Fitness Solved Mean", "Generalization Fitness Solved Standard Deviation", 
               "Champion Complexity Mean", "Champion Hidden Nodes Mean"]
 
     writer = csv.DictWriter(output, lineterminator='\n', fieldnames=fields)
@@ -64,6 +65,7 @@ with open("analysis.csv", 'w') as output:
         solvedComplexity = []
         solvedHiddens = []
 
+        maxGens = 0
         minGensSolved = sys.maxsize
         maxGensSolved = 0
 
@@ -118,8 +120,12 @@ with open("analysis.csv", 'w') as output:
                 hid = float(row["Champion Hidden Nodes"])
                 hiddens.append(hid)
     
+                gens = float(row["Generations"])
+
+                if gens > maxGens:
+                    maxGens = gens
+
                 if solved:
-                    gens = float(row["Generations"])
                     solvedGens.append(gens)
                     solvedComplexity.append(comp)
                     solvedHiddens.append(hid)
@@ -151,6 +157,9 @@ with open("analysis.csv", 'w') as output:
         complexitySolvedStdDev = -1
         hiddenNodesSolvedMean = -1
         hiddenNodesSolvedStdDev = -1
+
+        testedFitnessSolvedStdDev = -1
+        generalizationFitnessSolvedStdDev = -1
         
         meanTestedFitness = -1
         if len(fitnessTest) > 0:
@@ -163,10 +172,12 @@ with open("analysis.csv", 'w') as output:
         meanTestedFitnessSolved = -1
         if len(fitnessTestSolved) > 0:
             meanTestedFitnessSolved = sum(fitnessTestSolved) / len(fitnessTestSolved)
+            testedFitnessSolvedStdDev = stddev(fitnessTestSolved)
 
         meanGeneralizationFitnessSolved = -1
         if len(fitnessGenSolved) > 0:
             meanGeneralizationFitnessSolved = sum(fitnessGenSolved) / len(fitnessGenSolved)
+            generalizationFitnessSolvedStdDev = stddev(fitnessGenSolved)
 
         if solvedCount == 0:
             minGensSolved = -1
@@ -199,6 +210,7 @@ with open("analysis.csv", 'w') as output:
         row["Experiments"] = count
         row["Solves"] = len(solvedGens)
         row["Solve Percentage"] = "%s%%" % round(float(solvedCount) / count * 100, 2)
+        row["Max Generations"] = maxGens
 
         row["Generations Solved Mean"] = round(gensSolvedMean, 2)
         row["Generations Solved Standard Deviation"] = round(gensSolvedStdDev, 2)
@@ -220,7 +232,9 @@ with open("analysis.csv", 'w') as output:
         row["Generalization Fitness Mean"] = round(meanGeneralizationFitness, 4)
 
         row["Tested Fitness Solved Mean"] = round(meanTestedFitnessSolved, 4)
+        row["Tested Fitness Solved Standard Deviation"] = round(testedFitnessSolvedStdDev, 4)
         row["Generalization Fitness Solved Mean"] = round(meanGeneralizationFitnessSolved, 4)
+        row["Generalization Fitness Solved Standard Deviation"] = round(generalizationFitnessSolvedStdDev, 4)
 
         row["Champion Complexity Mean"] = round(sum(complexity) / count, 2)
         row["Champion Hidden Nodes Mean"] = round(sum(hiddens) / count, 2)

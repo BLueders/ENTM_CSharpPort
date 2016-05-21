@@ -465,7 +465,7 @@ namespace ENTM.TuringMachine
 
             // Compare the tape position before and after write
             double similarity = Utilities.Emilarity(preWrite, _tape[_headPositions[head]]);
-            if (similarity < _didWriteThreshold)
+            if (similarity <= _didWriteThreshold)
             {
                 // If the vectors are not similar, it means we wrote to the tape.
                 _didWrite = true;

@@ -14,19 +14,19 @@
   </Description>
 
   <!-- Comment about the specific experiment setup. NO LINE BREAKS! -->
-  <Comment>Default setup</Comment>
+  <Comment>Size 2 objective</Comment>
   
   <!-- How many experiments will be performed (serially) -->
-  <ExperimentCount>10</ExperimentCount>
+  <ExperimentCount>20</ExperimentCount>
 
   <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
-  <MaxGenerations>5000</MaxGenerations>
+  <MaxGenerations>10000</MaxGenerations>
 
   <!-- NEAT -->
   <PopulationSize>300</PopulationSize>
 
   <!-- The generation interval between writing the status to the log -->
-  <LogInterval>10</LogInterval>
+  <LogInterval>100</LogInterval>
 
   <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
   <MultiThreading>true</MultiThreading>
@@ -46,15 +46,15 @@
 
     <!-- Write vector size -->
     <M>5</M>
-
+    
     <!-- If M > 1 this will initialize the values of the turing machine with a gradient from 0 to 1. Default = false -->
     <InitalizeWithGradient>false</InitalizeWithGradient>
-
+    
     <!-- The turing machine vectors can have an initial values instead of a gradient. Default = 0-->
     <InitalValue>0</InitalValue>
-
-    <!-- Minimum similarity of the turing data vector to consider this location for a content jump. Default = 0 -->
-    <MinSimilarityToJump>0</MinSimilarityToJump>
+    
+    <!-- Minimum similarity of the turing data vector to consider this location for a content jump -->
+    <MinSimilarityToJump>0.5</MinSimilarityToJump>
 
     <!-- Number of Read/Write heads-->
     <Heads>1</Heads>
@@ -65,12 +65,12 @@
     <!-- "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
     <ShiftMode>Multiple</ShiftMode>
 
-	  <!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
-	  This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
-	  <UseMemoryExpandLocation>false</UseMemoryExpandLocation>	
-	
-	  <!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
-	  <DidWriteThreshold>0.9</DidWriteThreshold>	
+	 <!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
+		This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
+	<UseMemoryExpandLocation>false</UseMemoryExpandLocation>	
+
+	<!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
+	<DidWriteThreshold>0.9</DidWriteThreshold>	
 	
     <!-- "Interpolate" or "Overwrite". 
         Interpolate: Turing machine will interpolate between the write vector and the content already stored at the position.
@@ -120,35 +120,31 @@
   <NoveltySearch>
 
     <!-- If false, only environmental objective fitness will be used. -->
-    <Enabled>true</Enabled>
+    <Enabled>false</Enabled>
 
     <!-- What behaviour we want to score
       WritePattern:           Use the write position over time as the novelty vector.
       ReadContent:            Use the read vector over time as the novelty vector.
       WritePatternAndInterp:  Use write position and interp as novelty vector.
-      ShiftJumpInterp:        Shift, jump and interp for novelty vector.
-      EnvironmentAction:      Environment dependant.
+      ShiftJumpInterp:        Shift, jump and interp for novelty vector
       -->
-    <NoveltyVector>EnvironmentAction</NoveltyVector>
+    <NoveltyVector>ShiftJumpInterp</NoveltyVector>
 
     <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
-    <PMin>5</PMin>
+    <PMin>15</PMin>
 
-    <!-- If PMin is adjusted lower than this threshold, novelty search will end. Default = -1 (disabled) -->
-    <PMinLowerThreshold>-1</PMinLowerThreshold>
+    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
+    <PMinLowerThreshold>1</PMinLowerThreshold>
 
     <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
-    <MaxNoveltySearchGenerations>2500</MaxNoveltySearchGenerations>
+    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
 
     <!-- Switch to Objective search if the Objective score has reached this value. -->
     <ObjectiveScoreThreshold>.9</ObjectiveScoreThreshold>
-
-    <!-- Whether or not behaviours must be compared with the historical archive -->
-    <EnableArchiveComparison>true</EnableArchiveComparison>
     
     <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
     <ArchiveLimit>500</ArchiveLimit>
-    
+
     <!-- PMin up adjustment factor-->
     <PMinAdjustUp>1.05</PMinAdjustUp>
 
@@ -178,20 +174,19 @@
 
   <MultiObjective>
     <!-- Enable multiobjective -->
-    <Enabled>true</Enabled>
-
+    <Enabled>false</Enabled>
+    
     <!-- Enable the genetic diversity objective. If false, only objective fitness and novelty search will be used. -->
-    <GeneticDiversityEnabled>false</GeneticDiversityEnabled>
+    <GeneticDiversityEnabled>true</GeneticDiversityEnabled>
 
     <!-- K value for KNN for genetic diversity -->
     <GeneticDiversityK>10</GeneticDiversityK>
 
     <!-- If the algorithm should reject behaviours that have the same or similar values for all objectives (one copy will be kept) -->
-    <RejectSimilarBehaviours>true</RejectSimilarBehaviours>
+    <RejectSimilarBehaviours>false</RejectSimilarBehaviours>
 
     <!-- The minimum similarity behaviours can have before being rejected -->
     <RejectSimilarThreshold>0.001</RejectSimilarThreshold>
-  
   </MultiObjective>
 
   <!-- The network activation scheme to use -->
@@ -235,7 +230,7 @@
     <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.15</ElitismProportion>
+    <ElitismProportion>0.02</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->

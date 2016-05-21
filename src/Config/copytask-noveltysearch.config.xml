@@ -165,7 +165,7 @@
     <K>10</K>
 
     <!-- How often the novelty scorer should report to the log (generations) -->
-    <ReportInterval>100</ReportInterval>
+    <ReportInterval>10</ReportInterval>
 
     <!-- How many redundant iterations an individual can have before it does not meet minimum criteria. 
       0-1 relative to total timesteps during lifetime. -->
@@ -178,16 +178,16 @@
 
   <MultiObjective>
     <!-- Enable multiobjective -->
-    <Enabled>true</Enabled>
+    <Enabled>false</Enabled>
 
     <!-- Enable the genetic diversity objective. If false, only objective fitness and novelty search will be used. -->
-    <GeneticDiversityEnabled>false</GeneticDiversityEnabled>
+    <GeneticDiversityEnabled>true</GeneticDiversityEnabled>
 
     <!-- K value for KNN for genetic diversity -->
     <GeneticDiversityK>10</GeneticDiversityK>
 
     <!-- If the algorithm should reject behaviours that have the same or similar values for all objectives (one copy will be kept) -->
-    <RejectSimilarBehaviours>true</RejectSimilarBehaviours>
+    <RejectSimilarBehaviours>false</RejectSimilarBehaviours>
 
     <!-- The minimum similarity behaviours can have before being rejected -->
     <RejectSimilarThreshold>0.001</RejectSimilarThreshold>
@@ -235,7 +235,7 @@
     <SpecieCount>10</SpecieCount>
 
     <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
-    <ElitismProportion>0.15</ElitismProportion>
+    <ElitismProportion>0.02</ElitismProportion>
 
     <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
          Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->

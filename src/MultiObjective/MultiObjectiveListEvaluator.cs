@@ -79,7 +79,6 @@ namespace ENTM.MultiObjective
         private Dictionary<TGenome, Behaviour<TGenome>> _previousGeneration; 
 
         private bool _multiObjectiveEnabled;
-        private bool _multiObjectiveComplete;
         private bool _noveltySearchEnabled;
 
         private int _generation;

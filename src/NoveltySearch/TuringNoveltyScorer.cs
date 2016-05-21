@@ -194,9 +194,9 @@ namespace ENTM.NoveltySearch
                 }
             }
 
-            if (_generation%_reportInterval == 0)
+            if (_generation % _reportInterval == 0)
             {
-                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin:F2}. Avg knn time spent/gen: {_knnTotalTimeSpent/_reportInterval} ms. " + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria/(float) _reportInterval}");
+                _logger.Info($"Archive size: {_archive.Count}, pMin: {_pMin:F2}. Avg knn time spent/gen: {_knnTotalTimeSpent/_reportInterval} ms. " + $"Average individuals/gen below minimum criteria: {(float) _belowMinimumCriteria/(float) _reportInterval}, Max Objective score: {_maxObjectiveScore:F4}");
                 _knnTotalTimeSpent = 0;
                 _belowMinimumCriteria = 0;
             }

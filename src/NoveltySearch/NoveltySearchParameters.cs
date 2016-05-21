@@ -36,7 +36,7 @@ namespace ENTM.NoveltySearch
             props.EnableArchiveComparison = XmlUtils.TryGetValueAsBool(xmlConfig, "EnableArchiveComparison") ?? true;
             props.ArchiveLimit = XmlUtils.GetValueAsInt(xmlConfig, "ArchiveLimit");
             props.MaxNoveltySearchGenerations = XmlUtils.GetValueAsInt(xmlConfig, "MaxNoveltySearchGenerations");
-            props.PMinLowerThreshold = XmlUtils.GetValueAsDouble(xmlConfig, "PMinLowerThreshold");
+            props.PMinLowerThreshold = XmlUtils.TryGetValueAsDouble(xmlConfig, "PMinLowerThreshold") ?? -1;
             props.ObjectiveScoreThreshold = XmlUtils.TryGetValueAsDouble(xmlConfig, "ObjectiveScoreThreshold") ?? .9;
             props.PMinAdjustUp = XmlUtils.GetValueAsDouble(xmlConfig, "PMinAdjustUp");
             props.PMinAdjustDown = XmlUtils.GetValueAsDouble(xmlConfig, "PMinAdjustDown");
