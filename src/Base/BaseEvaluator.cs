@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Xml;
 using ENTM.MultiObjective;
 using ENTM.NoveltySearch;
@@ -242,6 +243,9 @@ namespace ENTM.Base
 
         private EvaluationInfo Test(IBlackBox phenome, int iterations)
         {
+            Controller.NoveltySearch = NoveltySearchInfo;
+            Environment.NoveltySearch = NoveltySearchInfo;
+
             Controller.Phenome = phenome;
 
             // Deactivate novelty search for testing
@@ -249,7 +253,12 @@ namespace ENTM.Base
             NoveltySearchInfo.ScoreNovelty = false;
 
             EvaluationInfo evaluation = new EvaluationInfo();
+            evaluation.Iterations = iterations;
+            evaluation.ObjectiveFitnessIt = new double[iterations];
+
             EvaluateRecord(Controller, iterations, ref evaluation);
+
+            CalculateTestStats(ref evaluation);
 
             TearDownTest();
 
@@ -258,6 +267,38 @@ namespace ENTM.Base
             Controller.Phenome = null;
 
             return evaluation;
+        }
+
+        private void CalculateTestStats(ref EvaluationInfo info)
+        {
+            double total = 0;
+            double min = double.MaxValue;
+            double max = double.MinValue;
+
+            for (int i = 0; i < info.Iterations; i++)
+            {
+                double fitness = info.ObjectiveFitnessIt[i];
+                total += fitness;
+
+                if (fitness < min) min = fitness;
+                if (fitness > max) max = fitness;
+            }
+
+            double mean = total / info.Iterations;
+
+            double sdTotal = 0;
+            for (int i = 0; i < info.Iterations; i++)
+            {
+                double fitness = info.ObjectiveFitnessIt[i];
+
+                double v = fitness - mean;
+                sdTotal += v * v;
+            }
+
+            info.ObjectiveFitnessMean = mean;
+            info.ObjectiveFitnessStandardDeviation = Math.Sqrt(sdTotal / info.Iterations);
+            info.ObjectiveFitnessMax = max;
+            info.ObjectiveFitnessMin = min;
         }
 
         public void Reset()

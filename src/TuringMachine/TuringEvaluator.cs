@@ -101,8 +101,6 @@ namespace ENTM.TuringMachine
 
         protected override void EvaluateRecord(TuringController controller, int iterations, ref EvaluationInfo evaluation)
         {
-            double totalScore = 0;
-
             // Iteration loop
             for (int i = 0; i < iterations; i++)
             {
@@ -136,7 +134,7 @@ namespace ENTM.TuringMachine
                     }
                 }
 
-                totalScore += Environment.NormalizedScore;
+                evaluation.ObjectiveFitnessIt[i] = Environment.NormalizedScore;
 
                 if (i == 0)
                 {
@@ -144,8 +142,6 @@ namespace ENTM.TuringMachine
                     Recorder.FinalTuringTape = Controller.TuringMachine.TapeValues;
                 }
             }
-
-            evaluation.ObjectiveFitness = Math.Max(0d, totalScore / iterations);
         }
 
         public override int NoveltyVectorDimensions

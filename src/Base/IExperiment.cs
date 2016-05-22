@@ -19,12 +19,12 @@ namespace ENTM.Base
         void Initialize(string name, XmlElement xmlConfig, string identifier, int subIdentifier, int number);
 
         void StartStopEA();
-    
-        double TestCurrentChampion();
-        double TestCurrentChampion(int iterations);
-        double TestCurrentChampionGeneralization(int iterations);
-        double TestSavedChampion(string xmlChampion);
-        double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings, bool generalize);
+
+        EvaluationInfo TestCurrentChampion();
+        EvaluationInfo TestCurrentChampion(int iterations);
+        EvaluationInfo TestCurrentChampionGeneralization(int iterations);
+        EvaluationInfo TestSavedChampion(string xmlChampion);
+        EvaluationInfo[] TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings, bool generalize);
         void TestCurrentPopulation();
 
         void AbortCurrentExperiment();

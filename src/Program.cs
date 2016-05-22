@@ -27,6 +27,7 @@ namespace ENTM
         private const string LOG4NET_CONFIG = "log4net.properties";
         private const string RESULTS_FILE = "results.csv";
         private const string CONFIG_FILE = "config.xml";
+        private const string DATA_FILE_GEN = "generalization.csv";
 
         private static readonly Stopwatch _stopwatch = new Stopwatch();
 
@@ -45,6 +46,8 @@ namespace ENTM
         private static int _currentExperiment;
         private static int _experiementCount;
         private static DateTime _experimentStartedTime;
+
+        private static bool _generalizeAllChamps = false;
 
         public static readonly int MainThreadId = Thread.CurrentThread.ManagedThreadId;
 
@@ -67,16 +70,25 @@ namespace ENTM
 
             LoadExperiments(configs);
 
-            if (_inputEnabled) PrintOptions();
-
-            NextExperiment();
-
-            // Start listening for input from console
-            if (_inputEnabled) ProcessInput();
+            if (_generalizeAllChamps)
+            {
+                GeneralizeAllChamps();
+            }
             else
             {
-                while (!_terminated);
+
+                if (_inputEnabled) PrintOptions();
+
+                NextExperiment();
+
+                // Start listening for input from console
+                if (_inputEnabled) ProcessInput();
+                else
+                {
+                    while (!_terminated);
+                }
             }
+
         }
 
         private static string[] ParseArgs(string[] args)
@@ -110,6 +122,7 @@ namespace ENTM
             Console.WriteLine("Select config:");
 
             Console.WriteLine($"A: Execute all experiments in the current directory serially");
+            Console.WriteLine($"G: Generalization test of all champion genomes in a folder. The folder must contain a matching config.xml");
 
             _currentDir = CONFIG_PATH;
             _dirStack.Push(ROOT_PATH);
@@ -155,6 +168,12 @@ namespace ENTM
                 if (key.Key == ConsoleKey.A)
                 {
                     return xmls.ToArray();
+                }
+
+                if (key.Key == ConsoleKey.G)
+                {
+                    _generalizeAllChamps = true;
+                    return Directory.GetFiles(_currentDir, "config.xml");
                 }
 
                 int selection = (int) char.GetNumericValue(key.KeyChar);
@@ -281,8 +300,8 @@ namespace ENTM
             string timeSpent = Utilities.TimeToString(e.TimeSpent);
             _logger.Info($"Time spent: {timeSpent}");
 
-            double testedFitness = _experiment.TestCurrentChampion(10);
-            double testedGenFitness = _experiment.TestCurrentChampionGeneralization(10);
+            EvaluationInfo testedFitness = _experiment.TestCurrentChampion(100);
+            EvaluationInfo testedGenFitness = _experiment.TestCurrentChampionGeneralization(100);
 
             string resultsFile = $"{e.Directory}{RESULTS_FILE}";
             bool writeHeader = !File.Exists(resultsFile);
@@ -301,7 +320,7 @@ namespace ENTM
                         "{0},\"{1}\",{9},{2},{3},{4},{5:F4},{6:F0},{7},{8},{10:F4},{11:F4}",
                         e.Experiment, e.Comment, timeSpent, e.Solved, e.Generations, e.ChampFitness, e.ChampComplexity,
                         e.ChampHiddenNodes, e.ChampBirthGen, _experimentStartedTime.ToString("ddMMyyyy-HHmmss"),
-                        testedFitness, testedGenFitness));
+                        testedFitness.ObjectiveFitnessMean, testedGenFitness.ObjectiveFitnessMean));
                 }
             }
             catch (Exception ex)
@@ -369,6 +388,49 @@ namespace ENTM
                 _logger.Info($"All experiments completed. Total time spent: {Utilities.TimeToString(_stopwatch.Elapsed)}");
                 if (_inputEnabled) Console.WriteLine("\nPress any key to exit...");
             }
+        }
+
+        private static void GeneralizeAllChamps()
+        {
+            string[] xmls = Directory.EnumerateFiles(_currentDir, "champion*.xml").ToArray();
+            Console.WriteLine($"Found {xmls.Length} champion genomes");
+
+            int count = xmls.Length;
+            int iterations = GetIntegerConsoleInput("Enter number of iterations:");
+
+            NextExperiment();
+
+            EvaluationInfo[] results = new EvaluationInfo[count];
+            for (int i = 0; i < count; i++)
+            {
+                results[i] = _experiment.TestSavedChampion(xmls[i], iterations, 1, true, true)[0];
+            }
+
+            try
+            {
+                string genDataFile = $"{_currentDir}/{DATA_FILE_GEN}";
+
+                using (StreamWriter sw = File.AppendText(genDataFile))
+                {
+                    sw.WriteLine("Genome", "Iterations", "Mean", "Standard Deviation", "Max", "Min");
+
+                    for (int i = 0; i < count; i++)
+                    {
+                        EvaluationInfo res = results[i];
+
+                        sw.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                            "{0},{1},{2:F4},{3:F4},{4:F4},{5:F4}", 
+                            res.GenomeId, res.Iterations, res.ObjectiveFitnessMean, res.ObjectiveFitnessStandardDeviation, res.ObjectiveFitnessMax, res.ObjectiveFitnessMin));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn($"Could not write to generalization file: {ex.Message}", ex);
+            }
+
+            Console.WriteLine("Done. Press any key to exit...");
+            Console.ReadKey();
         }
 
         private static string[] LoadGenomeFromXml()

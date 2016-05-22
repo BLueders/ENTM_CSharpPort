@@ -208,30 +208,30 @@ namespace ENTM.Base
         /// <summary>
         /// Test the champion of the current EA
         /// </summary>
-        public double TestCurrentChampion()
+        public EvaluationInfo TestCurrentChampion()
         {
             return TestCurrentChampion(1, false);
         }
 
-        public double TestCurrentChampion(int iterations)
+        public EvaluationInfo TestCurrentChampion(int iterations)
         {
             return TestCurrentChampion(iterations, false);
         }
 
-        public double TestCurrentChampionGeneralization(int iterations)
+        public EvaluationInfo TestCurrentChampionGeneralization(int iterations)
         {
             return TestCurrentChampion(iterations, true);
         }
 
-        private double TestCurrentChampion(int iterations, bool generalize)
+        private EvaluationInfo TestCurrentChampion(int iterations, bool generalize)
         {
             if (_ea?.CurrentChampGenome == null)
             {
                 Console.WriteLine("No current champion");
-                return 0d;
+                return default(EvaluationInfo);
             }
 
-            return TestGenome(_ea.CurrentChampGenome, iterations, 1, true, generalize);
+            return TestGenome(_ea.CurrentChampGenome, iterations, 1, true, generalize)[0];
         }
 
         public void TestCurrentPopulation()
@@ -250,12 +250,12 @@ namespace ENTM.Base
             }
         }
 
-        public double TestSavedChampion(string xmlPath)
+        public EvaluationInfo TestSavedChampion(string xmlPath)
         {
-            return TestSavedChampion(xmlPath, 1, 1, true, false);
+            return TestSavedChampion(xmlPath, 1, 1, true, false)[0];
         }
 
-        public double TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings, bool generalize)
+        public EvaluationInfo[] TestSavedChampion(string xmlPath, int iterations, int runs, bool createRecordings, bool generalize)
         {
 
             NeatGenome championGenome = LoadGenomeFromXml(xmlPath);
@@ -275,8 +275,13 @@ namespace ENTM.Base
             return NeatGenomeXmlIO.LoadGenome(xmlChampion.DocumentElement, false);
         }
 
-        private double TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings, bool generalize)
+        private EvaluationInfo[] TestGenome(NeatGenome genome, int iterations, int runs, bool createRecordings, bool generalize)
         {
+            if (runs <= 0)
+            {
+                return new EvaluationInfo[0];
+            }
+
             if (_ea != null && _ea.RunState == RunState.Running)
             {
                 _ea.RequestPause();
@@ -294,31 +299,34 @@ namespace ENTM.Base
             _logger.Info($"Testing phenome {(generalize ? "generalization " : "")}(ID: {genome.Id})...");
             Console.WriteLine($"Testing phenome (ID: {genome.Id})...");
 
-            double[] fitness = new double[runs];
+            EvaluationInfo[] fitness = new EvaluationInfo[runs];
 
             CreateExperimentDirectoryIfNecessary();
 
             // run evaluations
             double minFitness = double.MaxValue;
             double maxFitness = double.MinValue;
+
             for (int i = 0; i < runs; i++)
             {
                 if (generalize)
                 {
-                    fitness[i] = _evaluator.TestPhenomeGeneralization(phenome, iterations).ObjectiveFitness;
+                    fitness[i] = _evaluator.TestPhenomeGeneralization(phenome, iterations);
+                    fitness[i].GenomeId = genome.Id;
                 }
                 else
                 {
-                    fitness[i] = _evaluator.TestPhenome(phenome, iterations).ObjectiveFitness;
+                    fitness[i] = _evaluator.TestPhenome(phenome, iterations);
                 }
 
-                if (fitness[i] < minFitness) {
-                    minFitness = fitness[i];
-                }
-
-                if (fitness[i] > maxFitness)
+                if (fitness[i].ObjectiveFitnessMean < minFitness)
                 {
-                    maxFitness = fitness[i];
+                    minFitness = fitness[i].ObjectiveFitnessMean;
+                }
+
+                if (fitness[i].ObjectiveFitnessMean > maxFitness)
+                {
+                    maxFitness = fitness[i].ObjectiveFitnessMean;
                 }
 
                 if (createRecordings)
@@ -335,7 +343,7 @@ namespace ENTM.Base
 
                         using (Bitmap bmp = Recorder.LifetimeToBitmap())
                         {
-                                bmp.Save(recordingFile, ImageFormat.Png);
+                            bmp.Save(recordingFile, ImageFormat.Png);
                         }
 
                         using (Bitmap bmp = Recorder.TapeToBitmap())
@@ -349,27 +357,29 @@ namespace ENTM.Base
                         break;
                     }
 
-                    _logger.Info($"Run {i}: Achieved fitness: {fitness[i]:F4}");
-                    Console.WriteLine($"Run {i}: Achieved fitness: {fitness[i]:F4}");
+                    _logger.Info($"Run {i}: Achieved fitness: {fitness[i].ObjectiveFitnessMean:F4}");
+                    Console.WriteLine($"Run {i}: Achieved fitness: {fitness[i].ObjectiveFitnessMean:F4}");
                 }
             }
 
             // evaluate runs
-            double result = 0;
             if (runs > 1)
             {
-                result = Utilities.Mean(fitness);
-                double sd = Utilities.StandartDeviation(fitness);
+                double[] fit = new double[runs];
+                for (int i = 0; i < runs; i++)
+                {
+                    fit[i] = fitness[i].ObjectiveFitnessMean;
+                }
+
+                double mean = Utilities.Mean(fit);
+                double sd = Utilities.StandartDeviation(fit);
                 //TODO FIXME We had problems with the logger, it hangs at some point probably a buffer issue on the windows cmd???
                 //We had to disable the console appender on log4net and just log to the file, so there is now a console writeline instead
-                _logger.Info($"Done. Average fitness: {result:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
-                Console.WriteLine($"Done. Average fitness: {result:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
-            } else
-            {
-                result = fitness[0];
+                _logger.Info($"Done. Average fitness: {mean:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
+                Console.WriteLine($"Done. Average fitness: {mean:F4}, min fitness: {minFitness:F4}, max fitness: {maxFitness:F4}, sd: {sd:F4}");
             }
 
-            return result;
+            return fitness;
         }
 
         public void AbortCurrentExperiment()

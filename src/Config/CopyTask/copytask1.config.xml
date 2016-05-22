@@ -237,10 +237,10 @@
     <SelectionProportion>0.2</SelectionProportion>
 
     <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
-    <OffspringAsexualProportion>0.8</OffspringAsexualProportion>
+    <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
 
     <!-- The proportion of offspring to be produced from sexual reproduction. Default: 0.5 -->
-    <OffspringSexualProportion>0.2</OffspringSexualProportion>
+    <OffspringSexualProportion>0.5</OffspringSexualProportion>
 
     <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
     <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
