@@ -17,7 +17,7 @@ namespace ENTM.Experiments.SeasonTask
         // How many different days are there each season
         public int DaysMin;
         public int DaysMax;
-        protected int _days; 
+        protected int _days;
 
         // How many different foods there are to select from each season
         protected readonly int _foodTypes;
@@ -52,7 +52,8 @@ namespace ENTM.Experiments.SeasonTask
 
         public override double CurrentScore => _score * _fitnessFactor;
 
-        public override double MaxScore {
+        public override double MaxScore
+        {
             get
             {
                 double maxScore = _fitnessFactor * _foodTypes * _days * Seasons * Years; // regular max score
@@ -186,7 +187,7 @@ namespace ENTM.Experiments.SeasonTask
                 {
                     for (int k = 0; k < _days; k++)
                     {
-                        int currentDayIndex = i*Seasons* _days * _foodTypes + j* _days * _foodTypes + k*_foodTypes;
+                        int currentDayIndex = i * Seasons * _days * _foodTypes + j * _days * _foodTypes + k * _foodTypes;
                         // shuffle dem poisons
                         if (_poisonFoodShufflePositions.Count != 0 && k >= _poisonFoodShufflePositions[nextShuffleDayIndex])
                         {
@@ -217,18 +218,22 @@ namespace ENTM.Experiments.SeasonTask
         {
             List<int> shufflePositions = new List<int>();
             // If we have a specific date specified, just use this to shuffle the food items around.
-            if (_specificPoisonousTypeChange != -1) {
+            if (_specificPoisonousTypeChange != -1)
+            {
                 shufflePositions.Add(_specificPoisonousTypeChange);
                 return shufflePositions;
             }
 
+            if (_poisonousTypeChanges == 0)
+                return shufflePositions;
 
             // this will not happen on the first, the second or the last day, that would be pointless.
             int[] allPositions = new int[_days - 3];
 
             // fill array with all foodTypes
-            for (int i = 0; i < allPositions.Length; i++) {
-                allPositions[i] = i + 2; 
+            for (int i = 0; i < allPositions.Length; i++)
+            {
+                allPositions[i] = i + 2;
             }
 
             // shuffle
