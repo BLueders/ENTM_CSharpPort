@@ -459,7 +459,7 @@ namespace ENTM.Base
                     StringBuilder header = new StringBuilder("Generation,Novelty Search,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
 
                     string[] objNames = _listEvaluator.ObjectiveNames;
-                    for (int i = 0; i < objNames.Length; i++)
+                    for (int i = 0; i < _listEvaluator.ObjectiveCount; i++)
                     {
                         header.Append($", Obj {i}: {objNames[i]} Max Score");
                     }
@@ -491,7 +491,7 @@ namespace ENTM.Base
                     }
                     else
                     {
-                        data.Append(-1);
+                        data.Append($",-1");
                     }
                 }
 
