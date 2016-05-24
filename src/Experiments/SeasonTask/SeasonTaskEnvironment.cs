@@ -67,7 +67,7 @@ namespace ENTM.Experiments.SeasonTask
             }
         }
 
-        public override int NoveltyVectorLength => SequenceLength;
+        public override int NoveltyVectorLength => Years * Seasons * DaysMax * _foodTypes;
 
         public override int NoveltyVectorDimensions => 1;
 

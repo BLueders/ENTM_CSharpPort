@@ -18,6 +18,25 @@ namespace ENTM.Experiments.SeasonTask
             _seasonTaskProps = new SeasonTaskProperties(xmlConfig.SelectSingleNode("SeasonTaskParams") as XmlElement);
         }
 
+        protected override void OnObjectiveEvaluationStart()
+        {
+            // Constant length
+            Environment.DaysMin = _seasonTaskProps.DaysMax;
+            Environment.DaysMax = _seasonTaskProps.DaysMax;
+
+            // Reset the environment. This will reset the random
+            Environment.ResetAll();
+        }
+
+        protected override void OnNoveltyEvaluationStart()
+        {
+            Environment.DaysMin = _seasonTaskProps.DaysMin;
+            Environment.DaysMax = _seasonTaskProps.DaysMax;
+
+            // Reset environment so random seed is reset
+            Environment.ResetAll();
+        }
+
         protected override void SetupTest()
         {
             Environment.RandomSeed = System.Environment.TickCount;

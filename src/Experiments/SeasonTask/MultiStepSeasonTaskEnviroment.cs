@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ENTM.Experiments.SeasonTask;
-using ENTM.Replay;
+﻿using ENTM.Replay;
 using ENTM.Utility;
 
 namespace ENTM.Experiments.SeasonTask
@@ -21,7 +15,7 @@ namespace ENTM.Experiments.SeasonTask
 
         public override int TotalTimeSteps => Sequence.Length * StepNum;
 
-        public override int MaxTimeSteps => SequenceLength * StepNum;
+        public override int MaxTimeSteps => Years * Seasons * DaysMax * _foodTypes * StepNum;
 
         public override double[] PerformAction(double[] action)
         {

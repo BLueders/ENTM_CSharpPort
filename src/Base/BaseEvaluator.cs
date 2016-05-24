@@ -180,8 +180,8 @@ namespace ENTM.Base
         /// </summary>
         public EvaluationInfo Evaluate(IBlackBox phenome)
         {
-            Controller.NoveltySearch = NoveltySearchInfo;
             Environment.NoveltySearch = NoveltySearchInfo;
+            Controller.NoveltySearch = NoveltySearchInfo;
 
             // Register the phenome
             Controller.Phenome = phenome;

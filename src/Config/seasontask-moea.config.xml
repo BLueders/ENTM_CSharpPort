@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Config>
+  <!-- The name of the experiment -->
+  <Name>SeasonTask-New-Memory-Location_Init05</Name>
+  <!-- The fully qualified name of the experiment class -->
+  <ExperimentClass>ENTM.Experiments.SeasonTask.SeasonTaskExperiment</ExperimentClass>
+  <!-- Experiment description -->
+  <Description>
+    Season task experiment with turing controller. 
+    In multible seasons the controller must learn wich foods are edible and which are poisonous for each. 
+    Then recall the information when it encounters that season again to decide wich to eat.
+  </Description>
+  <!-- Comment about the specific experiment setup. NO LINE BREAKS!!!!!!!!!!!! -->
+  <Comment>Experiment for memory expansion with special location. 4 foods, 2 poisonous, no seasons</Comment>
+  <!-- How many experiments will be performed (serially) -->
+  <ExperimentCount>10</ExperimentCount>
+  <!-- The maximum number of generations that the experiment will run before terminating if the maximum fitness has not been achieved. -1 for unlimited -->
+  <MaxGenerations>5000</MaxGenerations>
+  <!-- NEAT -->
+  <PopulationSize>250</PopulationSize>
+  <!-- The generation interval between writing the status to the log -->
+  <LogInterval>1</LogInterval>
+  <!-- Wether or not to use parallel or serial evaluation. Parallel is faster, but serial can be necessary for debugging -->
+  <MultiThreading>true</MultiThreading>
+  <!-- Maximum number of threads if multithreading is enabled. -1 defaults to CPU core count -->
+  <MaxDegreeOfParallelism>-1</MaxDegreeOfParallelism>
+  <!-- Turing Machine Parameters-->
+  <TuringMachineParams>
+    <Enabled>true</Enabled>
+    <!-- Maximum memory size (-1 for unlimited) -->
+    <N>-1</N>
+    <!-- Write vector size -->
+    <M>10</M>
+    <!-- Minimum similarity of the turing data vector to consider this location for a content jump. Default = 0 -->
+    <MinSimilarityToJump>0.6</MinSimilarityToJump>
+    <!-- If M > 1 this will initialize the values of the turing machine with a gradient from 0 to 1. Default = false -->
+    <InitalizeWithGradient>false</InitalizeWithGradient>
+    <!-- the turing machine vectors can have a initial values instead of a gradient. Default = 0-->
+    <InitalValue>0.5</InitalValue>
+    <!-- Number of shift inputs. Default = 3-->
+    <ShiftLength>3</ShiftLength>
+    <!-- A extra memory location is maintained with the initial values at the end of the tape. If the machine write to this location, a new one is created.
+		This can be used to give the tm an option to always have a place to jump to create new memories. Default = false -->
+    <UseMemoryExpandLocation>true</UseMemoryExpandLocation>
+    <!-- Similarity threshold to check if a write operation changed the values at a location Default = 0.9 -->
+    <DidWriteThreshold>0.9</DidWriteThreshold>
+    <!-- Shift mode: "Single" or "Multiple". Single has only a single input value, multiple has 3 for [-1, 0, 1] -->
+    <ShiftMode>Multiple</ShiftMode>
+    <!-- Number of Read/Write heads-->
+    <Heads>1</Heads>
+  </TuringMachineParams>
+  <!-- Season Task Parameters -->
+  <SeasonTaskParams>
+    <!-- Evaluation iterations -->
+    <Iterations>50</Iterations>
+    <!-- The seed used for random environment generations -->
+    <RandomSeed>0</RandomSeed>
+    <FitnessFactor>1</FitnessFactor>
+    <Years>1</Years>
+    <Seasons>1</Seasons>
+    <DaysMin>2</DaysMin>
+    <DaysMax>5</DaysMax>
+    <FoodTypes>4</FoodTypes>
+    <PoisonFoods>2</PoisonFoods>
+    <!-- Randomly shuffle wich foods are poisonous at a random position in the sequence -->
+    <PoisonousTypeChanges>0</PoisonousTypeChanges>
+    <!-- The first time a food is encountered, the system cant know the answer, so maybe we dont want to score them -->
+    <IgnoreFirstDayOfSeasonInFirstYear>true</IgnoreFirstDayOfSeasonInFirstYear>
+    <!-- How many steps to we spend at each food before giving the feedback -->
+    <StepsPerFood>4</StepsPerFood>
+    <!-- User reinforcment learning punishment and reward on food that is not eaten but ignored? -->
+    <FeedbackOnIgnoredFood>true</FeedbackOnIgnoredFood>
+  </SeasonTaskParams>
+  <!-- Novelty Search Parameters -->
+  <NoveltySearch>
+    <!-- If false, only environmental objective fitness will be used. -->
+    <Enabled>true</Enabled>
+    <!-- What behaviour we want to score
+      WritePattern:           Use the write position over time as the novelty vector.
+      ReadContent:            Use the read vector over time as the novelty vector.
+      WritePatternAndInterp:  Use write position and interp as novelty vector.
+      ShiftJumpInterp:        Shift, jump and interp for novelty vector
+      EnvironmentAction:      Environment dependant.
+    -->
+    <NoveltyVector>EnvironmentAction</NoveltyVector>
+    <!-- The minimum novelty score an individual must achieve to be entered into the archive. -->
+    <PMin>45</PMin>
+    <!-- If PMin is adjusted lower than this threshold, novelty search will end. -->
+    <PMinLowerThreshold>1</PMinLowerThreshold>
+    <!-- Maximum number of generations that the novelty search will run before switching to objective search -->
+    <MaxNoveltySearchGenerations>500</MaxNoveltySearchGenerations>
+    <!-- Switch to Objective search if the Objective score has reached this value. -->
+    <ObjectiveScoreThreshold>.9</ObjectiveScoreThreshold>
+    <!-- The maximum size of the behaviour archive. -1 for unlimited. -->
+    <ArchiveLimit>500</ArchiveLimit>
+    <!-- PMin up adjustment factor-->
+    <PMinAdjustUp>1.05</PMinAdjustUp>
+    <!-- PMin down adjustment factor -->
+    <PMinAdjustDown>0.95</PMinAdjustDown>
+    <!-- How many individuals can be added to the archive in a generation before PMin is adjusted up -->
+    <AdditionsPMinAdjustUp>4</AdditionsPMinAdjustUp>
+    <!-- How many generations without archihve additions before PMin is adjusted down -->
+    <GenerationsPMinAdjustDown>5</GenerationsPMinAdjustDown>
+    <!-- K nearest neighbors -->
+    <K>10</K>
+    <!-- How often the novelty scorer should report to the log (generations) -->
+    <ReportInterval>10</ReportInterval>
+    <!-- How many redundant iterations an individual can have before it does not meet minimum criteria. 
+      0-1 relative to total timesteps during lifetime. -->
+    <MinimumCriteriaReadWriteLowerThreshold>0.1</MinimumCriteriaReadWriteLowerThreshold>
+    <!-- Multiply the Novely Score with the Objective fitness to the power of x. 0 to use only Novelty Score. -->
+    <ObjectiveFactorExponent>0</ObjectiveFactorExponent>
+  </NoveltySearch>
+  <MultiObjective>
+    <!-- Enable multiobjective -->
+    <Enabled>true</Enabled>
+
+    <!-- Enable the genetic diversity objective. If false, only objective fitness and novelty search will be used. -->
+    <GeneticDiversityEnabled>false</GeneticDiversityEnabled>
+
+    <!-- K value for KNN for genetic diversity -->
+    <GeneticDiversityK>10</GeneticDiversityK>
+
+    <!-- If the algorithm should reject behaviours that have the same or similar values for all objectives (one copy will be kept) -->
+    <RejectSimilarBehaviours>true</RejectSimilarBehaviours>
+
+    <!-- The minimum similarity behaviours can have before being rejected -->
+    <RejectSimilarThreshold>0.001</RejectSimilarThreshold>
+  
+  </MultiObjective>
+  <!-- The network activation scheme to use -->
+  <Activation>
+    <!-- "Acyclic", "CyclicFixedIters" or "CyclicRelax"
+         Acyclic:           Does not support recurrent connections. Network is fully activated each activation.
+         CyclicFixedIters:  Each iteration will iterate signals one step from input -> output.
+         CyclicRelax:       Activate the network until all node output has remained unchanged between iterations within the threshold, 
+                            or until the maximum iteration count is reached. -->
+    <Scheme>Acyclic</Scheme>
+    <!-- CyclicFixedIters only -->
+    <Iters>3</Iters>
+    <!-- CyclicRelax only -->
+    <Threshold>0.1</Threshold>
+    <!-- CyclicRelax only -->
+    <MaxIters>5</MaxIters>
+  </Activation>
+  <!-- Complexity Regulation Parameters -->
+  <ComplexityRegulation>
+    <!-- "Absolute" or "Relative"
+       Absolute: Defines an absolute ceiling on complexity.
+       Relative: Defines a relative ceiling on complexity. E.g. relative to the complexity at the end of the most recent simplification phase. -->
+    <ComplexityRegulationStrategy>Absolute</ComplexityRegulationStrategy>
+    <!-- The complexity ceiling. When complexity reaches this threshold, the algorithm will switch from complexifying to simplification -->
+    <ComplexityThreshold>350</ComplexityThreshold>
+  </ComplexityRegulation>
+  <!-- Evolution Algorithm Parameters -->
+  <EAParams>
+    <!-- Number of species in the population. Default: 10 -->
+    <SpecieCount>10</SpecieCount>
+    <!-- We sort specie genomes by fitness and keep the top N%, the other genomes are removed to make way for the offspring. Default: 0.2  -->
+    <ElitismProportion>0.2</ElitismProportion>
+    <!-- We sort specie genomes by fitness and select parent genomes for producing offspring from the top N%. 
+         Selection is performed prior to elitism being applied, therefore selecting from more genomes than will be made elite is possible. Default: 0.2 -->
+    <SelectionProportion>0.2</SelectionProportion>
+    <!-- The proportion of offspring to be produced from asexual reproduction (mutation). Default: 0.5 -->
+    <OffspringAsexualProportion>0.5</OffspringAsexualProportion>
+    <!-- The proportion of offspring to be produced from sexual reproduction. Default: 0.5 -->
+    <OffspringSexualProportion>0.5</OffspringSexualProportion>
+    <!-- The proportion of sexual reproductions that will use genomes from different species. Default: 0.01 -->
+    <InterspeciesMatingProportion>0.01</InterspeciesMatingProportion>
+    <!-- The history buffer length used for calculating the best fitness moving average. Default: 100 -->
+    <BestFitnessMovingAverageHistoryLength>100</BestFitnessMovingAverageHistoryLength>
+    <!-- The history buffer length used for calculating the mean specie champ fitness. Default: 100 -->
+    <MeanSpecieChampFitnessMovingAverageHistoryLength>100</MeanSpecieChampFitnessMovingAverageHistoryLength>
+    <!-- The history buffer length used for calculating the mean genome complexity moving. Default: 100 -->
+    <ComplexityMovingAverageHistoryLength>100</ComplexityMovingAverageHistoryLength>
+  </EAParams>
+  <!-- Genome Parameters -->
+  <GenomeParams>
+    <!-- The connection weight range to use in NEAT genomes. E.g. a value of 5 defines a weight range of -5 to 5. 
+         The weight range is strictly enforced - e.g. when creating new connections and mutating existing ones. Default: 5.0 -->
+    <ConnectionWeightRange>10.0</ConnectionWeightRange>
+    <!-- A proportion that specifies the number of interconnections to make between input and output neurons in an initial random population. 
+         This is a proportion of the total number of possible interconnections. Default: 0.05 -->
+    <InitialInterconnectionsProportion>0.2</InitialInterconnectionsProportion>
+    <!-- The probability that all excess and disjoint genes are copied into an offspring genome during sexual reproduction. 
+         Currently the execss/disjoint genes are copied in an all or nothing strategy. Default: 0.1 -->
+    <DisjointExcessGenesRecombinedProbability>0.5</DisjointExcessGenesRecombinedProbability>
+    <!-- The probability that a genome mutation operates on genome connection weights. Default: 0.988 -->
+    <ConnectionWeightMutationProbability>0.988</ConnectionWeightMutationProbability>
+    <!-- The probability that a genome mutation is an 'add node' mutation. Default: 0.001 -->
+    <AddNodeMutationProbability>0.005</AddNodeMutationProbability>
+    <!-- The probability that a genome mutation is an 'add connection' mutation. Default: 0.01 -->
+    <AddConnectionMutationProbability>0.09</AddConnectionMutationProbability>
+    <!-- The probability that a genome mutation is a 'node auxiliary state' mutation. Default: 0.00 -->
+    <NodeAuxStateMutationProbability>0.00</NodeAuxStateMutationProbability>
+    <!-- The probability that a genome mutation is a 'delete connection' mutation. Default: 0.001 -->
+    <DeleteConnectionMutationProbability>0.05</DeleteConnectionMutationProbability>
+  </GenomeParams>
+</Config>
