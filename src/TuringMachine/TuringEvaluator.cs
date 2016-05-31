@@ -106,7 +106,7 @@ namespace ENTM.TuringMachine
             {
                 Reset();
 
-                // Only record first iterations, as subsequent ones will overwrite
+                // Only record first iteration, as subsequent ones will overwrite
                 if (i == 0)
                 {
                     Recorder = new Recorder();

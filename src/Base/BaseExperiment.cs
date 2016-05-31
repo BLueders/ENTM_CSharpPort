@@ -485,16 +485,8 @@ namespace ENTM.Base
 
                 for (int i = 0; i < _listEvaluator.ObjectiveCount; i++)
                 {
-                    if (MultiObjectiveEnabled)
-                    {
-                        data.Append(string.Format(CultureInfo.InvariantCulture, ",{0:F4}", _listEvaluator.MaxObjectiveScores[i]));
-                    }
-                    else
-                    {
-                        data.Append($",-1");
-                    }
+                    data.Append(string.Format(CultureInfo.InvariantCulture, ",{0:F4}", _listEvaluator.MaxObjectiveScores?[i] ?? 0d));
                 }
-
 
                 for (int i = 0; i < spcCount; i++)
                 {
@@ -529,26 +521,26 @@ namespace ENTM.Base
             if (_ea.CurrentGeneration > 0) WriteData();
 
 
-            if (!_multiObjectiveParams.Enabled && _noveltySearchParams.Enabled)
-            {
-                // Novelty search 
-                if (NoveltySearchEnabled)
-                {
-                    // Novelty search has been completed, so we switch to objective search using the archive as seeded generation.
-                    if (_listEvaluator.NoveltySearchComplete)
-                    {
-                        CreateEAFromNoveltyArchive();
-                    }
-                }
-                else
-                {
-                    //if (_ea.CurrentGeneration - _lastMaxFitnessImprovementGen > 1000)
-                    //{
-                    //    _logger.Info("1000 gens passed since last improvement " + _ea.CurrentGeneration + " " + _lastMaxFitnessImprovementGen);
-                    //    NoveltySearchEnabled = true;
-                    //}
-                }
-            }
+            //if (!_multiObjectiveParams.Enabled && _noveltySearchParams.Enabled)
+            //{
+            //    // Novelty search 
+            //    if (NoveltySearchEnabled)
+            //    {
+            //        // Novelty search has been completed, so we switch to objective search using the archive as seeded generation.
+            //        if (_listEvaluator.NoveltySearchComplete)
+            //        {
+            //            CreateEAFromNoveltyArchive();
+            //        }
+            //    }
+            //    else
+            //    {
+            //        //if (_ea.CurrentGeneration - _lastMaxFitnessImprovementGen > 1000)
+            //        //{
+            //        //    _logger.Info("1000 gens passed since last improvement " + _ea.CurrentGeneration + " " + _lastMaxFitnessImprovementGen);
+            //        //    NoveltySearchEnabled = true;
+            //        //}
+            //    }
+            //}
 
             
 
@@ -557,7 +549,7 @@ namespace ENTM.Base
             {
                 PrintEAStats();
 
-                if (MultiObjectiveEnabled && _evaluator.StopConditionSatisfied)
+                if ((MultiObjectiveEnabled || NoveltySearchEnabled) && _evaluator.StopConditionSatisfied)
                 {
                     // If the max objective fitness has been found when running multi objective, we must run an objective search, 
                     // since the champion is not necessarily the objective champion. Another objective champion could be ranked higher.

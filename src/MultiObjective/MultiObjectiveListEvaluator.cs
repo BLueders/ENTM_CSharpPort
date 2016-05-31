@@ -286,10 +286,21 @@ namespace ENTM.MultiObjective
                 }
                 else
                 {
+                    MaxObjectiveScores = new double[ObjectiveCount];
+
                     // Only novelty score
                     for (int i = 0; i < combinedCount; i++)
                     {
-                        combined[i].ApplyNoveltyScoreOnly();
+                        Behaviour<TGenome> b = combined[i];
+
+                        b.ApplyNoveltyScoreOnly();
+
+
+                        // Debug max objective scores
+                        if (b.Evaluation.ObjectiveFitness > MaxObjectiveScores[0])
+                        {
+                            MaxObjectiveScores[0] = b.Evaluation.ObjectiveFitness;
+                        }
                     }
                 }
 

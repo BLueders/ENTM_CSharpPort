@@ -175,6 +175,7 @@
     <Content Include="Config\seasontask.config.xml" />
     <Content Include="Scripts\anji2sharpneat.py" />
     <Content Include="Genomes\chromosome11943.xml" />
+    <Content Include="Scripts\data_analysis.py" />
     <Content Include="Scripts\results_analysis.py" />
   </ItemGroup>
   <ItemGroup />
