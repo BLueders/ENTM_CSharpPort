@@ -66,6 +66,12 @@ namespace ENTM.TuringMachine
                     // The turing controller will handle the turing machine I/O
                     double[] environmentInput = controller.ActivateNeuralNetwork(enviromentOutput);
 
+                    if (_turingMachineProps.MemorySizeHardLimit > 0 &&
+                        controller.TuringMachine.TapeSize > _turingMachineProps.MemorySizeHardLimit) {
+                        evaluation.ObjectiveFitness = 0d;
+                        return;
+                    }
+                    
                     // Activate the environment with the output from the controller (NN)
                     enviromentOutput = Environment.PerformAction(environmentInput);
                 }

@@ -18,6 +18,7 @@ namespace ENTM.TuringMachine
         public bool InitalizeWithGradient;
         public double DidWriteThreshold;
         public bool UseMemoryExpandLocation;
+        public int MemorySizeHardLimit;
 
         public TuringMachineProperties(XmlElement xmlConfig)
         {
@@ -40,6 +41,8 @@ namespace ENTM.TuringMachine
 
             UseMemoryExpandLocation = XmlUtils.TryGetValueAsBool(xmlConfig, "UseMemoryExpandLocation") ?? false;
             DidWriteThreshold = XmlUtils.TryGetValueAsDouble(xmlConfig, "DidWriteThreshold") ?? 0.9d;
+
+            MemorySizeHardLimit = XmlUtils.TryGetValueAsInt(xmlConfig, "MemorySizeHardLimit") ?? -1;
         }
 
         public TuringMachineProperties(int m, int n, int shiftLength, ShiftMode shiftMode, bool enabled, int heads)

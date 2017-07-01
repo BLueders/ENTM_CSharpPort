@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using ENTM.Base;
+﻿using ENTM.Base;
 using ENTM.NoveltySearch;
-using SharpNeat.Phenomes;
 using ENTM.Utility;
-using log4net;
+using SharpNeat.Phenomes;
 
 namespace ENTM.TuringMachine
 {
@@ -31,14 +28,16 @@ namespace ENTM.TuringMachine
 
         public double[] ActivateNeuralNetwork(double[] environmentOutput)
         {
-            // NN Input is the output from the environment, and the output from the turing machine in the previous activation
-            double[] nnInput = Utilities.JoinArrays(environmentOutput, _turingMachineOutput);
+            Debug.DLog($"Neural Network Input:  {Utilities.ToString(environmentOutput, "f4")}{Utilities.ToString(_turingMachineOutput, "f4")}", true);
 
-            Debug.DLog($"Neural Network Input:  {Utilities.ToString(nnInput, "f4")}", true);
-
-            // Activate the neural network
+            // Reset the neural network state
             Phenome.ResetState();
-            Phenome.InputSignalArray.CopyFrom(nnInput, 0);
+       
+            // NN Input is the output from the environment, and the output from the turing machine in the previous activation
+            Phenome.InputSignalArray.CopyFrom(environmentOutput, 0);
+            Phenome.InputSignalArray.CopyFrom(_turingMachineOutput, environmentOutput.Length);
+            
+            // Activate the neural network
             Phenome.Activate();
 
             double[] nnOutput = new double[Phenome.OutputSignalArray.Length];

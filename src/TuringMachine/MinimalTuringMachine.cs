@@ -88,6 +88,8 @@ namespace ENTM.TuringMachine
 
         public double[][] DefaultRead => _initialRead;
 
+        public int TapeSize => _tape.Count;
+        
         private int EndOfTape => _tape.Count - 1;
 
         // Number of times each location was accessed during livetime of the tm

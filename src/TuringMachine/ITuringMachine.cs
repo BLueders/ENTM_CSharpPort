@@ -15,6 +15,8 @@ namespace ENTM.TuringMachine
 
         int OutputCount { get; }
 
+        int TapeSize { get; }
+        
         double[][] DefaultRead { get; }
 
         /// <summary>
