@@ -49,7 +49,7 @@
     <!-- Number of Read/Write heads-->
     <Heads>1</Heads>
     <!-- A maximum size the turing machine can expand the memory tape, before being disqualified, or -1 for no limit. Default: -1 -->
-    <MemorySizeHardLimit>-1</MemorySizeHardLimit>
+    <MemorySizeHardLimit>8</MemorySizeHardLimit>
   </TuringMachineParams>
   <!-- Season Task Parameters -->
   <SeasonTaskParams>

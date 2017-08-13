@@ -62,8 +62,8 @@ namespace ENTM.MultiObjective
 
         public int Compare(IMultiObjectiveBehaviour x, IMultiObjectiveBehaviour y)
         {
-            double ox = x.Objectives[Objective];
-            double oy = y.Objectives[Objective];
+            double ox = x?.Objectives[Objective] ?? 0d;
+            double oy = y?.Objectives[Objective] ?? 0d;
 
             if (ox > oy) return 1;
             if (ox < oy) return -1;
