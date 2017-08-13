@@ -175,6 +175,17 @@ namespace ENTM.Base
                 _listEvaluator.MultiObjectiveEnabled = _multiObjectiveEnabled;
 
                 _logger.Info($"Multi Objective {(_multiObjectiveEnabled ? "enabled" : "disabled")}");
+                if (_multiObjectiveEnabled) {
+                    StringBuilder sb = new StringBuilder("Objectives: [");
+                    for (int i = 0, c = _listEvaluator.ObjectiveCount; i < c; i++) {
+                        sb.Append(_listEvaluator.ObjectiveName(i));
+                        if (i < c - 1) {
+                            sb.Append(", ");
+                        }
+                    }
+                    sb.Append("]");
+                    _logger.Info(sb.ToString());
+                }
             }
         }
 
@@ -458,10 +469,9 @@ namespace ENTM.Base
                     CreateExperimentDirectoryIfNecessary();
                     StringBuilder header = new StringBuilder("Generation,Novelty Search,Max Fitness,Mean Fitness,Max Complexity,Mean Complexity,Champion Complexity,Champion Hidden Node Count,Max Specie Size,Min Specie Size");
 
-                    string[] objNames = _listEvaluator.ObjectiveNames;
                     for (int i = 0; i < _listEvaluator.ObjectiveCount; i++)
                     {
-                        header.Append($", Obj {i}: {objNames[i]} Max Score");
+                        header.Append($", Obj {i}: {_listEvaluator.ObjectiveName(i)} Max Score");
                     }
 
                     for (int i = 0; i < spcCount; i++)
@@ -994,15 +1004,42 @@ namespace ENTM.Base
             // Create genome decoder.
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = CreateGenomeDecoder();
 
-            INoveltyScorer<NeatGenome> noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
-            IGeneticDiversityScorer<NeatGenome> geneticDiversityScorer = new GeneticDiversityKnn<NeatGenome>(_neatGenomeParams.ConnectionWeightRange);
-            IMultiObjectiveScorer multiObjectiveScorer = new NSGAII(_multiObjectiveParams);
+            bool noveltySearchEnabled = _noveltySearchParams?.Enabled ?? false;
+            bool multiObjectiveEnabled = _multiObjectiveParams?.Enabled ?? false;
+
+            INoveltyScorer<NeatGenome> noveltyScorer = null;
+            IMultiObjectiveScorer multiObjectiveScorer = null;
+            IList<IObjectiveScorer<NeatGenome>> objectiveScorers = new List<IObjectiveScorer<NeatGenome>>();
+            
+            if (noveltySearchEnabled) {
+                noveltyScorer = new TuringNoveltyScorer<NeatGenome>(_noveltySearchParams);
+            }
+
+            if (multiObjectiveEnabled) {
+                multiObjectiveScorer = new NSGAII(_multiObjectiveParams);
+
+                if (NoveltySearchEnabled) {
+                    objectiveScorers.Add(noveltyScorer);                    
+                }
+                
+                if (_multiObjectiveParams.GeneticDiversityEnabled) {
+                    objectiveScorers.Add(new GeneticDiversityKnn<NeatGenome>(_neatGenomeParams.ConnectionWeightRange));        
+                }
+                
+                if (_multiObjectiveParams.TapeSizeCostEnabled) {
+                    objectiveScorers.Add(new TapeSizeCostScorer<NeatGenome>());        
+                }
+                
+                if (_multiObjectiveParams.ConnectionCostEnabled) {
+                    objectiveScorers.Add(new ConnectionCostScorer<NeatGenome>());        
+                }
+            }
 
              _listEvaluator = new MultiObjectiveListEvaluator<NeatGenome, IBlackBox>(
                  genomeDecoder, 
                  _evaluator, 
                  noveltyScorer, 
-                 geneticDiversityScorer, 
+                 objectiveScorers, 
                  multiObjectiveScorer, 
                  _multiThreading, 
                  _parallelOptions);
@@ -1010,8 +1047,8 @@ namespace ENTM.Base
             _listEvaluator.MultiObjectiveParams = _multiObjectiveParams;
             _listEvaluator.ReportInterval = _logInterval;
 
-            NoveltySearchEnabled = _noveltySearchParams?.Enabled ?? false;
-            MultiObjectiveEnabled = _multiObjectiveParams?.Enabled ?? false;
+            NoveltySearchEnabled = noveltySearchEnabled;
+            MultiObjectiveEnabled = multiObjectiveEnabled;
 
             // Initialize the evolution algorithm.
             ea.Initialize(_listEvaluator, genomeFactory, genomeList);

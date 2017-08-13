@@ -18,7 +18,7 @@ namespace ENTM.Base
         /// <summary>
         /// Activate the neural network and other controller components with the output from the environment
         /// </summary>
-        /// <param name="enviromentInput"></param>
+        /// <param name="environmentOutput"></param>
         /// <returns></returns>
         double[] ActivateNeuralNetwork(double[] environmentOutput);
 

@@ -64,12 +64,14 @@
     <Compile Include="Experiments\Xor\XorExperiment.cs" />
     <Compile Include="Base\Behaviour.cs" />
     <Compile Include="Base\EvaluationInfo.cs" />
+    <Compile Include="MultiObjective\ConnectionCostScorer.cs" />
     <Compile Include="MultiObjective\GeneticDiversityKnn.cs" />
-    <Compile Include="MultiObjective\IGeneticDiversityScorer.cs" />
+    <Compile Include="MultiObjective\IObjectiveScorer.cs" />
     <Compile Include="MultiObjective\IMultiObjectiveEvaluator.cs" />
     <Compile Include="MultiObjective\IMultiObjectiveScorer.cs" />
     <Compile Include="MultiObjective\MultiObjectiveParameters.cs" />
     <Compile Include="MultiObjective\NSGAII.cs" />
+    <Compile Include="MultiObjective\TapeSizeCostScorer.cs" />
     <Compile Include="NoveltySearch\INoveltyScorer.cs" />
     <Compile Include="Distance\KnnMultiDimensional.cs" />
     <Compile Include="MultiObjective\MultiObjectiveListEvaluator.cs" />

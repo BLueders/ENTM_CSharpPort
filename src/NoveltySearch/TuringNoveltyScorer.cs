@@ -15,12 +15,17 @@ namespace ENTM.NoveltySearch
     {
         private static readonly ILog _logger = LogManager.GetLogger("Novelty Search");
 
+        public string Name => "TuringNoveltyScorer";
+        public MultiObjectiveParameters Params { get; set; }
+        public int Objective { get; set; }
+        
         private readonly NoveltySearchParameters _params;
         private readonly LimitedQueue<Behaviour<TGenome>> _archive;
 
         private readonly Stopwatch _timer = new Stopwatch();
         public long TimeSpent => _timer.ElapsedMilliseconds;
-
+        public long TimeSpentAccumulated { get; set; }
+   
         public IList<TGenome> Archive
         {
             get
@@ -61,7 +66,8 @@ namespace ENTM.NoveltySearch
             _knnTotalTimeSpent = 0;
         }
 
-        public void Score(IList<Behaviour<TGenome>> behaviours, int noveltyObjective)
+
+        public void Score(IList<Behaviour<TGenome>> behaviours)
         {
             _timer.Restart();
 
@@ -146,7 +152,7 @@ namespace ENTM.NoveltySearch
                     }
 
                     // Novelty score objective
-                    b.Objectives[noveltyObjective] = score;
+                    b.Objectives[Objective] = score;
 
                     if (score > _pMin)
                     {

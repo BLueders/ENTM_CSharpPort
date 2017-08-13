@@ -6,12 +6,10 @@ using ENTM.Utility;
 
 namespace ENTM.NoveltySearch
 {
-    public interface INoveltyScorer<TGenome> : ITimeable where TGenome : class, IGenome<TGenome>
+    public interface INoveltyScorer<TGenome> : IObjectiveScorer<TGenome> where TGenome : class, IGenome<TGenome>
     {
         IList<TGenome> Archive { get; }
 
         bool StopConditionSatisfied { get; }
-
-        void Score(IList<Behaviour<TGenome>> behaviours, int noveltyObjective);
     }
 }

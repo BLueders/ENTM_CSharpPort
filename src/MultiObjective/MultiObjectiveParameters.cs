@@ -15,7 +15,9 @@ namespace ENTM.NoveltySearch
         public int GeneticDiversityK;
         public bool RejectSimilarBehaviours;
         public double RejectSimilarThreshold;
-
+        public bool TapeSizeCostEnabled;
+        public bool ConnectionCostEnabled;
+        
         public static MultiObjectiveParameters ReadXmlProperties(XmlElement xmlConfig)
         {
             MultiObjectiveParameters props = new MultiObjectiveParameters();
@@ -25,6 +27,8 @@ namespace ENTM.NoveltySearch
             props.GeneticDiversityK = XmlUtils.TryGetValueAsInt(xmlConfig, "GeneticDiversityK") ?? 10;
             props.RejectSimilarBehaviours = XmlUtils.TryGetValueAsBool(xmlConfig, "RejectSimilarBehaviours") ?? false;
             props.RejectSimilarThreshold = XmlUtils.TryGetValueAsDouble(xmlConfig, "RejectSimilarThreshold") ?? 0.001d;
+            props.TapeSizeCostEnabled = XmlUtils.TryGetValueAsBool(xmlConfig, "TapeSizeCostEnabled") ?? false;
+            props.ConnectionCostEnabled = XmlUtils.TryGetValueAsBool(xmlConfig, "ConnectionCostEnabled") ?? false;
 
             return props;
         }

@@ -6,9 +6,11 @@ using SharpNeat.Core;
 
 namespace ENTM.MultiObjective
 {
-    public interface IGeneticDiversityScorer<TGenome> : ITimeable where TGenome : class, IGenome<TGenome>
+    public interface IObjectiveScorer<TGenome> : ITimeable where TGenome : class, IGenome<TGenome>
     {
+        string Name { get; }
         MultiObjectiveParameters Params { get; set; }
-        void Score(IList<Behaviour<TGenome>> behaviours, int objective);
+        int Objective { get; set; }
+        void Score(IList<Behaviour<TGenome>> behaviours);
     }
 }

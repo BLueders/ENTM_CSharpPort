@@ -49,6 +49,7 @@ namespace ENTM.TuringMachine
             Utility.Debug.DLogHeader("STARTING EVAULATION", true);
 
             double totalScore = 0;
+            evaluation.TapeSizes = new int[iterations];
 
             // Iteration loop
             for (int i = 0; i < iterations; i++)
@@ -69,6 +70,8 @@ namespace ENTM.TuringMachine
                     if (_turingMachineProps.MemorySizeHardLimit > 0 &&
                         controller.TuringMachine.TapeSize > _turingMachineProps.MemorySizeHardLimit) {
                         evaluation.ObjectiveFitness = 0d;
+                        
+                        // Phenome is disqualified, no need to do any further evaluation.
                         return;
                     }
                     
@@ -77,6 +80,7 @@ namespace ENTM.TuringMachine
                 }
 
                 totalScore += Environment.NormalizedScore;
+                evaluation.TapeSizes[i] = controller.TuringMachine.TapeSize;
 
                 Utility.Debug.DLog($"EVALUATION Total Score: {totalScore}, Iteration Score: {Environment.CurrentScore}", true);
             }

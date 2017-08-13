@@ -19,6 +19,7 @@ namespace ENTM.MultiObjective
 
         private readonly Stopwatch _timer = new Stopwatch();
         public long TimeSpent => _timer.ElapsedMilliseconds;
+        public long TimeSpentAccumulated { get; set; }
         public int ParetoOptimal { get; private set; }
 
         private readonly ObjectiveComparer _objectiveComparer = new ObjectiveComparer();

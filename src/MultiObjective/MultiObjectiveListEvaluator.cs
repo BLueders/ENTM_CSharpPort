@@ -27,30 +27,12 @@ namespace ENTM.MultiObjective
     {
         private static readonly ILog _logger = LogManager.GetLogger("List Evaluator");
 
-        private const int OBJ_OBJECTIVE_FITNESS = 0;
-        private const int OBJ_NOVELTY_SCORE = 1;
-        private const int OBJ_GENETIC_DIVERSITY = 2;
-
-        public int ObjectiveCount
-        {
-            get
-            {
-                int count = 1;
-                if (NoveltySearchEnabled) count++;
-                if (_multiObjectiveParameters.GeneticDiversityEnabled) count++;
-
-                return count;
-            }
-        }
-
-        private static readonly string[] _objectiveNames = { "Objective", "Novelty", "Genetic Diversity" };
-        public string[] ObjectiveNames => _objectiveNames;
-
+        public int ObjectiveCount => _objectiveScorers.Count + 1;
         public int ReportInterval { get; set; } = 0;
 
         private readonly Stopwatch _evaluationTimer = new Stopwatch();
 
-        private long _timeSpentEvaluation, _timeSpentNoveltySearch, _timeSpentGeneticDiversity, _timeSpentMultiObjective;
+        private long _timeSpentEvaluation, _timeSpentNoveltySearch, _timeSpentMultiObjective;
         private long _paretoOptimal;
 
         public double[] MaxObjectiveScores { get; private set; }
@@ -62,7 +44,9 @@ namespace ENTM.MultiObjective
             set
             {
                 _multiObjectiveParameters = value;
-                _geneticDiversityScorer.Params = value;
+                foreach (IObjectiveScorer<TGenome> scorer in _objectiveScorers) {
+                    scorer.Params = value;
+                }
             }
         }
 
@@ -71,7 +55,7 @@ namespace ENTM.MultiObjective
         private readonly IGenomeDecoder<TGenome, TPhenome> _genomeDecoder;
         private readonly IMultiObjectiveEvaluator<TPhenome> _phenomeEvaluator;
         private readonly INoveltyScorer<TGenome> _noveltyScorer;
-        private readonly IGeneticDiversityScorer<TGenome> _geneticDiversityScorer;
+        private readonly IList<IObjectiveScorer<TGenome>> _objectiveScorers;
         private readonly IMultiObjectiveScorer _multiObjectiveScorer;
         private readonly ParallelOptions _parallelOptions;
         private readonly EvaluationMethod _evalMethod;
@@ -110,6 +94,12 @@ namespace ENTM.MultiObjective
             }
         }
 
+        public string ObjectiveName(int i) {
+            if (i == 0) {
+                return "Objective";
+            }
+            return _objectiveScorers[i - 1].Name;
+        }
 
         public List<TGenome> NoveltyArchive => new List<TGenome>(_noveltyScorer.Archive);
 
@@ -122,7 +112,7 @@ namespace ENTM.MultiObjective
         public MultiObjectiveListEvaluator(IGenomeDecoder<TGenome, TPhenome> genomeDecoder,
                                            IMultiObjectiveEvaluator<TPhenome> phenomeEvaluator,
                                            INoveltyScorer<TGenome> noveltyScorer,
-                                           IGeneticDiversityScorer<TGenome> geneticDiversityScorer,
+                                           IList<IObjectiveScorer<TGenome>> objectiveScorers,
                                            IMultiObjectiveScorer multiObjectiveScorer,
                                            bool enableMultiThreading,
                                            ParallelOptions options)
@@ -130,7 +120,11 @@ namespace ENTM.MultiObjective
             _genomeDecoder = genomeDecoder;
             _phenomeEvaluator = phenomeEvaluator;
             _noveltyScorer = noveltyScorer;
-            _geneticDiversityScorer = geneticDiversityScorer;
+            _objectiveScorers = objectiveScorers;
+            for (int i = 0; i < _objectiveScorers.Count; i++) {
+                _objectiveScorers[i].Objective = i + 1;
+            }
+            
             _multiObjectiveScorer = multiObjectiveScorer;
             _parallelOptions = options;
             _generation = 0;
@@ -235,7 +229,7 @@ namespace ENTM.MultiObjective
                 if (NoveltySearchEnabled)
                 {
                     // Calculate novelty scores
-                    _noveltyScorer.Score(combined, OBJ_NOVELTY_SCORE);
+                    _noveltyScorer.Score(combined);
                     _timeSpentNoveltySearch += _noveltyScorer.TimeSpent;
                 }
 
@@ -245,11 +239,10 @@ namespace ENTM.MultiObjective
                     Behaviour<TGenome>[] viable = combined.Where(x => !x.NonViable).ToArray();
                     int vCount = viable.Length;
 
-                    if (_multiObjectiveParameters.GeneticDiversityEnabled)
-                    {
+                    foreach (IObjectiveScorer<TGenome> scorer in _objectiveScorers) {
                         // Score genetic diversity
-                        _geneticDiversityScorer.Score(viable, OBJ_GENETIC_DIVERSITY);
-                        _timeSpentGeneticDiversity += _geneticDiversityScorer.TimeSpent;
+                        scorer.Score(viable);
+                        scorer.TimeSpentAccumulated += scorer.TimeSpent;
                     }
 
                     if (vCount > 0)
@@ -295,7 +288,6 @@ namespace ENTM.MultiObjective
 
                         b.ApplyNoveltyScoreOnly();
 
-
                         // Debug max objective scores
                         if (b.Evaluation.ObjectiveFitness > MaxObjectiveScores[0])
                         {
@@ -318,7 +310,7 @@ namespace ENTM.MultiObjective
 
                 if (MultiObjectiveEnabled)
                 {
-                    sb.Append($"Max Objective scores:");
+                    sb.Append("Max Objective scores:");
                     for (int i = 0; i < ObjectiveCount; i++)
                     {
                         sb.Append($" [{i}]: {MaxObjectiveScores[i]:F04}");
@@ -335,9 +327,10 @@ namespace ENTM.MultiObjective
                 }
                 if (MultiObjectiveEnabled)
                 {
-                    if (_multiObjectiveParameters.GeneticDiversityEnabled)
-                    {
-                        sb.Append($" [Genetic Diversity: {_timeSpentGeneticDiversity / ReportInterval} ms]");
+                    foreach (IObjectiveScorer<TGenome> scorer in _objectiveScorers) {
+                    
+                        sb.Append($" [{scorer.Name}: {scorer.TimeSpentAccumulated / ReportInterval} ms]");
+                        scorer.TimeSpentAccumulated = 0;
                     }
                     sb.Append($" [Multi Objective: {_timeSpentMultiObjective / ReportInterval} ms]");
                 }
@@ -348,7 +341,6 @@ namespace ENTM.MultiObjective
 
                 _timeSpentEvaluation = 0;
                 _timeSpentNoveltySearch = 0;
-                _timeSpentGeneticDiversity = 0;
                 _timeSpentMultiObjective = 0;
 
             }

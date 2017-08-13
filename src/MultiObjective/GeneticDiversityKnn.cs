@@ -7,10 +7,13 @@ using SharpNeat.Core;
 
 namespace ENTM.MultiObjective
 {
-    public class GeneticDiversityKnn<TGenome> : IGeneticDiversityScorer<TGenome> where TGenome : class, IGenome<TGenome>
+    public class GeneticDiversityKnn<TGenome> : IObjectiveScorer<TGenome> where TGenome : class, IGenome<TGenome>
     {
         private readonly Stopwatch _timer = new Stopwatch();
+        public string Name => "GeneticDiversityKnn";
+        public int Objective { get; set; }
         public long TimeSpent => _timer.ElapsedMilliseconds;
+        public long TimeSpentAccumulated { get; set; }
 
         internal class GeneticPosition : Knn.INeighbour
         {
@@ -23,13 +26,13 @@ namespace ENTM.MultiObjective
         public GeneticDiversityKnn(double weightRange)
         {
             _weightRange = weightRange;
-        } 
+        }
 
         public MultiObjectiveParameters Params { get; set; }
 
         private double _weightRange;
 
-        public void Score(IList<Behaviour<TGenome>> behaviours, int objective)
+        public void Score(IList<Behaviour<TGenome>> behaviours)
         {
             _timer.Restart();
 
@@ -70,7 +73,7 @@ namespace ENTM.MultiObjective
 
                 double score = knn.AverageDistToKnn(pos, Params.GeneticDiversityK);
 
-                pos._behaviour.Objectives[objective] = score;
+                pos._behaviour.Objectives[Objective] = score;
             }
 
             _timer.Stop();
